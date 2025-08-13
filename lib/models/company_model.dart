@@ -28,8 +28,12 @@ class Company {
       companyID: json['CompanyID'] ?? '',
       salesTerritoryID: json['SalesTerritoryID'] ?? '',
       isActive: json['IsActive'] ?? false,
-      createdDate: DateTime.parse(json['CreatedDate'] ?? DateTime.now().toIso8601String()),
-      modifiedDate: DateTime.parse(json['ModifiedDate'] ?? DateTime.now().toIso8601String()),
+      createdDate: DateTime.parse(
+        json['CreatedDate'] ?? DateTime.now().toIso8601String(),
+      ),
+      modifiedDate: DateTime.parse(
+        json['ModifiedDate'] ?? DateTime.now().toIso8601String(),
+      ),
       taxID: json['TaxID'] ?? '',
       companyName: json['CompanyName'] ?? '',
       noted: json['Noted'] ?? '',
@@ -58,17 +62,16 @@ class CompanyResponse {
   final String status;
   final List<Company> companies;
 
-  CompanyResponse({
-    required this.status,
-    required this.companies,
-  });
+  CompanyResponse({required this.status, required this.companies});
 
   factory CompanyResponse.fromJson(Map<String, dynamic> json) {
     return CompanyResponse(
       status: json['status'] ?? '',
-      companies: (json['companies'] as List<dynamic>?)
-          ?.map((companyJson) => Company.fromJson(companyJson))
-          .toList() ?? [],
+      companies:
+          (json['companies'] as List<dynamic>?)
+              ?.map((companyJson) => Company.fromJson(companyJson))
+              .toList() ??
+          [],
     );
   }
-} 
+}
