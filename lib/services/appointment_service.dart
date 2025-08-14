@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
-import 'package:wfs/models/AppointmentAddress_model.dart';
-import 'package:wfs/models/appointments_model.dart';
 import '../models/appointment_model.dart'; // Import model ที่เราสร้างขึ้น
 
 class AppointmentService {
@@ -49,38 +47,6 @@ class AppointmentService {
   }
 
   Future<void> Add(String accessToken) async {
-    // Appointments appointmentsMockData = new Appointments(
-    //   appointmentTitle: "นัดพบลูกค้า",
-    //   appointmentTypeID: "7DEEC491-A5AE-4856-B981-7E91870179FF",
-    //   userID: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-    //   clientID: "471638B8-F144-4446-8DC6-29CADA5EEEB0",
-    //   companyID: "627DC383-E210-46A2-9819-FB355146BB0B",
-    //   appointmentDateTimeFrom: "2025-08-14T18:00:00",
-    //   appointmentDateTimeTo: "2025-08-14T18:00:00",
-    //   appointmentStatusID: "4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B",
-    //   purposeTypeID: "A0794CE9-507E-4F6A-86A6-299282D7BF7F",
-    //   noted: null,
-    //   assignedBy: null,
-    //   appointmentAddress: new AppointmentAddress(
-    //     address: "123/4 Sukhumvit Road",
-    //     countryID: 1,
-    //     provinceID: 1,
-    //     districtID: 13,
-    //     subDistrictID: 2583,
-    //     latitude: null,
-    //     longitude: null,
-    //     isPrimary: true,
-    //     isActive: true,
-    //   ),
-    //   appointmentProducts: [
-    //     "E30AC1C5-37DD-49E4-90CD-26CC4D70848F",
-    //     "96EBF916-B4CF-46B2-B660-4A8D4F00CFA6",
-    //   ],
-    //   isActive: true,
-    //   createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-    //   modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-    // );
-
     String jsonString = '''
 {    
     "AppointmentTitle": "นัดพบลูกค้า"  ,
@@ -119,13 +85,13 @@ class AppointmentService {
     }
     try {
       final response = await http.post(
-        Uri.parse(ApiConfig.addAppointment),
+        Uri.parse(ApiConfig.addAppointmentUrl),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
         },
-        body: jsonEncode(jsonString), // jsonEncode(body),
+        body: jsonString, // jsonEncode(body),
       );
 
       if (response.statusCode == 200) {
@@ -136,71 +102,6 @@ class AppointmentService {
       }
     } catch (e) {
       print('เกิดข้อผิดพลาด: $e');
-    }
-  }
-
-  Future<void> postWithRedirect(String accessToken) async {
-    String jsonString = '''
-{    
-    "AppointmentTitle": "นัดพบลูกค้า"  ,
-    "AppointmentTypeID": "7DEEC491-A5AE-4856-B981-7E91870179FF"  ,
-    "UserID": "9E0DC5F7-1FD6-41F3-9137-14711FC510F6"  ,    
-    "ClientID" : "471638B8-F144-4446-8DC6-29CADA5EEEB0"    ,
-    "CompanyID"  : "627DC383-E210-46A2-9819-FB355146BB0B"  ,
-    "AppointmentDateTimeFrom": "2025-08-14T18:00:00",
-    "AppointmentDateTimeTo": "2025-08-14T18:00:00",
-    "AppointmentStatusID" : "4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B"  ,
-    "PurposeTypeID"  : "A0794CE9-507E-4F6A-86A6-299282D7BF7F"  ,
-    "Noted": null,
-    "AssignedBy": null,
-    "AppointmentAddress"  : {
-        "Address":"123/4 Sukhumvit Road",
-        "CountryID":1,
-        "ProvinceID":1,
-        "DistrictID":13,
-        "SubDistrictID":2583,
-        "Latitude": null,
-        "Longitude":null,
-        "IsPrimary": true  ,
-        "IsActive": true    
-    } ,
-    "AppointmentProducts":[
-      "0DB167F6-8AC9-4D31-A4BD-F3784F2489AD"
-    ],
-    "IsActive" : true  ,
-    "CreatedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6" ,      
-    "ModifiedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6"
-}
-''';
-
-    final client = http.Client();
-    try {
-      var request = http.Request('POST', Uri.parse(ApiConfig.addAppointment))
-        ..headers['Content-Type'] = 'application/json'
-        ..headers['Authorization'] = 'Bearer $accessToken'
-        ..body = jsonString;
-
-      var responseStream = await client.send(request);
-
-      // ถ้าเจอ Redirect (307)
-      if (responseStream.isRedirect) {
-        final location = responseStream.headers['location'];
-        if (location != null) {
-          print('Redirect to: $location');
-          request = http.Request('POST', Uri.parse(location))
-            ..headers['Content-Type'] = 'application/json'
-            ..body = jsonEncode({'username': 'test', 'password': '1234'});
-          responseStream = await client.send(request);
-        }
-      }
-
-      final response = await http.Response.fromStream(responseStream);
-      print('Status: ${response.statusCode}');
-      print('Body: ${response.body}');
-    } catch (e) {
-      print('Error: $e');
-    } finally {
-      client.close();
     }
   }
 }

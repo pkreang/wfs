@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
-import 'package:wfs/services/appointment_service.dart';
+import 'package:wfs/providers/userprofile_provider.dart';
 
 class TestScreen extends StatelessWidget {
   const TestScreen({super.key});
@@ -22,20 +22,19 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activity = ref.watch(clientsProvider);
+    final getUserProfileProvider = ref.watch(GetUserProfile);
     final authState = ref.watch(authProvider);
-    final accessToken = authState.accessToken;
-    AppointmentService appointmentService = AppointmentService();
-    appointmentService.postWithRedirect(accessToken.toString());
+    //final accessToken = authState.accessToken;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Riverpod API Example')),
       body: Center(
-        child: activity.when(
+        child: getUserProfileProvider.when(
           data: (data) => Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                data.toList()[0].clientID.toString(),
+                data.userId.toString(),
                 style: const TextStyle(fontSize: 20),
               ),
               const SizedBox(height: 20),
