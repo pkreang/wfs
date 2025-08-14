@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
 
 class TestScreen extends StatelessWidget {

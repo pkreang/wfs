@@ -1,47 +1,47 @@
 class ClientLevel {
-  String? clientLevelDescription;
+  String? clientLevelID;
   String? clientLevelName;
+  String? clientLevelDescription;
+  int? ordering;
   bool? isActive;
   String? createdDate;
   String? modifiedDate;
-  String? clientLevelID;
-  int? ordering;
   String? createdBy;
   String? modifiedBy;
 
   ClientLevel({
-    this.clientLevelDescription,
+    this.clientLevelID,
     this.clientLevelName,
+    this.clientLevelDescription,
+    this.ordering,
     this.isActive,
     this.createdDate,
     this.modifiedDate,
-    this.clientLevelID,
-    this.ordering,
     this.createdBy,
     this.modifiedBy,
   });
 
   ClientLevel.fromJson(Map<String, dynamic> json) {
-    clientLevelDescription = json['ClientLevelDescription'];
+    clientLevelID = json['ClientLevelID'];
     clientLevelName = json['ClientLevelName'];
+    clientLevelDescription = json['ClientLevelDescription'];
+    ordering = json['Ordering'];
     isActive = json['IsActive'];
     createdDate = json['CreatedDate'];
     modifiedDate = json['ModifiedDate'];
-    clientLevelID = json['ClientLevelID'];
-    ordering = json['Ordering'];
     createdBy = json['CreatedBy'];
     modifiedBy = json['ModifiedBy'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['ClientLevelDescription'] = this.clientLevelDescription;
+    data['ClientLevelID'] = this.clientLevelID;
     data['ClientLevelName'] = this.clientLevelName;
+    data['ClientLevelDescription'] = this.clientLevelDescription;
+    data['Ordering'] = this.ordering;
     data['IsActive'] = this.isActive;
     data['CreatedDate'] = this.createdDate;
     data['ModifiedDate'] = this.modifiedDate;
-    data['ClientLevelID'] = this.clientLevelID;
-    data['Ordering'] = this.ordering;
     data['CreatedBy'] = this.createdBy;
     data['ModifiedBy'] = this.modifiedBy;
     return data;

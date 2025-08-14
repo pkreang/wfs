@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
-import 'package:wfs/models/clients_model.dart';
+import 'package:wfs/models/client_model.dart';
 
 class ClientService {
-  Future<List<Clients>> fetchClients(String accessToken) async {
+  Future<List<Client>> fetchClients(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -19,7 +19,7 @@ class ClientService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> ClientListJson = data['clients'];
-      return ClientListJson.map((json) => Clients.fromJson(json)).toList();
+      return ClientListJson.map((json) => Client.fromJson(json)).toList();
     } else {
       throw Exception(
         'Failed to load Clients. Status code: ${response.statusCode}',

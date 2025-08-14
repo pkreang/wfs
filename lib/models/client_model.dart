@@ -1,9 +1,9 @@
 import 'package:wfs/models/clientlevel_model.dart';
 import 'package:wfs/models/clientstatus_model.dart';
+import 'package:wfs/models/company_model.dart';
+import 'package:wfs/models/product_model.dart';
 
-class Clients {
-  String? salesTerritoryID;
-  String? createdDate;
+class Client {
   String? clientStatusID;
   String? modifiedBy;
   String? clientLevelID;
@@ -18,14 +18,14 @@ class Clients {
   bool? isActive;
   String? email;
   String? createdBy;
+  String? salesTerritoryID;
+  String? createdDate;
+  List<Product>? products;
   ClientLevel? clientLevel;
   ClientStatus? clientStatus;
-  List<Null>? companies;
-  List<Null>? products;
+  List<Company>? company;
 
-  Clients({
-    this.salesTerritoryID,
-    this.createdDate,
+  Client({
     this.clientStatusID,
     this.modifiedBy,
     this.clientLevelID,
@@ -40,15 +40,15 @@ class Clients {
     this.isActive,
     this.email,
     this.createdBy,
+    this.salesTerritoryID,
+    this.createdDate,
+    this.products,
     this.clientLevel,
     this.clientStatus,
-    this.companies,
-    this.products,
+    this.company,
   });
 
-  Clients.fromJson(Map<String, dynamic> json) {
-    salesTerritoryID = json['SalesTerritoryID'];
-    createdDate = json['CreatedDate'];
+  Client.fromJson(Map<String, dynamic> json) {
     clientStatusID = json['ClientStatusID'];
     modifiedBy = json['ModifiedBy'];
     clientLevelID = json['ClientLevelID'];
@@ -63,30 +63,30 @@ class Clients {
     isActive = json['IsActive'];
     email = json['Email'];
     createdBy = json['CreatedBy'];
+    salesTerritoryID = json['SalesTerritoryID'];
+    createdDate = json['CreatedDate'];
+    if (json['products'] != null) {
+      products = [];
+      json['products'].forEach((v) {
+        products!.add(new Product.fromJson(v));
+      });
+    }
     clientLevel = json['ClientLevel'] != null
         ? new ClientLevel.fromJson(json['ClientLevel'])
         : null;
     clientStatus = json['ClientStatus'] != null
         ? new ClientStatus.fromJson(json['ClientStatus'])
         : null;
-    // if (json['companies'] != null) {
-    //   companies = <Null>[];
-    //   json['companies'].forEach((v) {
-    //     companies!.add(new Null.fromJson(v));
-    //   });
-    // }
-    // if (json['products'] != null) {
-    //   products = <Null>[];
-    //   json['products'].forEach((v) {
-    //     products!.add(new Null.fromJson(v));
-    //   });
-    // }
+    if (json['company'] != null) {
+      company = [];
+      json['company'].forEach((v) {
+        company!.add(new Company.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['SalesTerritoryID'] = this.salesTerritoryID;
-    data['CreatedDate'] = this.createdDate;
     data['ClientStatusID'] = this.clientStatusID;
     data['ModifiedBy'] = this.modifiedBy;
     data['ClientLevelID'] = this.clientLevelID;
@@ -101,18 +101,20 @@ class Clients {
     data['IsActive'] = this.isActive;
     data['Email'] = this.email;
     data['CreatedBy'] = this.createdBy;
+    data['SalesTerritoryID'] = this.salesTerritoryID;
+    data['CreatedDate'] = this.createdDate;
+    if (this.products != null) {
+      data['products'] = this.products!.map((v) => v.toJson()).toList();
+    }
     if (this.clientLevel != null) {
       data['ClientLevel'] = this.clientLevel!.toJson();
     }
     if (this.clientStatus != null) {
       data['ClientStatus'] = this.clientStatus!.toJson();
     }
-    // if (this.companies != null) {
-    //   data['companies'] = this.companies!.map((v) => v.toJson()).toList();
-    // }
-    // if (this.products != null) {
-    //   data['products'] = this.products!.map((v) => v.toJson()).toList();
-    // }
+    if (this.company != null) {
+      data['company'] = this.company!.map((v) => v.toJson()).toList();
+    }
     return data;
   }
 }
