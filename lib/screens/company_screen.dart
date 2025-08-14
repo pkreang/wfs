@@ -67,8 +67,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                 child: companiesAsync.when(
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) =>
-                      Center(child: Text('Error: $error')),
+                  error: (error, stack) => Center(child: Text('Error: $error')),
                   data: (companies) {
                     if (companies.isEmpty && !_showSearchOptions) {
                       return const Center(child: Text('No companies found.'));
@@ -125,9 +124,10 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
             child: const Text(
               'Edit',
               style: TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.normal,
-                  fontSize: 17),
+                color: Colors.blue,
+                fontWeight: FontWeight.normal,
+                fontSize: 17,
+              ),
             ),
           ),
         ],
@@ -135,7 +135,6 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
     );
   }
   // --- สิ้นสุดส่วนที่แก้ไข ---
-
 
   Widget _buildSearchBar() {
     return Padding(
@@ -185,20 +184,23 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
               setState(() {
                 _searchController.text = '$key ';
                 _searchController.selection = TextSelection.fromPosition(
-                    TextPosition(offset: _searchController.text.length));
+                  TextPosition(offset: _searchController.text.length),
+                );
                 _showSearchOptions = false;
               });
             },
             title: RichText(
               text: TextSpan(
                 style: const TextStyle(
-                    fontSize: 17,
-                    color: Colors.black,
-                    fontFamily: 'System'),
+                  fontSize: 17,
+                  color: Colors.black,
+                  fontFamily: 'System',
+                ),
                 children: <TextSpan>[
                   TextSpan(
-                      text: key,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                    text: key,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   TextSpan(text: ' ${options[key]}'),
                 ],
               ),
@@ -233,9 +235,10 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
               child: Text(
                 sectionKey,
                 style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF6E6E73),
-                    fontWeight: FontWeight.w500),
+                  fontSize: 16,
+                  color: Color(0xFF6E6E73),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
@@ -283,8 +286,11 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
-                          child: Icon(Icons.location_on,
-                              color: Colors.grey.shade600, size: 20),
+                          child: Icon(
+                            Icons.location_on,
+                            color: Colors.grey.shade600,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -305,14 +311,21 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey.shade300),
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Colors.grey.shade300,
+                ),
               ),
             ],
           ),
         ),
         const Divider(
-            height: 1, thickness: 1, indent: 16, color: Color(0xFFEFEFEF)),
+          height: 1,
+          thickness: 1,
+          indent: 16,
+          color: Color(0xFFEFEFEF),
+        ),
       ],
     );
   }

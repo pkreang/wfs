@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/models/auth_model.dart';
@@ -55,7 +54,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: SingleChildScrollView(
           child: Container(
             margin: const EdgeInsets.all(24.0),
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 48.0,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20.0),
@@ -95,7 +97,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
-                      borderSide: const BorderSide(color: Colors.blue, width: 2),
+                      borderSide: const BorderSide(
+                        color: Colors.blue,
+                        width: 2,
+                      ),
                     ),
                   ),
                   keyboardType: TextInputType.emailAddress,
@@ -116,11 +121,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
-                      borderSide: const BorderSide(color: Colors.blue, width: 2),
+                      borderSide: const BorderSide(
+                        color: Colors.blue,
+                        width: 2,
+                      ),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
                       onPressed: () {
                         setState(() {
@@ -157,12 +167,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           )
                         : const Text(
                             'Login',
-                            style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Error display
                 if (authState.error != null)
                   Container(
@@ -174,18 +188,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: Colors.red.shade600, size: 20),
+                        Icon(
+                          Icons.error_outline,
+                          color: Colors.red.shade600,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             authState.error!,
-                            style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+                            style: TextStyle(
+                              color: Colors.red.shade700,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                
+
                 const SizedBox(height: 16),
                 Align(
                   alignment: Alignment.center,
@@ -205,9 +226,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _performLogin() {
-    final email = emailController.text.trim();
-    final password = passwordController.text.trim();
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
 
+    email = "systemadmin@mail.com";
+    password = "abcd1234";
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

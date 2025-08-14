@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/screens/test_screen.dart';
 import 'dashboard_screen.dart';
 import 'company_screen.dart';
 import '../providers/company_provider.dart';
@@ -8,7 +9,8 @@ class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  ConsumerState<MainNavigationScreen> createState() => _MainNavigationScreenState();
+  ConsumerState<MainNavigationScreen> createState() =>
+      _MainNavigationScreenState();
 }
 
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
@@ -16,22 +18,19 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
 
   final List<Widget> _screens = [
     const DashboardScreen(),
-    const PlaceholderScreen(title: 'Appointments', icon: Icons.calendar_today_outlined),
-    const PlaceholderScreen(title: 'Clients', icon: Icons.people_outline),
-    const Scaffold(
-      body: SafeArea(
-        child: CompanyScreen(),
-      ),
+    const PlaceholderScreen(
+      title: 'Appointments',
+      icon: Icons.calendar_today_outlined,
     ),
+    const PlaceholderScreen(title: 'Clients', icon: Icons.people_outline),
+    const Scaffold(body: SafeArea(child: CompanyScreen())),
+    const Scaffold(body: SafeArea(child: TestScreen())),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
@@ -51,19 +50,20 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             icon: Icon(Icons.business_center_outlined),
             label: 'Company',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.business_center_outlined),
+            label: 'Test',
+          ),
         ],
         currentIndex: _currentIndex,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
         onTap: (index) {
- 
-
           if (index == 3) {
-          
             loadCompanies(ref);
           }
-          
+
           setState(() {
             _currentIndex = index;
           });
@@ -77,11 +77,7 @@ class PlaceholderScreen extends StatelessWidget {
   final String title;
   final IconData icon;
 
-  const PlaceholderScreen({
-    super.key,
-    required this.title,
-    required this.icon,
-  });
+  const PlaceholderScreen({super.key, required this.title, required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -91,11 +87,7 @@ class PlaceholderScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 64,
-                color: Colors.grey,
-              ),
+              Icon(icon, size: 64, color: Colors.grey),
               const SizedBox(height: 16),
               Text(
                 title,
@@ -108,10 +100,7 @@ class PlaceholderScreen extends StatelessWidget {
               const SizedBox(height: 8),
               const Text(
                 'Coming Soon',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ],
           ),
@@ -119,4 +108,4 @@ class PlaceholderScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}
