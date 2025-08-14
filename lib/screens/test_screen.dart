@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
+import 'package:wfs/services/appointment_service.dart';
 
 class TestScreen extends StatelessWidget {
   const TestScreen({super.key});
@@ -21,7 +23,10 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activity = ref.watch(clientsProvider);
-
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+    AppointmentService appointmentService = AppointmentService();
+    appointmentService.postWithRedirect(accessToken.toString());
     return Scaffold(
       appBar: AppBar(title: const Text('Riverpod API Example')),
       body: Center(

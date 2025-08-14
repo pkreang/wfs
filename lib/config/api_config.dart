@@ -10,4 +10,5 @@ class ApiConfig {
       '$baseUrl/appointment/status/?IsActive=true';
   static const String companyUrl = '$baseUrl/company';
   static const String clientUrl = '$baseUrl/client';
+  static const String addAppointment = '$baseUrl/appointment';
 }
