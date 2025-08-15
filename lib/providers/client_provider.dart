@@ -15,7 +15,7 @@ final clientDataProvider = StateProvider<AsyncValue<List<Client>>>(
 final clientProvider = FutureProvider<List<Client>>((ref) async {
   final authState = ref.watch(authProvider);
   final clientService = ref.read(clientServiceProvider);
-  final shouldLoad = ref.watch(clientLoadTriggerProvider);
+  //final shouldLoad = ref.watch(clientLoadTriggerProvider);
 
   // if (!shouldLoad) {
   //   return [];

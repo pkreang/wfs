@@ -1,12 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'widgets/auth_checker.dart'; 
+import 'widgets/auth_checker.dart';
 
+final selectedItemProvider = StateProvider<String?>((ref) => null);
 void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

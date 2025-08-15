@@ -1,12 +1,9 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:wfs/screens/client_screen.dart';
 import '../models/appointment_model.dart';
 import '../providers/appointment_provider.dart';
-import 'create_appointment_screen.dart'; 
-
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -29,29 +26,37 @@ class DashboardScreen extends ConsumerWidget {
               _buildSummarySection(),
               const SizedBox(height: 24),
 
-
               _buildSectionHeader(context, "Today's Appointments"),
 
               const SizedBox(height: 16),
-              
+
               appointmentsAsyncValue.when(
-                loading: () => const Center(heightFactor: 5, child: CircularProgressIndicator()),
-                error: (error, stackTrace) => Center(heightFactor: 5, child: Text('Error: $error')),
+                loading: () => const Center(
+                  heightFactor: 5,
+                  child: CircularProgressIndicator(),
+                ),
+                error: (error, stackTrace) =>
+                    Center(heightFactor: 5, child: Text('Error: $error')),
                 data: (appointments) {
                   if (appointments.isEmpty) {
-                    return const Center(heightFactor: 5, child: Text('No appointments found.'));
+                    return const Center(
+                      heightFactor: 5,
+                      child: Text('No appointments found.'),
+                    );
                   }
-                  
+
                   String? lastTimeHeader;
                   return Column(
                     children: appointments.map((appointment) {
-                      final timeHeader = DateFormat('HH:00').format(appointment.dateTime);
+                      final timeHeader = DateFormat(
+                        'HH:00',
+                      ).format(appointment.dateTime);
                       final bool showHeader = timeHeader != lastTimeHeader;
                       lastTimeHeader = timeHeader;
-                      
+
                       return _buildAppointmentItem(
-                        appointment: appointment, 
-                        showHeader: showHeader
+                        appointment: appointment,
+                        showHeader: showHeader,
                       );
                     }).toList(),
                   );
@@ -61,11 +66,8 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
       ),
-
     );
   }
-
-
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
@@ -81,7 +83,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Color _getTypeColor(String type) {
-     switch (type.toLowerCase()) {
+    switch (type.toLowerCase()) {
       case 'visit':
         return const Color(0xFFE3F2FD);
       case 'online':
@@ -102,7 +104,11 @@ class DashboardScreen extends ConsumerWidget {
           const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
           Text(
             DateFormat('MMMM d').format(DateTime.now()),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
           ),
           const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 20),
         ],
@@ -168,7 +174,11 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     Text(
                       "71.4%",
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
                     Text(
                       "10 of 14",
@@ -192,12 +202,22 @@ class DashboardScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         _buildLegendItem(Colors.red, "Pending", "2/14 tasks", "14%"),
         const SizedBox(height: 16),
-        _buildLegendItem(const Color(0xFFBDBDBD), "Canceled", "2/14 tasks", "14%"),
+        _buildLegendItem(
+          const Color(0xFFBDBDBD),
+          "Canceled",
+          "2/14 tasks",
+          "14%",
+        ),
       ],
     );
   }
 
-  Widget _buildLegendItem(Color color, String title, String tasks, String percentage) {
+  Widget _buildLegendItem(
+    Color color,
+    String title,
+    String tasks,
+    String percentage,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -206,16 +226,24 @@ class DashboardScreen extends ConsumerWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-            Text(tasks, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+            Text(
+              tasks,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           ],
         ),
         const Spacer(),
-        Text(percentage, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Text(
+          percentage,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }
-
 
   Widget _buildSectionHeader(BuildContext context, String title) {
     return Row(
@@ -228,11 +256,17 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
         TextButton.icon(
-            onPressed: () {
+          onPressed: () {
             // ตอนนี้ context ที่ใช้ใน Navigator เป็นตัวที่ถูกต้องแล้ว
+            // Navigator.of(context).push(
+            //   MaterialPageRoute(
+            //     builder: (context) => const CreateAppointmentScreen(),
+            //     fullscreenDialog: true,
+            //   ),
+            // );
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => const CreateAppointmentScreen(),
+                builder: (context) => const ClientScreen(),
                 fullscreenDialog: true,
               ),
             );
@@ -285,7 +319,10 @@ class DashboardScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
             child: Text(
               DateFormat('HH:00').format(appointment.dateTime),
-              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         Row(
@@ -300,7 +337,10 @@ class DashboardScreen extends ConsumerWidget {
                       Flexible(
                         child: Text(
                           appointment.title,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -311,23 +351,43 @@ class DashboardScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Icon(Icons.access_time_outlined, color: Colors.grey.shade600, size: 20),
+                      Icon(
+                        Icons.access_time_outlined,
+                        color: Colors.grey.shade600,
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
-                      Text(DateFormat('HH:mm').format(appointment.dateTime), style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
+                      Text(
+                        DateFormat('HH:mm').format(appointment.dateTime),
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(width: 16),
-                      Icon(Icons.business_center_outlined, color: Colors.grey.shade600, size: 20),
+                      Icon(
+                        Icons.business_center_outlined,
+                        color: Colors.grey.shade600,
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           appointment.companyName,
-                          style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 14,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  _buildInfoRow(Icons.location_on_outlined, appointment.customerAddress),
+                  _buildInfoRow(
+                    Icons.location_on_outlined,
+                    appointment.customerAddress,
+                  ),
                   _buildInfoRow(Icons.favorite_border, appointment.noted),
                 ],
               ),
@@ -349,7 +409,12 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           Icon(icon, color: Colors.grey.shade600, size: 20),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: TextStyle(color: Colors.grey.shade700, fontSize: 14))),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+            ),
+          ),
         ],
       ),
     );

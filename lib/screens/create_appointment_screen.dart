@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/main.dart';
 import 'package:wfs/providers/user_provider.dart';
 
 class CreateAppointmentScreen extends ConsumerStatefulWidget {
@@ -18,7 +19,8 @@ class _CreateAppointmentScreenState
 
   @override
   Widget build(BuildContext context) {
-    String? selectedProvinceId;
+    final selectedItem = ref.watch(selectedItemProvider);
+    //String? selectedProvinceId;
     return Scaffold(
       // ใช้สีพื้นหลังที่ใกล้เคียงกับ iOS Form
       backgroundColor: const Color(0xFFF2F2F7),

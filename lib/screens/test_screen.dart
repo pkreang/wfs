@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/models/company_model.dart';
-import 'package:wfs/models/user_model.dart';
 import 'package:wfs/providers/appointment_provider.dart';
-
-import 'package:wfs/providers/auth_provider.dart';
-import 'package:wfs/providers/user_provider.dart';
-import 'package:wfs/providers/userrole_provider.dart';
-import 'package:wfs/services/company_service.dart';
-import 'package:wfs/services/user_service.dart';
 
 class TestScreen extends StatelessWidget {
   const TestScreen({super.key});
@@ -31,8 +23,8 @@ class HomePage extends ConsumerWidget {
     final appointmentGetByIdProviderState = ref.watch(
       appointmentGetSummaryProvider("2025-08-14"),
     );
-    final authState = ref.watch(authProvider);
-    final accessToken = authState.accessToken;
+    //final authState = ref.watch(authProvider);
+    //final accessToken = authState.accessToken;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Riverpod API Example')),
