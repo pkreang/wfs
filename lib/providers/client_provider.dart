@@ -1,21 +1,81 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/models/client_model.dart';
-import 'package:wfs/services/client_service.dart';
+import '../models/client_model.dart';
+import '../services/client_service.dart';
 import 'auth_provider.dart';
 
 final clientServiceProvider = Provider<ClientService>((ref) {
   return ClientService();
 });
+final clientLoadTriggerProvider = StateProvider<bool>((ref) => false);
 
-final clientsProvider = FutureProvider<List<Client>>((ref) async {
+final clientDataProvider = StateProvider<AsyncValue<List<Client>>>(
+  (ref) => const AsyncValue.loading(),
+);
+
+final clientProvider = FutureProvider<List<Client>>((ref) async {
   final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+  final clientService = ref.read(clientServiceProvider);
+  final shouldLoad = ref.watch(clientLoadTriggerProvider);
 
-  if (accessToken == null || accessToken.isEmpty) {
-    throw Exception('User is not authenticated.');
+  // if (!shouldLoad) {
+  //   return [];
+  // }
+
+  if (authState.accessToken == null) {
+    throw Exception('No access token available');
   }
 
-  final clientService = ref.watch(clientServiceProvider);
+  return await clientService.GetList(authState.accessToken!);
+});
 
-  return clientService.fetchClients(accessToken);
+final clientSectionsProvider = Provider<Map<String, List<Client>>>((ref) {
+  final companiesAsync = ref.watch(clientCompaniesProvider);
+
+  return companiesAsync.when(
+    data: (companies) {
+      final sections = <String, List<Client>>{};
+
+      for (final client in companies) {
+        final firstLetter = client.firstName.toString().isNotEmpty
+            ? client.firstName.toString().toUpperCase()
+            : '#';
+
+        if (!sections.containsKey(firstLetter)) {
+          sections[firstLetter] = [];
+        }
+        sections[firstLetter]!.add(client);
+      }
+
+      // Sort sections alphabetically
+      final sortedSections = Map.fromEntries(
+        sections.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+      );
+
+      return sortedSections;
+    },
+    loading: () => {},
+    error: (_, __) => {},
+  );
+});
+final clientSearchProvider = StateProvider<String>((ref) => '');
+final clientCompaniesProvider = Provider<AsyncValue<List<Client>>>((ref) {
+  final companiesAsync = ref.watch(clientProvider);
+  final searchQuery = ref.watch(clientSearchProvider);
+
+  return companiesAsync.when(
+    data: (companies) {
+      if (searchQuery.isEmpty) {
+        return AsyncValue.data(companies);
+      }
+
+      final client = companies.where((company) {
+        final query = searchQuery.toLowerCase();
+        return company.firstName.toString().toLowerCase().contains(query);
+      }).toList();
+
+      return AsyncValue.data(client);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
 });

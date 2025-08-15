@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/models/client_model.dart';
+import 'package:wfs/providers/client_provider.dart';
 import '../models/company_model.dart';
 import '../providers/company_provider.dart';
 
-class CompanyScreen extends ConsumerStatefulWidget {
-  const CompanyScreen({super.key});
+class ClientScreen extends ConsumerStatefulWidget {
+  const ClientScreen({super.key});
 
   @override
-  ConsumerState<CompanyScreen> createState() => _CompanyScreenState();
+  ConsumerState<ClientScreen> createState() => _ClientScreenState();
 }
 
-class _CompanyScreenState extends ConsumerState<CompanyScreen> {
+class _ClientScreenState extends ConsumerState<ClientScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   bool _showSearchOptions = false;
@@ -62,7 +64,6 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
             Expanded(
               child: RefreshIndicator(
-                // giả sử refreshCompanies sẽ invalidate companyProvider
                 onRefresh: () async => refreshCompanies(ref),
                 child: companiesAsync.when(
                   loading: () =>
@@ -88,7 +89,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
     // Watch provider ที่เก็บข้อมูลบริษัททั้งหมดจาก API เพื่อนำจำนวนมาแสดง
     // **หมายเหตุ**: โค้ดนี้สันนิษฐานว่า provider ของคุณชื่อ `companyProvider`
     // หากใช้ชื่ออื่น กรุณาแก้ไขตามความเหมาะสม
-    final allCompaniesAsync = ref.watch(companiesDataProvider);
+    final allCompaniesAsync = ref.watch(clientProvider);
 
     // สร้างข้อความจำนวนจากสถานะของ AsyncValue
     final countText = allCompaniesAsync.when(
@@ -109,7 +110,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
           Column(
             children: [
               const Text(
-                'Client',
+                'Company',
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
@@ -217,7 +218,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
     if (_showSearchOptions) {
       return Container();
     }
-    final sections = ref.watch(companySectionsProvider);
+    final sections = ref.watch(clientSectionsProvider);
     final sectionKeys = sections.keys.toList()..sort();
 
     return ListView.builder(
@@ -258,7 +259,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
     );
   }
 
-  Widget _buildCompanyItem(Company company) {
+  Widget _buildCompanyItem(Client client) {
     return Column(
       children: [
         Padding(
@@ -273,11 +274,11 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                     Row(
                       children: [
                         Text(
-                          company.companyName,
+                          client.firstName.toString(),
                           style: const TextStyle(fontSize: 17),
                         ),
                         const SizedBox(width: 8),
-                        _buildStatusTag(company.isActive),
+                        _buildStatusTag(client.isActive as bool),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -295,7 +296,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            company.companyName,
+                            client.firstName.toString(),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey.shade600,
