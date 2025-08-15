@@ -104,4 +104,86 @@ class AppointmentService {
       print('เกิดข้อผิดพลาด: $e');
     }
   }
+
+  Future<Appointment> GetById(String accessToken, String guid) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+
+    final uri = Uri.parse(ApiConfig.getByIdApointmentUrl + guid);
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final dynamic appointmentListJson = data['appointment'];
+      return Appointment.fromJson(appointmentListJson);
+    } else {
+      throw Exception(
+        'Failed to load appointments. Status code: ${response.statusCode}',
+      );
+    }
+  }
+
+  Future<List<Appointment>> GetByDate(String accessToken, String date) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+
+    final uri = Uri.parse(ApiConfig.getByDateApointmentUrl + date);
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List<dynamic> appointmentListJson = data['appointments'];
+      return appointmentListJson
+          .map((json) => Appointment.fromJson(json))
+          .toList();
+    } else {
+      throw Exception(
+        'Failed to load appointments. Status code: ${response.statusCode}',
+      );
+    }
+  }
+
+  Future<List<Appointment>> GetSummary(String accessToken, String date) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+
+    final uri = Uri.parse(ApiConfig.getSummaryApointmentUrl + date);
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List<dynamic> appointmentListJson = data['appointments'];
+      return appointmentListJson
+          .map((json) => Appointment.fromJson(json))
+          .toList();
+    } else {
+      throw Exception(
+        'Failed to load appointments. Status code: ${response.statusCode}',
+      );
+    }
+  }
 }

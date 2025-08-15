@@ -15,4 +15,10 @@ class ApiConfig {
   static const String getListUserUrl = '$baseUrl/user/?IsActive=true';
   static const String addUser = '$baseUrl/user/';
   static const String getUserRoleUrl = '$baseUrl/user/role';
+  static const String addCompanyUrl = '$baseUrl/company/';
+  static const String getByIdApointmentUrl = '$baseUrl/appointment/id/';
+  static const String getByDateApointmentUrl =
+      '$baseUrl/appointment/bydate/?AppointmentDate=';
+  static const String getSummaryApointmentUrl =
+      '$baseUrl/appointment/summary/?AppointmentDate=';
 }
