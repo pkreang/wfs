@@ -265,7 +265,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
       children: [
         GestureDetector(
           onTap: () {
-            ref.read(selectedItemProvider.notifier).state = "Item 1";
+            ref.read(selectedItemProvider.notifier).state = client.clientID;
             Navigator.push(
               context,
               MaterialPageRoute(
