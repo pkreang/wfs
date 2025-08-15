@@ -14,4 +14,5 @@ class ApiConfig {
   static const String userProfileUrl = '$baseUrl/user/profile';
   static const String getListUserUrl = '$baseUrl/user/?IsActive=true';
   static const String addUser = '$baseUrl/user/';
+  static const String getUserRoleUrl = '$baseUrl/user/role';
 }

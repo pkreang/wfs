@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/models/user_model.dart';
-import 'package:wfs/services/userservice.dart';
+import 'package:wfs/services/user_service.dart';
 import 'auth_provider.dart';
 
 final userProvider = Provider<UserService>((ref) {
