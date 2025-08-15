@@ -1,45 +1,63 @@
 // lib/screens/create_appointment_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/models/user_model.dart';
+import 'package:wfs/providers/user_provider.dart';
 
-class CreateAppointmentScreen extends StatefulWidget {
+class CreateAppointmentScreen extends ConsumerStatefulWidget {
   const CreateAppointmentScreen({super.key});
 
   @override
-  State<CreateAppointmentScreen> createState() => _CreateAppointmentScreenState();
+  ConsumerState<CreateAppointmentScreen> createState() =>
+      _CreateAppointmentScreenState();
 }
 
-class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
+class _CreateAppointmentScreenState
+    extends ConsumerState<CreateAppointmentScreen> {
+  String? selectedProvince;
+
   @override
   Widget build(BuildContext context) {
+    String? selectedProvinceId;
     return Scaffold(
       // ใช้สีพื้นหลังที่ใกล้เคียงกับ iOS Form
       backgroundColor: const Color(0xFFF2F2F7),
       appBar: AppBar(
         backgroundColor: const Color(0xFFF2F2F7),
         elevation: 0,
- 
+
         leading: TextButton(
           onPressed: () {
-            Navigator.of(context).pop(); 
+            Navigator.of(context).pop();
           },
-          child: const Text('Cancel', style: TextStyle(color: Colors.blue, fontSize: 16)),
+          child: const Text(
+            'Cancel',
+            style: TextStyle(color: Colors.blue, fontSize: 16),
+          ),
         ),
         leadingWidth: 80,
-       
+
         title: const Text(
           'Create Appointment',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-   
+
         actions: [
           TextButton(
             onPressed: () {
               // TODO: Implement logic to save the appointment
-              Navigator.of(context).pop(); 
+              Navigator.of(context).pop();
             },
-            child: const Text('Add', style: TextStyle(color: Colors.blue, fontSize: 16, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Add',
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -53,7 +71,11 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
               children: [
                 _buildInfoRow('Client Name', 'John Doe'),
                 _buildTappableRow('Purpose', 'Initial Visit'),
-                _buildTappableRow('Territory', 'North East US', showDivider: false),
+                // _buildTappableRow(
+                //   'Territory',
+                //   'North East US',
+                //   showDivider: false,
+                // ),
               ],
             ),
           ),
@@ -65,17 +87,19 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
             child: Column(
               children: [
                 _buildDateTimePickerRow('Starts', 'Jul 21, 2023', '9:00 AM'),
-                _buildDateTimePickerRow('Ends', 'Jul 21, 2023', '10:00 AM', showDivider: false),
+                _buildDateTimePickerRow(
+                  'Ends',
+                  'Jul 21, 2023',
+                  '10:00 AM',
+                  showDivider: false,
+                ),
               ],
             ),
           ),
           const SizedBox(height: 30),
-          
+
           // Section: Address
-          Container(
-            color: Colors.white,
-            child: _buildAddressSection(),
-          ),
+          Container(color: Colors.white, child: _buildAddressSection()),
           const SizedBox(height: 30),
 
           // Section: CONTACT
@@ -90,7 +114,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
               ],
             ),
           ),
-           const SizedBox(height: 30),
+          const SizedBox(height: 30),
         ],
       ),
     );
@@ -121,7 +145,10 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
-                child: Text(value, style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
+                child: Text(
+                  value,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
               ),
             ],
           ),
@@ -132,7 +159,11 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   }
 
   // Widget สำหรับแถวที่กดได้ (มีลูกศร >)
-  Widget _buildTappableRow(String label, String value, {bool showDivider = true}) {
+  Widget _buildTappableRow(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
     return InkWell(
       onTap: () {
         // TODO: Implement navigation or show picker for this row
@@ -147,14 +178,76 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                 children: [
                   Text(label, style: const TextStyle(fontSize: 16)),
                   const Spacer(),
-                  Text(value, style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-                   const SizedBox(width: 16),
+
+                  // Text(value, style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
+                  //     );
+                  //   }).toList(),
+                  //   onChanged: (value) => setState(() => purposeTypeID = value),
+                  // ),
+                  // (listUser as AsyncValue<List<User>>).when(
+                  //   data: (users) {
+                  //     return DropdownButton<String>(
+                  //       isExpanded: true,
+                  //       hint: const Text('เลือกจังหวัด'),
+                  //       value: selectedProvince,
+                  //       items: users.map((user) {
+                  //         return DropdownMenuItem<String>(
+                  //           value: user.userID,
+                  //           child: Text(user.userRole.toString()),
+                  //         );
+                  //       }).toList(),
+                  //       onChanged: (value) {
+                  //         setState(() {
+                  //           selectedProvince = value;
+                  //         });
+                  //       },
+                  //     );
+                  //   },
+                  //   loading: () => const CircularProgressIndicator(),
+                  //   error: (err, _) => Text('Error: $err'),
+                  // ),
+                  // const SizedBox(width: 8),
+                  // const Icon(
+                  //   Icons.arrow_forward_ios,
+                  //   size: 14,
+                  //   color: Colors.grey,
+                  // ),
+                  // const SizedBox(width: 16),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final GetListUserState = ref.watch(GetListUser);
+                      return GetListUserState.when(
+                        data: (users) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: null,
+                              items: users.map((p) {
+                                return DropdownMenuItem<String>(
+                                  value: p.userID,
+                                  child: Text(p.firstName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                //setState(() {
+                                //selectedProvinceId = value;
+                                //});
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-             if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
           ],
         ),
       ),
@@ -162,9 +255,14 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   }
 
   // Widget สำหรับแถวเลือกวันที่และเวลา
-  Widget _buildDateTimePickerRow(String label, String date, String time, {bool showDivider = true}) {
+  Widget _buildDateTimePickerRow(
+    String label,
+    String date,
+    String time, {
+    bool showDivider = true,
+  }) {
     return Padding(
-       padding: const EdgeInsets.fromLTRB(16.0, 4, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16.0, 4, 16, 4),
       child: Column(
         children: [
           Row(
@@ -206,7 +304,10 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 16.0, top: 12.0),
-          child: Text('Address', style: TextStyle(fontSize: 16, color: Colors.blue)),
+          child: Text(
+            'Address',
+            style: TextStyle(fontSize: 16, color: Colors.blue),
+          ),
         ),
         Expanded(
           child: Column(
@@ -220,11 +321,12 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
               Row(
                 children: [
                   Expanded(child: _buildAddressTextField('Connecticut')),
-                  Container(width: 0.5, height: 44, color: Colors.grey.shade300),
-                  SizedBox(
-                    width: 100,
-                    child: _buildAddressTextField('35624'),
+                  Container(
+                    width: 0.5,
+                    height: 44,
+                    color: Colors.grey.shade300,
                   ),
+                  SizedBox(width: 100, child: _buildAddressTextField('35624')),
                 ],
               ),
               const Divider(height: 1, indent: 0, thickness: 0.5),
@@ -245,34 +347,44 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey.shade400),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
         ),
       ),
     );
   }
-  
+
   // Widget สำหรับแถวข้อมูล Contact (มีปุ่ม x)
-  Widget _buildContactRow(String label, String value, {bool showDivider = true}) {
+  Widget _buildContactRow(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(left: 16.0),
       child: Column(
         children: [
-           SizedBox(
-              height: 44,
-              child: Row(
-                children: [
-                  Text(label, style: const TextStyle(fontSize: 16)),
-                  const Spacer(),
-                  Text(value, style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
-                  IconButton(
-                    onPressed: () {
-                      // TODO: Implement remove contact logic
-                    },
-                    icon: Icon(Icons.cancel, color: Colors.grey.shade400),
-                  ),
-                ],
-              ),
+          SizedBox(
+            height: 44,
+            child: Row(
+              children: [
+                Text(label, style: const TextStyle(fontSize: 16)),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
+                IconButton(
+                  onPressed: () {
+                    // TODO: Implement remove contact logic
+                  },
+                  icon: Icon(Icons.cancel, color: Colors.grey.shade400),
+                ),
+              ],
             ),
+          ),
           if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
         ],
       ),
