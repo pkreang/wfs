@@ -26,4 +26,30 @@ class UserService {
       );
     }
   }
+
+  Future<void> Add(String accessToken, User user) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.addUser),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: json.encode(user),
+      );
+      //jsonEncode(user)
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('สำเร็จ: $data');
+      } else {
+        print('Error ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      print('เกิดข้อผิดพลาด: $e');
+    }
+  }
 }
