@@ -60,4 +60,27 @@ class CompanyService {
       print('เกิดข้อผิดพลาด: $e');
     }
   }
+
+  Future<List<Company>> GetList(String accessToken) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+    final uri = Uri.parse(ApiConfig.companyUrl);
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List<dynamic> companyTypeListJson = data['companies'];
+      return companyTypeListJson.map((json) => Company.fromJson(json)).toList();
+    } else {
+      throw Exception(
+        'Failed to load Clients. Status code: ${response.statusCode}',
+      );
+    }
+  }
 }

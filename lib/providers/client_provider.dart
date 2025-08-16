@@ -79,3 +79,19 @@ final clientCompaniesProvider = Provider<AsyncValue<List<Client>>>((ref) {
     error: (error, stack) => AsyncValue.error(error, stack),
   );
 });
+
+final clientGetByIdProvider = FutureProvider.family<Client, String>((
+  ref,
+  guid,
+) async {
+  final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
+
+  if (accessToken == null || accessToken.isEmpty) {
+    throw Exception('User is not authenticated.');
+  }
+
+  final clientService = ref.watch(clientServiceProvider);
+
+  return clientService.GetById(accessToken, guid);
+});

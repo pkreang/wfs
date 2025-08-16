@@ -21,4 +21,9 @@ class ApiConfig {
       '$baseUrl/appointment/bydate/?AppointmentDate=';
   static const String getSummaryApointmentUrl =
       '$baseUrl/appointment/summary/?AppointmentDate=';
+  static const String getByIdClientUrl = '$baseUrl/client/id/';
+  static const String getPurposeTypeUrl =
+      '$baseUrl/purpose_type/?IsActive=true';
+  static const String getSaleTerritorieUrl =
+      '$baseUrl/sale/territory/?IsActive=true';
 }

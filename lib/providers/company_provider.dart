@@ -100,3 +100,16 @@ void resetCompanies(WidgetRef ref) {
   ref.read(companyLoadTriggerProvider.notifier).state = false;
   ref.read(companySearchProvider.notifier).state = '';
 }
+
+final companyGetListProvider = FutureProvider<List<Company>>((ref) async {
+  final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
+
+  if (accessToken == null || accessToken.isEmpty) {
+    throw Exception('User is not authenticated.');
+  }
+
+  final companyService = ref.watch(companyServiceProvider);
+
+  return companyService.GetList(accessToken);
+});

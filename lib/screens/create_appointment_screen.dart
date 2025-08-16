@@ -2,8 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:wfs/main.dart';
-import 'package:wfs/providers/user_provider.dart';
+import 'package:wfs/providers/client_provider.dart';
+import 'package:wfs/providers/company_provider.dart';
+import 'package:wfs/providers/purposetype_provider.dart';
+import 'package:wfs/providers/saleterritorie_provider.dart';
 
 class CreateAppointmentScreen extends ConsumerStatefulWidget {
   const CreateAppointmentScreen({super.key});
@@ -15,11 +19,48 @@ class CreateAppointmentScreen extends ConsumerStatefulWidget {
 
 class _CreateAppointmentScreenState
     extends ConsumerState<CreateAppointmentScreen> {
-  String? selectedProvince;
+  String? selectedPurpose;
+  String? salesTerritory;
+  String? commany;
+  DateTime? dateTimeFrom;
+  DateTime? dateTimeTo;
+  Future<void> _pickDateTime(bool isFrom) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (pickedDate != null) {
+      TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: const TimeOfDay(hour: 9, minute: 0),
+      );
+      if (pickedTime != null) {
+        DateTime fullDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        setState(() {
+          if (isFrom) {
+            dateTimeFrom = fullDateTime;
+          } else {
+            dateTimeTo = fullDateTime;
+          }
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final selectedItem = ref.watch(selectedItemProvider);
+    final clientGetByIdProviderState = ref.watch(
+      clientGetByIdProvider(selectedItem.toString()),
+    );
     //String? selectedProvinceId;
     return Scaffold(
       // ใช้สีพื้นหลังที่ใกล้เคียงกับ iOS Form
@@ -70,13 +111,21 @@ class _CreateAppointmentScreenState
             color: Colors.white,
             child: Column(
               children: [
-                _buildInfoRow('Client Name', 'John Doe'),
-                _buildTappableRow('Purpose', 'Initial Visit'),
-                // _buildTappableRow(
-                //   'Territory',
-                //   'North East US',
-                //   showDivider: false,
-                // ),
+                _buildInfoRow(
+                  'Client Name',
+                  clientGetByIdProviderState.when(
+                    data: (client) =>
+                        client.firstName! + ' ' + client.lastName!,
+                    loading: () => "Loading",
+                    error: (err, stack) => err.toString(),
+                  ),
+                ),
+                _buildTappableRowPurpose('Purpose', 'Initial Visit'),
+                _buildTappableRowTerritory(
+                  'Territory',
+                  'North East US',
+                  showDivider: false,
+                ),
               ],
             ),
           ),
@@ -87,13 +136,53 @@ class _CreateAppointmentScreenState
             color: Colors.white,
             child: Column(
               children: [
-                _buildDateTimePickerRow('Starts', 'Jul 21, 2023', '9:00 AM'),
-                _buildDateTimePickerRow(
-                  'Ends',
-                  'Jul 21, 2023',
-                  '10:00 AM',
-                  showDivider: false,
+                ListTile(
+                  title: Row(
+                    children: [
+                      Text("Starts", style: const TextStyle(fontSize: 16)),
+                      const Spacer(),
+                      _buildDateTimeChip(
+                        DateFormat(
+                          'MMM dd,yyyy',
+                        ).format(dateTimeFrom ?? DateTime.now()),
+                      ),
+                      _buildDateTimeChip(
+                        DateFormat(
+                          'h;mm a',
+                        ).format(dateTimeFrom ?? DateTime.now()),
+                      ),
+                    ],
+                  ),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: () => _pickDateTime(true),
                 ),
+                ListTile(
+                  title: Row(
+                    children: [
+                      Text("Starts", style: const TextStyle(fontSize: 16)),
+                      const Spacer(),
+                      _buildDateTimeChip(
+                        DateFormat(
+                          'MMM dd,yyyy',
+                        ).format(dateTimeTo ?? DateTime.now()),
+                      ),
+                      _buildDateTimeChip(
+                        DateFormat(
+                          'h:mm a',
+                        ).format(dateTimeTo ?? DateTime.now()),
+                      ),
+                    ],
+                  ),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: () => _pickDateTime(false),
+                ),
+                //_buildDateTimePickerRow('Starts', "", ''),
+                //_buildDateTimePickerRow(
+                //   'Ends',
+                //   'Jul 21, 2023',
+                //   '10:00 AM',
+                //   showDivider: false,
+                // ),
               ],
             ),
           ),
@@ -109,9 +198,27 @@ class _CreateAppointmentScreenState
             color: Colors.white,
             child: Column(
               children: [
-                _buildContactRow('Mobile', '319-555-0115'),
-                _buildContactRow('Email', 'adam.erickson@example.com'),
-                _buildContactRow('Company', 'Happy Happy', showDivider: false),
+                _buildContactRow(
+                  'Mobile',
+                  clientGetByIdProviderState.when(
+                    data: (client) => client.phone!,
+                    loading: () => "Loading",
+                    error: (err, stack) => err.toString(),
+                  ),
+                ),
+                _buildContactRow(
+                  'Email',
+                  clientGetByIdProviderState.when(
+                    data: (client) => client.email!,
+                    loading: () => "Loading",
+                    error: (err, stack) => err.toString(),
+                  ),
+                ),
+                _buildContactRowCompany(
+                  'Company',
+                  'Happy Happy',
+                  showDivider: false,
+                ),
               ],
             ),
           ),
@@ -159,8 +266,71 @@ class _CreateAppointmentScreenState
     );
   }
 
+  Widget _buildTappableRowTerritory(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final saleTerritorieGetListState = ref.watch(
+                        saleTerritorieGetList,
+                      );
+                      return saleTerritorieGetListState.when(
+                        data: (saleTerritorie) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: salesTerritory,
+                              items: saleTerritorie.map((p) {
+                                return DropdownMenuItem<String>(
+                                  value: p.salesTerritoryID,
+                                  child: Text(p.salesTerritoryName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  salesTerritory = value;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Widget สำหรับแถวที่กดได้ (มีลูกศร >)
-  Widget _buildTappableRow(
+  Widget _buildTappableRowPurpose(
     String label,
     String value, {
     bool showDivider = true,
@@ -216,25 +386,27 @@ class _CreateAppointmentScreenState
                   // const SizedBox(width: 16),
                   Consumer(
                     builder: (context, ref, _) {
-                      final GetListUserState = ref.watch(GetListUser);
-                      return GetListUserState.when(
-                        data: (users) {
+                      final perposeTypeGetListState = ref.watch(
+                        perposeTypeGetList,
+                      );
+                      return perposeTypeGetListState.when(
+                        data: (perposeType) {
                           return SizedBox(
                             width: 300,
                             child: DropdownButton<String>(
                               isExpanded: true,
                               hint: const Text('เลือก'),
-                              value: null,
-                              items: users.map((p) {
+                              value: selectedPurpose,
+                              items: perposeType.map((p) {
                                 return DropdownMenuItem<String>(
-                                  value: p.userID,
-                                  child: Text(p.firstName.toString()),
+                                  value: p.purposeTypeID,
+                                  child: Text(p.purposeTypeName.toString()),
                                 );
                               }).toList(),
                               onChanged: (value) {
-                                //setState(() {
-                                //selectedProvinceId = value;
-                                //});
+                                setState(() {
+                                  selectedPurpose = value;
+                                });
                               },
                             ),
                           );
@@ -256,30 +428,41 @@ class _CreateAppointmentScreenState
   }
 
   // Widget สำหรับแถวเลือกวันที่และเวลา
-  Widget _buildDateTimePickerRow(
-    String label,
-    String date,
-    String time, {
-    bool showDivider = true,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 4, 16, 4),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 16)),
-              const Spacer(),
-              _buildDateTimeChip(date),
-              const SizedBox(width: 8),
-              _buildDateTimeChip(time),
-            ],
-          ),
-          if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
-        ],
-      ),
-    );
-  }
+  // Widget _buildDateTimePickerRow(
+  //   String label,
+  //   String date,
+  //   String time, {
+  //   bool showDivider = true,
+  // }) {
+  //   return Padding(
+  //     padding: const EdgeInsets.fromLTRB(16.0, 4, 16, 4),
+  //     child: Column(
+  //       children: [
+  //         Row(
+  //           children: [
+  //             // Text(label, style: const TextStyle(fontSize: 16)),
+  //             // const Spacer(),
+  //             // ListTile(
+  //             //   trailing: const Icon(Icons.calendar_today),
+  //             //   onTap: () => _pickDateTime(true),
+  //             // ),
+
+  //             // _buildDateTimeChip(
+  //             //   DateFormat(
+  //             //     'MMM dd,yyyy',
+  //             //   ).format(dateTimeFrom ?? DateTime.now()),
+  //             // ),
+  //             // const SizedBox(width: 8),
+  //             // _buildDateTimeChip(
+  //             //   DateFormat('h:mm a').format(dateTimeFrom ?? DateTime.now()),
+  //             // ),
+  //           ],
+  //         ),
+  //         if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // Chip แสดงวันที่/เวลา
   Widget _buildDateTimeChip(String text) {
@@ -382,6 +565,72 @@ class _CreateAppointmentScreenState
                     // TODO: Implement remove contact logic
                   },
                   icon: Icon(Icons.cancel, color: Colors.grey.shade400),
+                ),
+              ],
+            ),
+          ),
+          if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactRowCompany(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 44,
+            child: Row(
+              children: [
+                Text(label, style: const TextStyle(fontSize: 16)),
+                const Spacer(),
+                // Text(
+                //   value,
+                //   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                // ),
+                // IconButton(
+                //   onPressed: () {
+                //     // TODO: Implement remove contact logic
+                //   },
+                //   icon: Icon(Icons.cancel, color: Colors.grey.shade400),
+                // ),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final companyGetListProviderState = ref.watch(
+                      companyGetListProvider,
+                    );
+                    return companyGetListProviderState.when(
+                      data: (company) {
+                        return SizedBox(
+                          width: 300,
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            hint: const Text('เลือก'),
+                            value: commany,
+                            items: company.map((p) {
+                              return DropdownMenuItem<String>(
+                                value: p.companyID,
+                                child: Text(p.companyName.toString()),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                commany = value;
+                              });
+                            },
+                          ),
+                        );
+                      },
+                      loading: () => const CircularProgressIndicator(),
+                      error: (err, _) => Text('Error: $err'),
+                    );
+                  },
                 ),
               ],
             ),
