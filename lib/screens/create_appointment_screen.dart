@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:wfs/main.dart';
+import 'package:wfs/models/appointmentaddresss_model.dart';
+import 'package:wfs/models/appointments_model.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/providers/company_provider.dart';
 import 'package:wfs/providers/purposetype_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
+import 'package:wfs/services/appointment_service.dart';
 
 class CreateAppointmentScreen extends ConsumerStatefulWidget {
   const CreateAppointmentScreen({super.key});
@@ -24,6 +28,7 @@ class _CreateAppointmentScreenState
   String? commany;
   DateTime? dateTimeFrom;
   DateTime? dateTimeTo;
+  final TextEditingController txtAddress = TextEditingController();
   Future<void> _pickDateTime(bool isFrom) async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -89,8 +94,40 @@ class _CreateAppointmentScreenState
         actions: [
           TextButton(
             onPressed: () {
-              // TODO: Implement logic to save the appointment
-              Navigator.of(context).pop();
+              Appointments appointment = Appointments(
+                appointmentTitle: "นัดพบลูกค้า", //
+                appointmentTypeID: "7DEEC491-A5AE-4856-B981-7E91870179FF", //
+                userID: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6", //
+                clientID: selectedItem,
+                companyID: commany,
+                appointmentDateTimeFrom: dateTimeFrom?.toIso8601String(),
+                appointmentDateTimeTo: dateTimeTo?.toIso8601String(),
+                appointmentStatusID: "4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B", //
+                purposeTypeID: selectedPurpose,
+                noted: null, //
+                assignedBy: null, //
+                appointmentAddress: AppointmentAddresss(
+                  address: txtAddress.text,
+                  countryID: 1, //
+                  provinceID: 1, //
+                  districtID: 13, //
+                  subDistrictID: 2583, //
+                  latitude: null,
+                  longitude: null,
+                  isPrimary: true,
+                  isActive: true,
+                ),
+                appointmentProducts: [
+                  "0DB167F6-8AC9-4D31-A4BD-F3784F2489AD",
+                ], //
+                isActive: true,
+                createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6", //
+                modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6", //
+              );
+              AppointmentService appointmentService = new AppointmentService();
+              final authState = ref.watch(authProvider);
+              final accessToken = authState.accessToken;
+              appointmentService.Add(accessToken.toString(), appointment);
             },
             child: const Text(
               'Add',
@@ -527,6 +564,7 @@ class _CreateAppointmentScreenState
     return SizedBox(
       height: 44,
       child: TextField(
+        controller: txtAddress,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey.shade400),

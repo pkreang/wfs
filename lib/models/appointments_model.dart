@@ -1,4 +1,4 @@
-import 'package:wfs/models/AppointmentAddress_model.dart';
+import 'package:wfs/models/appointmentaddresss_model.dart';
 
 class Appointments {
   String? appointmentTitle;
@@ -12,7 +12,7 @@ class Appointments {
   String? purposeTypeID;
   String? noted;
   String? assignedBy;
-  AppointmentAddress? appointmentAddress;
+  AppointmentAddresss? appointmentAddress;
   List<String>? appointmentProducts;
   bool? isActive;
   String? createdBy;
@@ -50,7 +50,7 @@ class Appointments {
     noted = json['Noted'];
     assignedBy = json['AssignedBy'];
     appointmentAddress = json['AppointmentAddress'] != null
-        ? new AppointmentAddress.fromJson(json['AppointmentAddress'])
+        ? new AppointmentAddresss.fromJson(json['AppointmentAddress'])
         : null;
     appointmentProducts = json['AppointmentProducts'].cast<String>();
     isActive = json['IsActive'];

@@ -1,4 +1,4 @@
-class AppointmentAddress {
+class AppointmentAddresss {
   String? address;
   int? countryID;
   int? provinceID;
@@ -9,10 +9,7 @@ class AppointmentAddress {
   bool? isPrimary;
   bool? isActive;
 
-  AppointmentAddress(
-    String s,
-    int i,
-    Map<dynamic, Object?> map, {
+  AppointmentAddresss({
     this.address,
     this.countryID,
     this.provinceID,
@@ -24,7 +21,7 @@ class AppointmentAddress {
     this.isActive,
   });
 
-  AppointmentAddress.fromJson(Map<String, dynamic> json) {
+  AppointmentAddresss.fromJson(Map<String, dynamic> json) {
     address = json['Address'];
     countryID = json['CountryID'];
     provinceID = json['ProvinceID'];
