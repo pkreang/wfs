@@ -127,7 +127,24 @@ class _CreateAppointmentScreenState
               AppointmentService appointmentService = new AppointmentService();
               final authState = ref.watch(authProvider);
               final accessToken = authState.accessToken;
-              appointmentService.Add(accessToken.toString(), appointment);
+              try {
+                appointmentService.Add(accessToken.toString(), appointment);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('บันทึกข้อมูลเรียบร้อยแล้ว'),
+                    duration: Duration(seconds: 3),
+                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
+                  ),
+                );
+              } catch (ex) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(ex.toString()),
+                    duration: Duration(seconds: 3),
+                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
+                  ),
+                );
+              }
             },
             child: const Text(
               'Add',

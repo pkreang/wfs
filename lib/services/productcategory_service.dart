@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
-import 'package:wfs/models/purposetype_model.dart';
+import 'package:wfs/models/productcategory_model.dart';
 
-class PurposetypeService {
-  Future<List<PurposeType>> GetList(String accessToken) async {
+class ProductCategoryService {
+  Future<List<ProductCategory>> getList(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
-    final uri = Uri.parse(ApiConfig.getPurposeTypeUrl);
+    final uri = Uri.parse(ApiConfig.getListProductCategoryUrl);
     final response = await http.get(
       uri,
       headers: {
@@ -18,10 +18,10 @@ class PurposetypeService {
     );
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      final List<dynamic> purposeTypeListJson = data['purpose_types'];
-      return purposeTypeListJson
-          .map((json) => PurposeType.fromJson(json))
-          .toList();
+      final List<dynamic> ProductCategoryListJson = data['product_categories'];
+      return ProductCategoryListJson.map(
+        (json) => ProductCategory.fromJson(json),
+      ).toList();
     } else {
       throw Exception(
         'Failed to load Clients. Status code: ${response.statusCode}',
@@ -29,24 +29,27 @@ class PurposetypeService {
     }
   }
 
-  Future<PurposeType> Add(String accessToken, PurposeType purposeType) async {
+  Future<ProductCategory> add(
+    String accessToken,
+    ProductCategory productCategory,
+  ) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
     try {
       final response = await http.post(
-        Uri.parse(ApiConfig.addProductUrl),
+        Uri.parse(ApiConfig.addProductCategoryUrl),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
         },
-        body: json.encode(purposeType),
+        body: json.encode(productCategory),
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final dynamic ProductListJson = data['product_type'];
-        return PurposeType.fromJson(ProductListJson);
+        final dynamic ProductCategoryListJson = data['product_category'];
+        return ProductCategory.fromJson(ProductCategoryListJson);
       } else {
         throw Exception(
           'Failed to load Clients. Status code: ${response.statusCode}',

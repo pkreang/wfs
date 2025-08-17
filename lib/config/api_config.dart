@@ -34,4 +34,14 @@ class ApiConfig {
       '$baseUrl/appointment/status/?IsActive=true';
   static const String getPurposeTypeGroupUrl =
       '$baseUrl/purpose_type/group/?IsActive=true';
+  static const String getListProductUrl = '$baseUrl/product/?IsActive=true';
+  static const String addProductUrl = '$baseUrl/product/';
+  static const String addProductTypeUrl = '$baseUrl/product/type';
+  static const String getListProductCategoryUrl =
+      '$baseUrl/product/category/?IsActive=true';
+  static const String addProductCategoryUrl = '$baseUrl/product/category';
+  static const String getListCountryUrl =
+      '$baseUrl/address/country/?IsActive=true';
+  static const String getListProvinceUrl =
+      '$baseUrl/address/province/?IsActive=true';
 }
