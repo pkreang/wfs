@@ -47,6 +47,71 @@ class AppointmentService {
     }
   }
 
+  Future<Appointments> Edit(
+    String accessToken,
+    String guid,
+    Appointment appointment,
+  ) async {
+    // String jsonString = '''
+    // {
+    //      "AppointmentTitle": "นัดพบลูกค้าaaaaaaaaaaaaaa"  ,
+    // "AppointmentTypeID": "7DEEC491-A5AE-4856-B981-7E91870179FF"  ,
+    // "UserID": "9E0DC5F7-1FD6-41F3-9137-14711FC510F6"  ,
+    // "ClientID" : "471638B8-F144-4446-8DC6-29CADA5EEEB0"    ,
+    // "CompanyID"  : "627DC383-E210-46A2-9819-FB355146BB0B"  ,
+    // "AppointmentDateTimeFrom": "2025-08-14T18:00:00",
+    // "AppointmentDateTimeTo": "2025-08-14T18:00:00",
+    // "Noted": null,
+    // "AssignedBy": null,
+    // "AppointmentStatusID" : "4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B"  ,
+    // "PurposeTypeID"  : "A0794CE9-507E-4F6A-86A6-299282D7BF7F"  ,
+    // "AppointmentAddress"  : {
+    //     "Address":"123/4 Sukhumvit Road 5555",
+    //     "CountryID":1,
+    //     "ProvinceID":1,
+    //     "DistrictID":13,
+    //     "SubDistrictID":2583,
+    //     "Latitude": null,
+    //     "Longitude":null,
+    //     "IsPrimary": true  ,
+    //     "IsActive": true
+    // } ,
+    // "AppointmentProducts":[
+
+    // ],
+    // "IsActive" : true  ,
+    // "ModifiedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6"
+    // }
+    // ''';
+
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+    try {
+      final response = await http.put(
+        Uri.parse(ApiConfig.editAppointmentUrl + guid),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(appointment),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final dynamic appointmentListJson = data['appointment'];
+        return Appointments.fromJson(appointmentListJson);
+      } else {
+        throw Exception(
+          'Failed to load appointments. Status code: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to load appointments. Status code:');
+    }
+  }
+
   Future<void> Add(String accessToken, Appointments appointment) async {
     //     String jsonString = '''
     // {
@@ -185,6 +250,34 @@ class AppointmentService {
       throw Exception(
         'Failed to load appointments. Status code: ${response.statusCode}',
       );
+    }
+  }
+
+  Future<String> Delete(String accessToken, String guid) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.deleteAppointmentUrl + guid),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: "",
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data.toString();
+      } else {
+        throw Exception(
+          'Failed to load appointments. Status code: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to load appointments. Status code:');
     }
   }
 }

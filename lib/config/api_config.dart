@@ -26,4 +26,12 @@ class ApiConfig {
       '$baseUrl/purpose_type/?IsActive=true';
   static const String getSaleTerritorieUrl =
       '$baseUrl/sale/territory/?IsActive=true';
+  static const String editAppointmentUrl = '$baseUrl/appointment/';
+  static const String deleteAppointmentUrl = '$baseUrl/appointment/';
+  static const String getListAppointmentTypeUrl =
+      '$baseUrl/appointment/type/?IsActive=true';
+  static const String getListAppointmentStatusUrl =
+      '$baseUrl/appointment/status/?IsActive=true';
+  static const String getPurposeTypeGroupUrl =
+      '$baseUrl/purpose_type/group/?IsActive=true';
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/providers/appointment_provider.dart';
+import 'package:wfs/providers/purposetypegroup_provider.dart';
 
 class TestScreen extends StatelessWidget {
   const TestScreen({super.key});
@@ -20,21 +20,19 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appointmentGetByIdProviderState = ref.watch(
-      appointmentGetSummaryProvider("2025-08-14"),
-    );
-    //final authState = ref.watch(authProvider);
+    final perposeTypeGroupGetListState = ref.watch(perposeTypeGroupGetList);
+
     //final accessToken = authState.accessToken;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Riverpod API Example')),
       body: Center(
-        child: appointmentGetByIdProviderState.when(
+        child: perposeTypeGroupGetListState.when(
           data: (data) => Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                data.toList()[0].companyName.toString(),
+                data.toList()[0].purposeTypeGroupsName.toString(),
                 style: const TextStyle(fontSize: 20),
               ),
               const SizedBox(height: 20),
@@ -48,6 +46,7 @@ class HomePage extends ConsumerWidget {
           error: (err, stack) => Text('เกิดข้อผิดพลาด: $err'),
         ),
       ),
+      //Text("dsfsaf"),
     );
   }
 }
