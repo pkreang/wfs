@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:wfs/screens/client_screen.dart';
+import 'package:wfs/screens/clientaddappointment_screen.dart';
 import '../models/appointment_model.dart';
 import '../providers/appointment_provider.dart';
 
@@ -266,7 +266,7 @@ class DashboardScreen extends ConsumerWidget {
             // );
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => const ClientScreen(),
+                builder: (context) => const ClientAddAppointmentScreen(),
                 fullscreenDialog: true,
               ),
             );

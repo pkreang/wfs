@@ -1,0 +1,965 @@
+// lib/screens/create_appointment_screen.dart
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/main.dart';
+import 'package:wfs/models/appointmentaddresss_model.dart';
+import 'package:wfs/models/appointments_model.dart';
+import 'package:wfs/providers/auth_provider.dart';
+import 'package:wfs/providers/client_provider.dart';
+import 'package:wfs/providers/company_provider.dart';
+import 'package:wfs/providers/purposetype_provider.dart';
+import 'package:wfs/providers/saleterritorie_provider.dart';
+import 'package:wfs/services/appointment_service.dart';
+
+class CreateClientScreen extends ConsumerStatefulWidget {
+  const CreateClientScreen({super.key});
+
+  @override
+  ConsumerState<CreateClientScreen> createState() =>
+      _CreateAppointmentScreenState();
+}
+
+class _CreateAppointmentScreenState extends ConsumerState<CreateClientScreen> {
+  String? selectedPurpose;
+  String? salesTerritory;
+  String? commany;
+  DateTime? dateTimeFrom;
+  DateTime? dateTimeTo;
+  final TextEditingController txtAddress = TextEditingController();
+  Future<void> _pickDateTime(bool isFrom) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (pickedDate != null) {
+      TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: const TimeOfDay(hour: 9, minute: 0),
+      );
+      if (pickedTime != null) {
+        DateTime fullDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        setState(() {
+          if (isFrom) {
+            dateTimeFrom = fullDateTime;
+          } else {
+            dateTimeTo = fullDateTime;
+          }
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedItem = ref.watch(selectedItemProvider);
+    final clientGetByIdProviderState = ref.watch(
+      clientGetByIdProvider(selectedItem.toString()),
+    );
+    //String? selectedProvinceId;
+    return Scaffold(
+      // ใช้สีพื้นหลังที่ใกล้เคียงกับ iOS Form
+      backgroundColor: const Color(0xFFF2F2F7),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF2F2F7),
+        elevation: 0,
+
+        leading: TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text(
+            'Cancel',
+            style: TextStyle(color: Colors.blue, fontSize: 16),
+          ),
+        ),
+        leadingWidth: 80,
+
+        title: const Text(
+          'New Client',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+
+        actions: [
+          TextButton(
+            onPressed: () {
+              Appointments appointment = Appointments(
+                appointmentTitle: "นัดพบลูกค้า", //
+                appointmentTypeID: "7DEEC491-A5AE-4856-B981-7E91870179FF", //
+                userID: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6", //
+                clientID: selectedItem,
+                companyID: commany,
+                appointmentDateTimeFrom: dateTimeFrom?.toIso8601String(),
+                appointmentDateTimeTo: dateTimeTo?.toIso8601String(),
+                appointmentStatusID: "4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B", //
+                purposeTypeID: selectedPurpose,
+                noted: null, //
+                assignedBy: null, //
+                appointmentAddress: AppointmentAddresss(
+                  address: txtAddress.text,
+                  countryID: 1, //
+                  provinceID: 1, //
+                  districtID: 13, //
+                  subDistrictID: 2583, //
+                  latitude: null,
+                  longitude: null,
+                  isPrimary: true,
+                  isActive: true,
+                ),
+                appointmentProducts: [
+                  "0DB167F6-8AC9-4D31-A4BD-F3784F2489AD",
+                ], //
+                isActive: true,
+                createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6", //
+                modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6", //
+              );
+              AppointmentService appointmentService = new AppointmentService();
+              final authState = ref.watch(authProvider);
+              final accessToken = authState.accessToken;
+              try {
+                appointmentService.Add(accessToken.toString(), appointment);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('บันทึกข้อมูลเรียบร้อยแล้ว'),
+                    duration: Duration(seconds: 3),
+                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
+                  ),
+                );
+              } catch (ex) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(ex.toString()),
+                    duration: Duration(seconds: 3),
+                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
+                  ),
+                );
+              }
+            },
+            child: const Text(
+              'Add',
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: ListView(
+        children: [
+          // Section: CLIENT INFO
+          _buildSectionHeader('CLIENT INFO'),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                _buildInfoRow(
+                  'Client Name',
+                  // clientGetByIdProviderState.when(
+                  //   data: (client) =>
+                  //       client.firstName! + ' ' + client.lastName!,
+                  //   loading: () => "Loading",
+                  //   error: (err, stack) => err.toString(),
+                  //),
+                  'John Doel',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                _buildTappableRowStatus('Status', ''),
+                _buildTappableRowLevel('Level', '', showDivider: false),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                _buildTappableRowAddAddress('add address', ''),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                _buildTappableRowAddTerritoty('add territory', ''),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                _buildTappableRowAddPhone('add phone', ''),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                _buildTappableRowAddEmail('add email', ''),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Text("LINKED COMPANY"),
+          ),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                _buildTappableRowAddCompany('add company', ''),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Text("LINKED PRODUCT"),
+          ),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                _buildTappableRowAddProduct('add product', ''),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
+        ],
+      ),
+    );
+  }
+
+  // --- Helper Widgets for building UI sections ---
+
+  // Widget สำหรับหัวข้อของแต่ละ Section (เช่น CLIENT INFO)
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        title,
+        style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+      ),
+    );
+  }
+
+  // Widget สำหรับแถวข้อมูลธรรมดา (Label: Value)
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0, top: 16, bottom: 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(label, style: const TextStyle(fontSize: 16)),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(right: 200),
+                child: Text(
+                  value,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 1, indent: 0, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTappableRowAddAddress(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      print("Clicked");
+                    },
+                    icon: Icon(Icons.add),
+                    iconSize: 20,
+                    color: Colors.white,
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
+                      shape: MaterialStateProperty.all(CircleBorder()),
+                    ),
+                  ),
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowAddTerritoty(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      print("Clicked");
+                    },
+                    icon: Icon(Icons.add),
+                    iconSize: 20,
+                    color: Colors.white,
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
+                      shape: MaterialStateProperty.all(CircleBorder()),
+                    ),
+                  ),
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowAddPhone(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      print("Clicked");
+                    },
+                    icon: Icon(Icons.add),
+                    iconSize: 20,
+                    color: Colors.white,
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
+                      shape: MaterialStateProperty.all(CircleBorder()),
+                    ),
+                  ),
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowAddEmail(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      print("Clicked");
+                    },
+                    icon: Icon(Icons.add),
+                    iconSize: 20,
+                    color: Colors.white,
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
+                      shape: MaterialStateProperty.all(CircleBorder()),
+                    ),
+                  ),
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowAddCompany(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      print("Clicked");
+                    },
+                    icon: Icon(Icons.add),
+                    iconSize: 20,
+                    color: Colors.white,
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
+                      shape: MaterialStateProperty.all(CircleBorder()),
+                    ),
+                  ),
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowAddProduct(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      print("Clicked");
+                    },
+                    icon: Icon(Icons.add),
+                    iconSize: 20,
+                    color: Colors.white,
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
+                      shape: MaterialStateProperty.all(CircleBorder()),
+                    ),
+                  ),
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowLevel(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(fontSize: 16, color: Colors.blue),
+                  ),
+                  const Spacer(),
+
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final saleTerritorieGetListState = ref.watch(
+                        saleTerritorieGetList,
+                      );
+                      return saleTerritorieGetListState.when(
+                        data: (saleTerritorie) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: salesTerritory,
+                              items: saleTerritorie.map((p) {
+                                return DropdownMenuItem<String>(
+                                  value: p.salesTerritoryID,
+                                  child: Text(p.salesTerritoryName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  salesTerritory = value;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRow(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Widget สำหรับแถวที่กดได้ (มีลูกศร >)
+  Widget _buildTappableRowStatus(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(fontSize: 16, color: Colors.blue),
+                  ),
+                  const Spacer(),
+
+                  // Text(value, style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
+                  //     );
+                  //   }).toList(),
+                  //   onChanged: (value) => setState(() => purposeTypeID = value),
+                  // ),
+                  // (listUser as AsyncValue<List<User>>).when(
+                  //   data: (users) {
+                  //     return DropdownButton<String>(
+                  //       isExpanded: true,
+                  //       hint: const Text('เลือกจังหวัด'),
+                  //       value: selectedProvince,
+                  //       items: users.map((user) {
+                  //         return DropdownMenuItem<String>(
+                  //           value: user.userID,
+                  //           child: Text(user.userRole.toString()),
+                  //         );
+                  //       }).toList(),
+                  //       onChanged: (value) {
+                  //         setState(() {
+                  //           selectedProvince = value;
+                  //         });
+                  //       },
+                  //     );
+                  //   },
+                  //   loading: () => const CircularProgressIndicator(),
+                  //   error: (err, _) => Text('Error: $err'),
+                  // ),
+                  // const SizedBox(width: 8),
+                  // const Icon(
+                  //   Icons.arrow_forward_ios,
+                  //   size: 14,
+                  //   color: Colors.grey,
+                  // ),
+                  // const SizedBox(width: 16),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final perposeTypeGetListState = ref.watch(
+                        perposeTypeGetList,
+                      );
+                      return perposeTypeGetListState.when(
+                        data: (perposeType) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedPurpose,
+                              items: perposeType.map((p) {
+                                return DropdownMenuItem<String>(
+                                  value: p.purposeTypeID,
+                                  child: Text(p.purposeTypeName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedPurpose = value;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Widget สำหรับแถวเลือกวันที่และเวลา
+  // Widget _buildDateTimePickerRow(
+  //   String label,
+  //   String date,
+  //   String time, {
+  //   bool showDivider = true,
+  // }) {
+  //   return Padding(
+  //     padding: const EdgeInsets.fromLTRB(16.0, 4, 16, 4),
+  //     child: Column(
+  //       children: [
+  //         Row(
+  //           children: [
+  //             // Text(label, style: const TextStyle(fontSize: 16)),
+  //             // const Spacer(),
+  //             // ListTile(
+  //             //   trailing: const Icon(Icons.calendar_today),
+  //             //   onTap: () => _pickDateTime(true),
+  //             // ),
+
+  //             // _buildDateTimeChip(
+  //             //   DateFormat(
+  //             //     'MMM dd,yyyy',
+  //             //   ).format(dateTimeFrom ?? DateTime.now()),
+  //             // ),
+  //             // const SizedBox(width: 8),
+  //             // _buildDateTimeChip(
+  //             //   DateFormat('h:mm a').format(dateTimeFrom ?? DateTime.now()),
+  //             // ),
+  //           ],
+  //         ),
+  //         if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  // Chip แสดงวันที่/เวลา
+  Widget _buildDateTimeChip(String text) {
+    return GestureDetector(
+      onTap: () {
+        // TODO: Implement date/time picker logic
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(text, style: const TextStyle(fontSize: 15)),
+      ),
+    );
+  }
+
+  // Widget สำหรับ Section ที่อยู่
+  Widget _buildAddressSection() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 16.0, top: 12.0),
+          child: Text(
+            'Address',
+            style: TextStyle(fontSize: 16, color: Colors.blue),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            children: [
+              _buildAddressTextField('2118 Thornridge'),
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+              _buildAddressTextField('Street'),
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+              _buildAddressTextField('Cir. Syracuse'),
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+              Row(
+                children: [
+                  Expanded(child: _buildAddressTextField('Connecticut')),
+                  Container(
+                    width: 0.5,
+                    height: 44,
+                    color: Colors.grey.shade300,
+                  ),
+                  SizedBox(width: 100, child: _buildAddressTextField('35624')),
+                ],
+              ),
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+              _buildAddressTextField('USA'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // TextField สำหรับกรอกที่อยู่
+  Widget _buildAddressTextField(String hint) {
+    return SizedBox(
+      height: 44,
+      child: TextField(
+        controller: txtAddress,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey.shade400),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget สำหรับแถวข้อมูล Contact (มีปุ่ม x)
+  Widget _buildContactRow(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 44,
+            child: Row(
+              children: [
+                Text(label, style: const TextStyle(fontSize: 16)),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
+                IconButton(
+                  onPressed: () {
+                    // TODO: Implement remove contact logic
+                  },
+                  icon: Icon(Icons.cancel, color: Colors.grey.shade400),
+                ),
+              ],
+            ),
+          ),
+          if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactRowCompany(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 44,
+            child: Row(
+              children: [
+                Text(label, style: const TextStyle(fontSize: 16)),
+                const Spacer(),
+                // Text(
+                //   value,
+                //   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                // ),
+                // IconButton(
+                //   onPressed: () {
+                //     // TODO: Implement remove contact logic
+                //   },
+                //   icon: Icon(Icons.cancel, color: Colors.grey.shade400),
+                // ),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final companyGetListProviderState = ref.watch(
+                      companyGetListProvider,
+                    );
+                    return companyGetListProviderState.when(
+                      data: (company) {
+                        return SizedBox(
+                          width: 300,
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            hint: const Text('เลือก'),
+                            value: commany,
+                            items: company.map((p) {
+                              return DropdownMenuItem<String>(
+                                value: p.companyID,
+                                child: Text(p.companyName.toString()),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                commany = value;
+                              });
+                            },
+                          ),
+                        );
+                      },
+                      loading: () => const CircularProgressIndicator(),
+                      error: (err, _) => Text('Error: $err'),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+}

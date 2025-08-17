@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/screens/clientscreen_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
 import 'dashboard_screen.dart';
 import 'company_screen.dart';
@@ -22,7 +23,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
       title: 'Appointments',
       icon: Icons.calendar_today_outlined,
     ),
-    const PlaceholderScreen(title: 'Clients', icon: Icons.people_outline),
+    const Scaffold(body: SafeArea(child: ClientScreen())),
     const Scaffold(body: SafeArea(child: CompanyScreen())),
     const Scaffold(body: SafeArea(child: TestScreen())),
   ];
