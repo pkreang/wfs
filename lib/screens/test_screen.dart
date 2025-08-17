@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/models/productcategory_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/country_provider.dart';
+import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/productcategory_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
+import 'package:wfs/providers/subdistrict_provider.dart';
 import 'package:wfs/services/productcategory_service.dart';
 
 class TestScreen extends StatelessWidget {
@@ -25,7 +27,7 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provinceGetListState = ref.watch(provinceGetList);
+    final subDistrictGetListstate = ref.watch(subDistrictGetList);
     final authState = ref.watch(authProvider);
     final accessToken = authState.accessToken;
     // ProductCategory product = ProductCategory(
@@ -44,12 +46,12 @@ class HomePage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Riverpod API Example')),
       body: Center(
-        child: provinceGetListState.when(
+        child: subDistrictGetListstate.when(
           data: (data) => Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                data.toList()[0].provinceName.toString(),
+                data.toList()[0].subDistrictName.toString(),
                 style: const TextStyle(fontSize: 20),
               ),
               const SizedBox(height: 20),

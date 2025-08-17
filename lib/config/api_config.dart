@@ -44,4 +44,8 @@ class ApiConfig {
       '$baseUrl/address/country/?IsActive=true';
   static const String getListProvinceUrl =
       '$baseUrl/address/province/?IsActive=true';
+  static const String getListDistrictUrl =
+      '$baseUrl/address/district/?IsActive=true';
+  static const String getListSubDistrictUrl =
+      '$baseUrl/address/subdistrict/?IsActive=true';
 }

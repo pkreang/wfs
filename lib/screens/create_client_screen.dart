@@ -6,8 +6,6 @@ import 'package:wfs/main.dart';
 import 'package:wfs/models/appointmentaddresss_model.dart';
 import 'package:wfs/models/appointments_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
-import 'package:wfs/providers/client_provider.dart';
-import 'package:wfs/providers/company_provider.dart';
 import 'package:wfs/providers/purposetype_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/services/appointment_service.dart';
@@ -27,43 +25,43 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateClientScreen> {
   DateTime? dateTimeFrom;
   DateTime? dateTimeTo;
   final TextEditingController txtAddress = TextEditingController();
-  Future<void> _pickDateTime(bool isFrom) async {
-    DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-    );
-    if (pickedDate != null) {
-      TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: const TimeOfDay(hour: 9, minute: 0),
-      );
-      if (pickedTime != null) {
-        DateTime fullDateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          pickedTime.hour,
-          pickedTime.minute,
-        );
-        setState(() {
-          if (isFrom) {
-            dateTimeFrom = fullDateTime;
-          } else {
-            dateTimeTo = fullDateTime;
-          }
-        });
-      }
-    }
-  }
+  // Future<void> _pickDateTime(bool isFrom) async {
+  //   DateTime? pickedDate = await showDatePicker(
+  //     context: context,
+  //     initialDate: DateTime.now(),
+  //     firstDate: DateTime(2020),
+  //     lastDate: DateTime(2100),
+  //   );
+  //   if (pickedDate != null) {
+  //     TimeOfDay? pickedTime = await showTimePicker(
+  //       context: context,
+  //       initialTime: const TimeOfDay(hour: 9, minute: 0),
+  //     );
+  //     if (pickedTime != null) {
+  //       DateTime fullDateTime = DateTime(
+  //         pickedDate.year,
+  //         pickedDate.month,
+  //         pickedDate.day,
+  //         pickedTime.hour,
+  //         pickedTime.minute,
+  //       );
+  //       setState(() {
+  //         if (isFrom) {
+  //           dateTimeFrom = fullDateTime;
+  //         } else {
+  //           dateTimeTo = fullDateTime;
+  //         }
+  //       });
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
     final selectedItem = ref.watch(selectedItemProvider);
-    final clientGetByIdProviderState = ref.watch(
-      clientGetByIdProvider(selectedItem.toString()),
-    );
+    // final clientGetByIdProviderState = ref.watch(
+    //   clientGetByIdProvider(selectedItem.toString()),
+    // );
     //String? selectedProvinceId;
     return Scaffold(
       // ใช้สีพื้นหลังที่ใกล้เคียงกับ iOS Form
@@ -305,9 +303,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateClientScreen> {
     bool showDivider = true,
   }) {
     return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
+      onTap: () {},
       child: Padding(
         padding: const EdgeInsets.only(left: 16.0, bottom: 16),
         child: Column(
@@ -318,7 +314,66 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateClientScreen> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      print("Clicked");
+                      // showDialog(
+                      //   context: context,
+                      //   builder: (BuildContext context) {
+                      //     return AlertDialog(
+                      //       shape: RoundedRectangleBorder(
+                      //         borderRadius: BorderRadius.circular(20),
+                      //       ),
+                      //       title: Text(
+                      //         "popup",
+                      //         style: TextStyle(fontWeight: FontWeight.bold),
+                      //       ),
+                      //       content: Text("test popup"),
+                      //       actions: [
+                      //         ElevatedButton(
+                      //           style: ElevatedButton.styleFrom(
+                      //             backgroundColor: Colors.red,
+                      //             shape: RoundedRectangleBorder(
+                      //               borderRadius: BorderRadius.circular(12),
+                      //             ),
+                      //           ),
+                      //           child: Text(
+                      //             "ปิด",
+                      //             style: TextStyle(color: Colors.white),
+                      //           ),
+                      //           onPressed: () {
+                      //             print("Deleted");
+                      //             Navigator.of(context).pop();
+                      //           },
+                      //         ),
+                      //       ],
+                      //     );
+                      //   },
+                      // );
+                      showModalBottomSheet(
+                        context: context,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(25),
+                          ),
+                        ),
+                        builder: (context) => Container(
+                          padding: EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                "popup",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              ListTile(
+                                title: Text("Test Popup"),
+                                onTap: () => Navigator.pop(context),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
                     icon: Icon(Icons.add),
                     iconSize: 20,
@@ -617,35 +672,35 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  Widget _buildTappableRow(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(label, style: const TextStyle(fontSize: 16)),
-                  const Spacer(),
-                ],
-              ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildTappableRow(
+  //   String label,
+  //   String value, {
+  //   bool showDivider = true,
+  // }) {
+  //   return InkWell(
+  //     onTap: () {
+  //       // TODO: Implement navigation or show picker for this row
+  //     },
+  //     child: Padding(
+  //       padding: const EdgeInsets.only(left: 16.0),
+  //       child: Column(
+  //         children: [
+  //           SizedBox(
+  //             height: 44, // ความสูงมาตรฐานของ iOS list item
+  //             child: Row(
+  //               children: [
+  //                 Text(label, style: const TextStyle(fontSize: 16)),
+  //                 const Spacer(),
+  //               ],
+  //             ),
+  //           ),
+  //           if (showDivider)
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // Widget สำหรับแถวที่กดได้ (มีลูกศร >)
   Widget _buildTappableRowStatus(
@@ -786,180 +841,180 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateClientScreen> {
   // }
 
   // Chip แสดงวันที่/เวลา
-  Widget _buildDateTimeChip(String text) {
-    return GestureDetector(
-      onTap: () {
-        // TODO: Implement date/time picker logic
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(text, style: const TextStyle(fontSize: 15)),
-      ),
-    );
-  }
+  // Widget _buildDateTimeChip(String text) {
+  //   return GestureDetector(
+  //     onTap: () {
+  //       // TODO: Implement date/time picker logic
+  //     },
+  //     child: Container(
+  //       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  //       decoration: BoxDecoration(
+  //         color: Colors.grey.shade200,
+  //         borderRadius: BorderRadius.circular(8),
+  //       ),
+  //       child: Text(text, style: const TextStyle(fontSize: 15)),
+  //     ),
+  //   );
+  // }
 
   // Widget สำหรับ Section ที่อยู่
-  Widget _buildAddressSection() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 16.0, top: 12.0),
-          child: Text(
-            'Address',
-            style: TextStyle(fontSize: 16, color: Colors.blue),
-          ),
-        ),
-        Expanded(
-          child: Column(
-            children: [
-              _buildAddressTextField('2118 Thornridge'),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              _buildAddressTextField('Street'),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              _buildAddressTextField('Cir. Syracuse'),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              Row(
-                children: [
-                  Expanded(child: _buildAddressTextField('Connecticut')),
-                  Container(
-                    width: 0.5,
-                    height: 44,
-                    color: Colors.grey.shade300,
-                  ),
-                  SizedBox(width: 100, child: _buildAddressTextField('35624')),
-                ],
-              ),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              _buildAddressTextField('USA'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildAddressSection() {
+  //   return Row(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       const Padding(
+  //         padding: EdgeInsets.only(left: 16.0, top: 12.0),
+  //         child: Text(
+  //           'Address',
+  //           style: TextStyle(fontSize: 16, color: Colors.blue),
+  //         ),
+  //       ),
+  //       Expanded(
+  //         child: Column(
+  //           children: [
+  //             _buildAddressTextField('2118 Thornridge'),
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //             _buildAddressTextField('Street'),
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //             _buildAddressTextField('Cir. Syracuse'),
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //             Row(
+  //               children: [
+  //                 Expanded(child: _buildAddressTextField('Connecticut')),
+  //                 Container(
+  //                   width: 0.5,
+  //                   height: 44,
+  //                   color: Colors.grey.shade300,
+  //                 ),
+  //                 SizedBox(width: 100, child: _buildAddressTextField('35624')),
+  //               ],
+  //             ),
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //             _buildAddressTextField('USA'),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   // TextField สำหรับกรอกที่อยู่
-  Widget _buildAddressTextField(String hint) {
-    return SizedBox(
-      height: 44,
-      child: TextField(
-        controller: txtAddress,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade400),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildAddressTextField(String hint) {
+  //   return SizedBox(
+  //     height: 44,
+  //     child: TextField(
+  //       controller: txtAddress,
+  //       decoration: InputDecoration(
+  //         hintText: hint,
+  //         hintStyle: TextStyle(color: Colors.grey.shade400),
+  //         border: InputBorder.none,
+  //         contentPadding: const EdgeInsets.symmetric(
+  //           horizontal: 16,
+  //           vertical: 12,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // Widget สำหรับแถวข้อมูล Contact (มีปุ่ม x)
-  Widget _buildContactRow(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 44,
-            child: Row(
-              children: [
-                Text(label, style: const TextStyle(fontSize: 16)),
-                const Spacer(),
-                Text(
-                  value,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                ),
-                IconButton(
-                  onPressed: () {
-                    // TODO: Implement remove contact logic
-                  },
-                  icon: Icon(Icons.cancel, color: Colors.grey.shade400),
-                ),
-              ],
-            ),
-          ),
-          if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
-        ],
-      ),
-    );
-  }
+  // Widget _buildContactRow(
+  //   String label,
+  //   String value, {
+  //   bool showDivider = true,
+  // }) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(left: 16.0),
+  //     child: Column(
+  //       children: [
+  //         SizedBox(
+  //           height: 44,
+  //           child: Row(
+  //             children: [
+  //               Text(label, style: const TextStyle(fontSize: 16)),
+  //               const Spacer(),
+  //               Text(
+  //                 value,
+  //                 style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+  //               ),
+  //               IconButton(
+  //                 onPressed: () {
+  //                   // TODO: Implement remove contact logic
+  //                 },
+  //                 icon: Icon(Icons.cancel, color: Colors.grey.shade400),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildContactRowCompany(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 44,
-            child: Row(
-              children: [
-                Text(label, style: const TextStyle(fontSize: 16)),
-                const Spacer(),
-                // Text(
-                //   value,
-                //   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                // ),
-                // IconButton(
-                //   onPressed: () {
-                //     // TODO: Implement remove contact logic
-                //   },
-                //   icon: Icon(Icons.cancel, color: Colors.grey.shade400),
-                // ),
-                Consumer(
-                  builder: (context, ref, _) {
-                    final companyGetListProviderState = ref.watch(
-                      companyGetListProvider,
-                    );
-                    return companyGetListProviderState.when(
-                      data: (company) {
-                        return SizedBox(
-                          width: 300,
-                          child: DropdownButton<String>(
-                            isExpanded: true,
-                            hint: const Text('เลือก'),
-                            value: commany,
-                            items: company.map((p) {
-                              return DropdownMenuItem<String>(
-                                value: p.companyID,
-                                child: Text(p.companyName.toString()),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                commany = value;
-                              });
-                            },
-                          ),
-                        );
-                      },
-                      loading: () => const CircularProgressIndicator(),
-                      error: (err, _) => Text('Error: $err'),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
-        ],
-      ),
-    );
-  }
+  // Widget _buildContactRowCompany(
+  //   String label,
+  //   String value, {
+  //   bool showDivider = true,
+  // }) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(left: 16.0),
+  //     child: Column(
+  //       children: [
+  //         SizedBox(
+  //           height: 44,
+  //           child: Row(
+  //             children: [
+  //               Text(label, style: const TextStyle(fontSize: 16)),
+  //               const Spacer(),
+  //               // Text(
+  //               //   value,
+  //               //   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+  //               // ),
+  //               // IconButton(
+  //               //   onPressed: () {
+  //               //     // TODO: Implement remove contact logic
+  //               //   },
+  //               //   icon: Icon(Icons.cancel, color: Colors.grey.shade400),
+  //               // ),
+  //               Consumer(
+  //                 builder: (context, ref, _) {
+  //                   final companyGetListProviderState = ref.watch(
+  //                     companyGetListProvider,
+  //                   );
+  //                   return companyGetListProviderState.when(
+  //                     data: (company) {
+  //                       return SizedBox(
+  //                         width: 300,
+  //                         child: DropdownButton<String>(
+  //                           isExpanded: true,
+  //                           hint: const Text('เลือก'),
+  //                           value: commany,
+  //                           items: company.map((p) {
+  //                             return DropdownMenuItem<String>(
+  //                               value: p.companyID,
+  //                               child: Text(p.companyName.toString()),
+  //                             );
+  //                           }).toList(),
+  //                           onChanged: (value) {
+  //                             setState(() {
+  //                               commany = value;
+  //                             });
+  //                           },
+  //                         ),
+  //                       );
+  //                     },
+  //                     loading: () => const CircularProgressIndicator(),
+  //                     error: (err, _) => Text('Error: $err'),
+  //                   );
+  //                 },
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
