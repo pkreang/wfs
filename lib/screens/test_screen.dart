@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/models/productcategory_model.dart';
-import 'package:wfs/providers/auth_provider.dart';
-import 'package:wfs/providers/country_provider.dart';
-import 'package:wfs/providers/district_provider.dart';
-import 'package:wfs/providers/productcategory_provider.dart';
-import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
-import 'package:wfs/services/productcategory_service.dart';
 
 class TestScreen extends StatelessWidget {
   const TestScreen({super.key});
@@ -28,8 +21,8 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final subDistrictGetListstate = ref.watch(subDistrictGetList);
-    final authState = ref.watch(authProvider);
-    final accessToken = authState.accessToken;
+    //final authState = ref.watch(authProvider);
+    //final accessToken = authState.accessToken;
     // ProductCategory product = ProductCategory(
     //   productCategoryName: "Product Category 1111",
     //   productCategoryDescription: "xxxxxxxxxxxxxxxx",

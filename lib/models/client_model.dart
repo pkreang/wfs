@@ -1,3 +1,5 @@
+import 'package:wfs/models/clientaddresses.dart';
+import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/clientlevel_model.dart';
 import 'package:wfs/models/clientstatus_model.dart';
 import 'package:wfs/models/company_model.dart';
@@ -24,7 +26,10 @@ class Client {
   ClientLevel? clientLevel;
   ClientStatus? clientStatus;
   List<Company>? company;
-
+  String? address;
+  List<ClientAddresses>? clientAddresses;
+  List<String>? clientProducts;
+  List<ClientCompanies>? clientCompanies;
   Client({
     this.clientStatusID,
     this.modifiedBy,
@@ -46,6 +51,10 @@ class Client {
     this.clientLevel,
     this.clientStatus,
     this.company,
+    this.address,
+    this.clientAddresses,
+    this.clientProducts,
+    this.clientCompanies,
   });
 
   Client.fromJson(Map<String, dynamic> json) {
@@ -65,6 +74,7 @@ class Client {
     createdBy = json['CreatedBy'];
     salesTerritoryID = json['SalesTerritoryID'];
     createdDate = json['CreatedDate'];
+    address = json['address'];
     if (json['products'] != null) {
       products = [];
       json['products'].forEach((v) {
@@ -81,6 +91,21 @@ class Client {
       company = [];
       json['company'].forEach((v) {
         company!.add(new Company.fromJson(v));
+      });
+    }
+    if (json['ClientAddresses'] != null) {
+      clientAddresses = <ClientAddresses>[];
+      json['ClientAddresses'].forEach((v) {
+        clientAddresses!.add(new ClientAddresses.fromJson(v));
+      });
+    }
+    if (json['ClientProducts'] != null) {
+      clientProducts = json['ClientProducts'].cast<String>();
+    }
+    if (json['ClientCompanies'] != null) {
+      clientCompanies = <ClientCompanies>[];
+      json['ClientCompanies'].forEach((v) {
+        clientCompanies!.add(new ClientCompanies.fromJson(v));
       });
     }
   }
@@ -103,6 +128,7 @@ class Client {
     data['CreatedBy'] = this.createdBy;
     data['SalesTerritoryID'] = this.salesTerritoryID;
     data['CreatedDate'] = this.createdDate;
+    data['address'] = this.address;
     if (this.products != null) {
       data['products'] = this.products!.map((v) => v.toJson()).toList();
     }
@@ -114,6 +140,19 @@ class Client {
     }
     if (this.company != null) {
       data['company'] = this.company!.map((v) => v.toJson()).toList();
+    }
+    if (this.clientAddresses != null) {
+      data['ClientAddresses'] = this.clientAddresses!
+          .map((v) => v.toJson())
+          .toList();
+    }
+    if (this.clientProducts != null) {
+      data['ClientProducts'] = this.clientProducts;
+    }
+    if (this.clientCompanies != null) {
+      data['ClientCompanies'] = this.clientCompanies!
+          .map((v) => v.toJson())
+          .toList();
     }
     return data;
   }

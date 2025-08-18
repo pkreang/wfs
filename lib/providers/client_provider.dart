@@ -95,3 +95,19 @@ final clientGetByIdProvider = FutureProvider.family<Client, String>((
 
   return clientService.GetById(accessToken, guid);
 });
+
+final clienAddProvider = FutureProvider.family<Client, Client>((
+  ref,
+  client,
+) async {
+  final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
+
+  if (accessToken == null || accessToken.isEmpty) {
+    throw Exception('User is not authenticated.');
+  }
+
+  final clientService = ref.watch(clientServiceProvider);
+
+  return clientService.Add(accessToken, client);
+});

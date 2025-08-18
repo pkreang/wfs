@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/screens/createcompany_screen.dart';
 import '../models/company_model.dart';
 import '../providers/company_provider.dart';
 
@@ -102,9 +103,16 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
+          TextButton(
             onPressed: () {},
-            icon: const Icon(Icons.add, color: Colors.blue, size: 32),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.normal,
+                fontSize: 17,
+              ),
+            ),
           ),
           Column(
             children: [
@@ -120,9 +128,14 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
             ],
           ),
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateCompanyScreen()),
+              );
+            },
             child: const Text(
-              'Edit',
+              'Add',
               style: TextStyle(
                 color: Colors.blue,
                 fontWeight: FontWeight.normal,

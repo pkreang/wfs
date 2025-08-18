@@ -23,6 +23,7 @@ class CreateAppointmentScreen extends ConsumerStatefulWidget {
 
 class _CreateAppointmentScreenState
     extends ConsumerState<CreateAppointmentScreen> {
+  final _formKey = GlobalKey<FormState>();
   String? selectedPurpose;
   String? salesTerritory;
   String? commany;
@@ -157,127 +158,124 @@ class _CreateAppointmentScreenState
           ),
         ],
       ),
-      body: ListView(
-        children: [
-          // Section: CLIENT INFO
-          _buildSectionHeader('CLIENT INFO'),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                _buildInfoRow(
-                  'Client Name',
-                  clientGetByIdProviderState.when(
-                    data: (client) =>
-                        client.firstName! + ' ' + client.lastName!,
-                    loading: () => "Loading",
-                    error: (err, stack) => err.toString(),
+      body: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: ListView(
+          children: [
+            // Section: CLIENT INFO
+            _buildSectionHeader('CLIENT INFO'),
+            Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  _buildInfoRow(
+                    'Client Name',
+                    clientGetByIdProviderState.when(
+                      data: (client) =>
+                          client.firstName! + ' ' + client.lastName!,
+                      loading: () => "Loading",
+                      error: (err, stack) => err.toString(),
+                    ),
                   ),
-                ),
-                _buildTappableRowPurpose('Purpose', 'Initial Visit'),
-                _buildTappableRowTerritory(
-                  'Territory',
-                  'North East US',
-                  showDivider: false,
-                ),
-              ],
+                  _buildTappableRowPurpose('Purpose', 'Initial Visit'),
+                  _buildTappableRowTerritory(
+                    'Territory',
+                    'North East US',
+                    showDivider: false,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 30),
+            const SizedBox(height: 30),
 
-          // Section: Date & Time
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                ListTile(
-                  title: Row(
-                    children: [
-                      Text("Starts", style: const TextStyle(fontSize: 16)),
-                      const Spacer(),
-                      _buildDateTimeChip(
-                        DateFormat(
-                          'MMM dd,yyyy',
-                        ).format(dateTimeFrom ?? DateTime.now()),
-                      ),
-                      _buildDateTimeChip(
-                        DateFormat(
-                          'h;mm a',
-                        ).format(dateTimeFrom ?? DateTime.now()),
-                      ),
-                    ],
+            // Section: Date & Time
+            Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  ListTile(
+                    title: Row(
+                      children: [
+                        Text("Starts", style: const TextStyle(fontSize: 16)),
+                        const Spacer(),
+                        _buildDateTimeChip(
+                          DateFormat(
+                            'MMM dd,yyyy',
+                          ).format(dateTimeFrom ?? DateTime.now()),
+                        ),
+                        _buildDateTimeChip(
+                          DateFormat(
+                            'h;mm a',
+                          ).format(dateTimeFrom ?? DateTime.now()),
+                        ),
+                      ],
+                    ),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () => _pickDateTime(true),
                   ),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () => _pickDateTime(true),
-                ),
-                ListTile(
-                  title: Row(
-                    children: [
-                      Text("Starts", style: const TextStyle(fontSize: 16)),
-                      const Spacer(),
-                      _buildDateTimeChip(
-                        DateFormat(
-                          'MMM dd,yyyy',
-                        ).format(dateTimeTo ?? DateTime.now()),
-                      ),
-                      _buildDateTimeChip(
-                        DateFormat(
-                          'h:mm a',
-                        ).format(dateTimeTo ?? DateTime.now()),
-                      ),
-                    ],
+                  ListTile(
+                    title: Row(
+                      children: [
+                        Text("Starts", style: const TextStyle(fontSize: 16)),
+                        const Spacer(),
+                        _buildDateTimeChip(
+                          DateFormat(
+                            'MMM dd,yyyy',
+                          ).format(dateTimeTo ?? DateTime.now()),
+                        ),
+                        _buildDateTimeChip(
+                          DateFormat(
+                            'h:mm a',
+                          ).format(dateTimeTo ?? DateTime.now()),
+                        ),
+                      ],
+                    ),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () => _pickDateTime(false),
                   ),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () => _pickDateTime(false),
-                ),
-                //_buildDateTimePickerRow('Starts', "", ''),
-                //_buildDateTimePickerRow(
-                //   'Ends',
-                //   'Jul 21, 2023',
-                //   '10:00 AM',
-                //   showDivider: false,
-                // ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 30),
+            const SizedBox(height: 30),
 
-          // Section: Address
-          Container(color: Colors.white, child: _buildAddressSection()),
-          const SizedBox(height: 30),
+            // Section: Address
+            Container(color: Colors.white, child: _buildAddressSection()),
+            const SizedBox(height: 30),
 
-          // Section: CONTACT
-          _buildSectionHeader('CONTACT'),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                _buildContactRow(
-                  'Mobile',
-                  clientGetByIdProviderState.when(
-                    data: (client) => client.phone!,
-                    loading: () => "Loading",
-                    error: (err, stack) => err.toString(),
+            // Section: CONTACT
+            _buildSectionHeader('CONTACT'),
+            Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  _buildContactRow(
+                    'Mobile',
+                    clientGetByIdProviderState.when(
+                      data: (client) => client.phone!,
+                      loading: () => "Loading",
+                      error: (err, stack) => err.toString(),
+                    ),
                   ),
-                ),
-                _buildContactRow(
-                  'Email',
-                  clientGetByIdProviderState.when(
-                    data: (client) => client.email!,
-                    loading: () => "Loading",
-                    error: (err, stack) => err.toString(),
+                  _buildContactRow(
+                    'Email',
+                    clientGetByIdProviderState.when(
+                      data: (client) => client.email!,
+                      loading: () => "Loading",
+                      error: (err, stack) => err.toString(),
+                    ),
                   ),
-                ),
-                _buildContactRowCompany(
-                  'Company',
-                  'Happy Happy',
-                  showDivider: false,
-                ),
-              ],
+                  _buildContactRowCompany(
+                    'Company',
+                    'Happy Happy',
+                    showDivider: false,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 30),
-        ],
+            const SizedBox(height: 30),
+          ],
+        ),
       ),
     );
   }
@@ -298,7 +296,7 @@ class _CreateAppointmentScreenState
   // Widget สำหรับแถวข้อมูลธรรมดา (Label: Value)
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0),
+      padding: const EdgeInsets.only(left: 16.0, top: 16),
       child: Column(
         children: [
           Row(
@@ -330,7 +328,7 @@ class _CreateAppointmentScreenState
         // TODO: Implement navigation or show picker for this row
       },
       child: Padding(
-        padding: const EdgeInsets.only(left: 16.0),
+        padding: const EdgeInsets.only(left: 16.0, right: 16),
         child: Column(
           children: [
             SizedBox(
@@ -394,7 +392,7 @@ class _CreateAppointmentScreenState
         // TODO: Implement navigation or show picker for this row
       },
       child: Padding(
-        padding: const EdgeInsets.only(left: 16.0),
+        padding: const EdgeInsets.only(left: 16.0, right: 16),
         child: Column(
           children: [
             SizedBox(
@@ -403,41 +401,6 @@ class _CreateAppointmentScreenState
                 children: [
                   Text(label, style: const TextStyle(fontSize: 16)),
                   const Spacer(),
-
-                  // Text(value, style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
-                  //     );
-                  //   }).toList(),
-                  //   onChanged: (value) => setState(() => purposeTypeID = value),
-                  // ),
-                  // (listUser as AsyncValue<List<User>>).when(
-                  //   data: (users) {
-                  //     return DropdownButton<String>(
-                  //       isExpanded: true,
-                  //       hint: const Text('เลือกจังหวัด'),
-                  //       value: selectedProvince,
-                  //       items: users.map((user) {
-                  //         return DropdownMenuItem<String>(
-                  //           value: user.userID,
-                  //           child: Text(user.userRole.toString()),
-                  //         );
-                  //       }).toList(),
-                  //       onChanged: (value) {
-                  //         setState(() {
-                  //           selectedProvince = value;
-                  //         });
-                  //       },
-                  //     );
-                  //   },
-                  //   loading: () => const CircularProgressIndicator(),
-                  //   error: (err, _) => Text('Error: $err'),
-                  // ),
-                  // const SizedBox(width: 8),
-                  // const Icon(
-                  //   Icons.arrow_forward_ios,
-                  //   size: 14,
-                  //   color: Colors.grey,
-                  // ),
-                  // const SizedBox(width: 16),
                   Consumer(
                     builder: (context, ref, _) {
                       final perposeTypeGetListState = ref.watch(
@@ -480,43 +443,6 @@ class _CreateAppointmentScreenState
       ),
     );
   }
-
-  // Widget สำหรับแถวเลือกวันที่และเวลา
-  // Widget _buildDateTimePickerRow(
-  //   String label,
-  //   String date,
-  //   String time, {
-  //   bool showDivider = true,
-  // }) {
-  //   return Padding(
-  //     padding: const EdgeInsets.fromLTRB(16.0, 4, 16, 4),
-  //     child: Column(
-  //       children: [
-  //         Row(
-  //           children: [
-  //             // Text(label, style: const TextStyle(fontSize: 16)),
-  //             // const Spacer(),
-  //             // ListTile(
-  //             //   trailing: const Icon(Icons.calendar_today),
-  //             //   onTap: () => _pickDateTime(true),
-  //             // ),
-
-  //             // _buildDateTimeChip(
-  //             //   DateFormat(
-  //             //     'MMM dd,yyyy',
-  //             //   ).format(dateTimeFrom ?? DateTime.now()),
-  //             // ),
-  //             // const SizedBox(width: 8),
-  //             // _buildDateTimeChip(
-  //             //   DateFormat('h:mm a').format(dateTimeFrom ?? DateTime.now()),
-  //             // ),
-  //           ],
-  //         ),
-  //         if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   // Chip แสดงวันที่/เวลา
   Widget _buildDateTimeChip(String text) {
@@ -636,7 +562,7 @@ class _CreateAppointmentScreenState
     bool showDivider = true,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0),
+      padding: const EdgeInsets.only(left: 16.0, right: 16),
       child: Column(
         children: [
           SizedBox(
@@ -645,16 +571,6 @@ class _CreateAppointmentScreenState
               children: [
                 Text(label, style: const TextStyle(fontSize: 16)),
                 const Spacer(),
-                // Text(
-                //   value,
-                //   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                // ),
-                // IconButton(
-                //   onPressed: () {
-                //     // TODO: Implement remove contact logic
-                //   },
-                //   icon: Icon(Icons.cancel, color: Colors.grey.shade400),
-                // ),
                 Consumer(
                   builder: (context, ref, _) {
                     final companyGetListProviderState = ref.watch(
