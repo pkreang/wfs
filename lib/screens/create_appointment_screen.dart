@@ -1,5 +1,3 @@
-// lib/screens/create_appointment_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -23,7 +21,6 @@ class CreateAppointmentScreen extends ConsumerStatefulWidget {
 
 class _CreateAppointmentScreenState
     extends ConsumerState<CreateAppointmentScreen> {
-  final _formKey = GlobalKey<FormState>();
   String? selectedPurpose;
   String? salesTerritory;
   String? commany;
@@ -61,13 +58,6 @@ class _CreateAppointmentScreenState
         });
       }
     }
-  }
-
-  String? _validateNull(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'กรุณากรอกอีเมล';
-    }
-    return null;
   }
 
   @override
@@ -167,122 +157,118 @@ class _CreateAppointmentScreenState
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: ListView(
-          children: [
-            // Section: CLIENT INFO
-            _buildSectionHeader('CLIENT INFO'),
-            Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  _buildInfoRow(
-                    'Client Name',
-                    clientGetByIdProviderState.when(
-                      data: (client) =>
-                          client.firstName! + ' ' + client.lastName!,
-                      loading: () => "Loading",
-                      error: (err, stack) => err.toString(),
-                    ),
+      body: ListView(
+        children: [
+          // Section: CLIENT INFO
+          _buildSectionHeader('CLIENT INFO'),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                _buildInfoRow(
+                  'Client Name',
+                  clientGetByIdProviderState.when(
+                    data: (client) =>
+                        client.firstName! + ' ' + client.lastName!,
+                    loading: () => "Loading",
+                    error: (err, stack) => err.toString(),
                   ),
-                  _buildTappableRowPurpose('Purpose', 'Initial Visit'),
-                  _buildTappableRowTerritory(
-                    'Territory',
-                    'North East US',
-                    showDivider: false,
-                  ),
-                ],
-              ),
+                ),
+                _buildTappableRowPurpose('Purpose', 'Initial Visit'),
+                _buildTappableRowTerritory(
+                  'Territory',
+                  'North East US',
+                  showDivider: false,
+                ),
+              ],
             ),
-            const SizedBox(height: 30),
+          ),
+          const SizedBox(height: 30),
 
-            // Section: Date & Time
-            Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  ListTile(
-                    title: Row(
-                      children: [
-                        Text("Starts", style: const TextStyle(fontSize: 16)),
-                        const Spacer(),
-                        _buildDateTimeChip(
-                          DateFormat(
-                            'MMM dd,yyyy',
-                          ).format(dateTimeFrom ?? DateTime.now()),
-                        ),
-                        _buildDateTimeChip(
-                          DateFormat(
-                            'h;mm a',
-                          ).format(dateTimeFrom ?? DateTime.now()),
-                        ),
-                      ],
-                    ),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickDateTime(true),
+          // Section: Date & Time
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                ListTile(
+                  title: Row(
+                    children: [
+                      Text("Starts", style: const TextStyle(fontSize: 16)),
+                      const Spacer(),
+                      _buildDateTimeChip(
+                        DateFormat(
+                          'MMM dd,yyyy',
+                        ).format(dateTimeFrom ?? DateTime.now()),
+                      ),
+                      _buildDateTimeChip(
+                        DateFormat(
+                          'h;mm a',
+                        ).format(dateTimeFrom ?? DateTime.now()),
+                      ),
+                    ],
                   ),
-                  ListTile(
-                    title: Row(
-                      children: [
-                        Text("Starts", style: const TextStyle(fontSize: 16)),
-                        const Spacer(),
-                        _buildDateTimeChip(
-                          DateFormat(
-                            'MMM dd,yyyy',
-                          ).format(dateTimeTo ?? DateTime.now()),
-                        ),
-                        _buildDateTimeChip(
-                          DateFormat(
-                            'h:mm a',
-                          ).format(dateTimeTo ?? DateTime.now()),
-                        ),
-                      ],
-                    ),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () => _pickDateTime(false),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: () => _pickDateTime(true),
+                ),
+                ListTile(
+                  title: Row(
+                    children: [
+                      Text("Starts", style: const TextStyle(fontSize: 16)),
+                      const Spacer(),
+                      _buildDateTimeChip(
+                        DateFormat(
+                          'MMM dd,yyyy',
+                        ).format(dateTimeTo ?? DateTime.now()),
+                      ),
+                      _buildDateTimeChip(
+                        DateFormat(
+                          'h:mm a',
+                        ).format(dateTimeTo ?? DateTime.now()),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: () => _pickDateTime(false),
+                ),
+              ],
             ),
-            const SizedBox(height: 30),
+          ),
+          const SizedBox(height: 30),
 
-            // Section: Address
-            Container(color: Colors.white, child: _buildAddressSection()),
-            // Section: CONTACT
-            _buildSectionHeader('CONTACT'),
-            Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  _buildContactRow(
-                    'Mobile',
-                    clientGetByIdProviderState.when(
-                      data: (client) => client.phone!,
-                      loading: () => "Loading",
-                      error: (err, stack) => err.toString(),
-                    ),
+          // Section: Address
+          Container(color: Colors.white, child: _buildAddressSection()),
+          // Section: CONTACT
+          _buildSectionHeader('CONTACT'),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                _buildContactRow(
+                  'Mobile',
+                  clientGetByIdProviderState.when(
+                    data: (client) => client.phone!,
+                    loading: () => "Loading",
+                    error: (err, stack) => err.toString(),
                   ),
-                  _buildContactRow(
-                    'Email',
-                    clientGetByIdProviderState.when(
-                      data: (client) => client.email!,
-                      loading: () => "Loading",
-                      error: (err, stack) => err.toString(),
-                    ),
+                ),
+                _buildContactRow(
+                  'Email',
+                  clientGetByIdProviderState.when(
+                    data: (client) => client.email!,
+                    loading: () => "Loading",
+                    error: (err, stack) => err.toString(),
                   ),
-                  _buildContactRowCompany(
-                    'Company',
-                    'Happy Happy',
-                    showDivider: false,
-                  ),
-                ],
-              ),
+                ),
+                _buildContactRowCompany(
+                  'Company',
+                  'Happy Happy',
+                  showDivider: false,
+                ),
+              ],
             ),
-            const SizedBox(height: 30),
-          ],
-        ),
+          ),
+          const SizedBox(height: 30),
+        ],
       ),
     );
   }
@@ -312,18 +298,10 @@ class _CreateAppointmentScreenState
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
-                child: TextFormField(
-                  controller: txtClientName,
-                  decoration: InputDecoration(
-                    labelText: 'อีเมล',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: _validateNull,
+                child: Text(
+                  value,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                 ),
-                // Text(
-                //   value,
-                //   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                // ),
               ),
             ],
           ),

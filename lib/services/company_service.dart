@@ -36,7 +36,29 @@ class CompanyService {
     }
   }
 
-  Future<void> Add(String accessToken, Company company) async {
+  Future<Company> Add(String accessToken, Company company) async {
+    String jsonString = '''
+    {
+   "CompanyName": "CompanyTesataaaa"  ,
+    "TaxID" : "123457890"    ,    
+    "SalesTerritoryID"  : "09A69122-4BE0-4201-8B53-3AEF1C24EBDC" ,   
+    "Noted"  : "xxxxxxxxxxxxxxx"  ,
+    "IsActive" : true  ,
+    "CreatedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6" ,      
+    "ModifiedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+    "CompanyAddress": [{
+        "Address":"123/4 Sukhumvit Road",
+        "CountryID":1,
+        "ProvinceID":1,
+        "DistrictID":13,
+        "SubDistrictID":2583,
+        "Latitude": null,
+        "Longitude":null,
+        "IsPrimary": true  ,
+        "IsActive": true    
+    }]
+    }
+    ''';
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -48,16 +70,19 @@ class CompanyService {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
         },
-        body: json.encode(company),
+        body: jsonString, // json.encode(company),
       );
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print('สำเร็จ: $data');
+        final data = json.decode(response.body);
+        final dynamic companyTypeJson = data['companies'];
+        return Company.fromJson(companyTypeJson);
       } else {
-        print('Error ${response.statusCode}: ${response.body}');
+        throw Exception(
+          'Failed to load Clients. Status code: ${response.statusCode}',
+        );
       }
     } catch (e) {
-      print('เกิดข้อผิดพลาด: $e');
+      throw Exception('Failed to load Clients. Status code: ');
     }
   }
 

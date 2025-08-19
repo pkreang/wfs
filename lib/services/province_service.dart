@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
-import 'package:wfs/models/Province_model.dart';
+import 'package:wfs/models/province_model.dart';
 
 class ProvinceService {
   Future<List<Province>> getList(String accessToken) async {

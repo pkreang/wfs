@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/models/client_model.dart';
-import 'package:wfs/models/clientaddresses.dart';
-import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/company_model.dart';
+import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/product_model.dart';
+import 'package:wfs/models/province_model.dart';
+import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
+import 'package:wfs/providers/district_provider.dart';
+import 'package:wfs/providers/province_provider.dart';
+import 'package:wfs/providers/provincedistrictsubdistrictDropdown_provider.dart';
 import 'package:wfs/providers/purposetype_provider.dart';
 import 'package:wfs/providers/product_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
-import 'package:wfs/services/client_service.dart';
+import 'package:wfs/providers/subdistrict_provider.dart';
+import 'package:wfs/services/company_service.dart';
+import 'package:wfs/utility/appdialogs.dart';
+import 'package:wfs/utility/validator.dart';
 
 class Item {
   final String id;
@@ -27,7 +33,9 @@ class CreateCompanyScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
-  String? selectedPurpose;
+  Province? selectedProvince;
+  District? selectedDistrict;
+  Subdistrict? selectedSubdistrict;
   String? product;
   String? commany;
   String? salesTerritory;
@@ -134,74 +142,51 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              Client client = Client(
-                firstName: txtClientName.text,
-                lastName: "TestLastName",
-                address: "123 Bangkok",
-                phone: txtPhone.text,
-                email: txtEmail.text,
-                salesTerritoryID: salesTerritory,
-                clientStatusID: salesTerritory,
-                clientLevelID: salesTerritory,
+              String? error;
+              error = Validator.required(txtClientName.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Client Name");
+                return;
+              }
+
+              // error = Validator.required(selectedPurpose);
+              // if (error != null) {
+              //   AppDialogs.error(context, message: "กรุณาเลือก Status");
+              //   return;
+              // }
+
+              error = Validator.required(txtAddress.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + "Address");
+                return;
+              }
+
+              error = Validator.required(salesTerritory);
+              if (error != null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Territory");
+                return;
+              }
+
+              Company company = Company(
+                companyName: "CompanyTesataaaaa",
+                taxID: "123457890",
+                salesTerritoryID: "09A69122-4BE0-4201-8B53-3AEF1C24EBDC",
                 noted: "xxxxxxxxxxxxxxx",
-                availableTimeStart: "09:00",
-                availableTimeEnd: "16:00",
                 isActive: true,
                 createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
                 modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                clientAddresses: [
-                  ClientAddresses(
-                    address: "123/4 Sukhumvit Road",
-                    countryID: 1,
-                    provinceID: 1,
-                    districtID: 13,
-                    subDistrictID: 2583,
-                    latitude: null,
-                    longitude: null,
-                    isPrimary: true,
-                    isActive: true,
-                  ),
-                ],
-                clientID: "",
-                createdDate: "2025-08-17T09:15:41.557000",
-                modifiedDate: "2025-08-17T09:15:41.557000",
-                clientProducts: selectedProduct
-                    .map((f) => f.productID!)
-                    .toList(),
-                clientCompanies: selectedCompany
-                    .map(
-                      (c) => ClientCompanies(
-                        companyID: c.companyID,
-                        position: "Staff",
-                        noted: c.noted,
-                        availableTimeStart: null,
-                        availableTimeEnd: null,
-                        createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                        modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                      ),
-                    )
-                    .toList(),
+                companyID: "sadf",
+                createdDate: DateTime.now(),
+                modifiedDate: DateTime.now(),
               );
-              ClientService clientService = new ClientService();
+              CompanyService companyService = new CompanyService();
               final authState = ref.watch(authProvider);
               final accessToken = authState.accessToken;
               try {
-                clientService.Add(accessToken.toString(), client);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('บันทึกข้อมูลเรียบร้อยแล้ว'),
-                    duration: Duration(seconds: 3),
-                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
-                  ),
-                );
+                companyService.Add(accessToken.toString(), company);
+                AppDialogs.success(context);
               } catch (ex) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(ex.toString()),
-                    duration: Duration(seconds: 3),
-                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
-                  ),
-                );
+                AppDialogs.error(context);
               }
             },
             child: const Text(
@@ -238,55 +223,58 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
               children: [
                 _buildInfoRowAddress('Address', ''),
                 _buildTappableRowSaleTerritory('Territory', ''),
+                _buildTappableRowProvince('Province', ''),
+                _buildTappableRowDistrict('Distric', ''),
+                _buildTappableRowSubDistrict('SubDistric', ''),
               ],
             ),
           ),
           const SizedBox(height: 30),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Text("LINKED CLIENTS"),
-          ),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                SizedBox(height: 20),
-                _buildTappableRowProduct(
-                  'add clients',
-                  '',
-                  ProductGetListState,
-                ),
-                SizedBox(height: 20),
-                Center(
-                  child: selectedCompany.length > 0
-                      ? Text(
-                          "clients ที่เลือก:",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      : Text(""),
-                ),
-                SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: selectedProduct
-                      .map(
-                        (e) => Chip(
-                          label: Text(e.productName.toString()),
-                          deleteIcon: Icon(Icons.close),
-                          onDeleted: () {
-                            setState(() {
-                              selectedProduct.remove(e);
-                            });
-                          },
-                        ),
-                      )
-                      .toList(),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 30),
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 16.0),
+          //   child: Text("LINKED CLIENTS"),
+          // ),
+          // Container(
+          //   color: Colors.white,
+          //   child: Column(
+          //     children: [
+          //       SizedBox(height: 20),
+          //       _buildTappableRowProduct(
+          //         'add clients',
+          //         '',
+          //         ProductGetListState,
+          //       ),
+          //       SizedBox(height: 20),
+          //       Center(
+          //         child: selectedCompany.length > 0
+          //             ? Text(
+          //                 "clients ที่เลือก:",
+          //                 style: TextStyle(fontWeight: FontWeight.bold),
+          //               )
+          //             : Text(""),
+          //       ),
+          //       SizedBox(height: 10),
+          //       Wrap(
+          //         spacing: 8,
+          //         runSpacing: 8,
+          //         children: selectedProduct
+          //             .map(
+          //               (e) => Chip(
+          //                 label: Text(e.productName.toString()),
+          //                 deleteIcon: Icon(Icons.close),
+          //                 onDeleted: () {
+          //                   setState(() {
+          //                     selectedProduct.remove(e);
+          //                   });
+          //                 },
+          //               ),
+          //             )
+          //             .toList(),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // const SizedBox(height: 30),
         ],
       ),
     );
@@ -473,6 +461,212 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
     );
   }
 
+  Widget _buildTappableRowProvince(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(fontSize: 16, color: Colors.blue),
+                  ),
+                  const Spacer(),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final provincesProviderState = ref.watch(
+                        provincesProvider,
+                      );
+                      return provincesProviderState.when(
+                        data: (provinces) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<Province>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedProvince,
+                              items: provinces.map((p) {
+                                return DropdownMenuItem<Province>(
+                                  value: p,
+                                  child: Text(p.provinceName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedProvince = value;
+                                  selectedDistrict = null;
+                                  selectedSubdistrict = null;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowDistrict(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(fontSize: 16, color: Colors.blue),
+                  ),
+                  const Spacer(),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final districtGetListState = ref.watch(
+                        districtsProvider(
+                          selectedProvince == null
+                              ? ""
+                              : selectedProvince!.provinceID.toString(),
+                        ),
+                      );
+                      return districtGetListState.when(
+                        data: (district) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<District>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedDistrict,
+                              items: district.map((p) {
+                                return DropdownMenuItem<District>(
+                                  value: p,
+                                  child: Text(p.districtName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedDistrict = value;
+                                  selectedSubdistrict = null;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowSubDistrict(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(fontSize: 16, color: Colors.blue),
+                  ),
+                  const Spacer(),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final districtGetListState = ref.watch(
+                        subdistrictsProvider(
+                          selectedDistrict == null
+                              ? ""
+                              : selectedDistrict!.districtID.toString(),
+                        ),
+                      );
+                      return districtGetListState.when(
+                        data: (district) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<Subdistrict>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedSubdistrict,
+                              items: district.map((p) {
+                                return DropdownMenuItem<Subdistrict>(
+                                  value: p,
+                                  child: Text(p.subDistrictName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedSubdistrict = value;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Widget สำหรับแถวที่กดได้ (มีลูกศร >)
   Widget _buildTappableRowStatus(
     String label,
@@ -497,38 +691,38 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                   ),
                   const Spacer(),
 
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final perposeTypeGetListState = ref.watch(
-                        perposeTypeGetList,
-                      );
-                      return perposeTypeGetListState.when(
-                        data: (perposeType) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<String>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectedPurpose,
-                              items: perposeType.map((p) {
-                                return DropdownMenuItem<String>(
-                                  value: p.purposeTypeID,
-                                  child: Text(p.purposeTypeName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedPurpose = value;
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
+                  // Consumer(
+                  //   builder: (context, ref, _) {
+                  //     final perposeTypeGetListState = ref.watch(
+                  //       perposeTypeGetList,
+                  //     );
+                  //     return perposeTypeGetListState.when(
+                  //       data: (perposeType) {
+                  //         return SizedBox(
+                  //           width: 300,
+                  //           child: DropdownButton<String>(
+                  //             isExpanded: true,
+                  //             hint: const Text('เลือก'),
+                  //             value: selectedPurpose,
+                  //             items: perposeType.map((p) {
+                  //               return DropdownMenuItem<String>(
+                  //                 value: p.purposeTypeID,
+                  //                 child: Text(p.purposeTypeName.toString()),
+                  //               );
+                  //             }).toList(),
+                  //             onChanged: (value) {
+                  //               setState(() {
+                  //                 selectedPurpose = value;
+                  //               });
+                  //             },
+                  //           ),
+                  //         );
+                  //       },
+                  //       loading: () => const CircularProgressIndicator(),
+                  //       error: (err, _) => Text('Error: $err'),
+                  //     );
+                  //   },
+                  // ),
                 ],
               ),
             ),

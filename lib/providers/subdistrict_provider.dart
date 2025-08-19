@@ -7,6 +7,8 @@ final SubDistrictProvider = Provider<SubDistrictService>((ref) {
   return SubDistrictService();
 });
 
+final selectedSubdistrictProvider = StateProvider<String?>((ref) => null);
+
 final subDistrictGetList = FutureProvider<List<Subdistrict>>((ref) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/models/company_model.dart';
+import 'package:wfs/providers/auth_provider.dart';
+import 'package:wfs/providers/company_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
+import 'package:wfs/services/company_service.dart';
 
 class TestScreen extends StatelessWidget {
   const TestScreen({super.key});
@@ -21,20 +25,22 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final subDistrictGetListstate = ref.watch(subDistrictGetList);
-    //final authState = ref.watch(authProvider);
-    //final accessToken = authState.accessToken;
-    // ProductCategory product = ProductCategory(
-    //   productCategoryName: "Product Category 1111",
-    //   productCategoryDescription: "xxxxxxxxxxxxxxxx",
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+    // Company company = Company(
     //   isActive: true,
     //   createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
     //   modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-    //   createdDate: DateTime.now().toIso8601String(),
-    //   modifiedDate: DateTime.now().toIso8601String(),
+    //   createdDate: DateTime.now(),
+    //   modifiedDate: DateTime.now(),
+    //   companyID: "",
+    //   salesTerritoryID: "",
+    //   taxID: "",
+    //   companyName: "",
+    //   noted: "",
     // );
-    // ProductCategoryService productCategoryService =
-    //     new ProductCategoryService();
-    // productCategoryService.add(accessToken.toString(), product);
+    // CompanyService companyService = new CompanyService();
+    // companyService.Add(accessToken.toString(), company);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Riverpod API Example')),

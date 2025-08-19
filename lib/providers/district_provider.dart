@@ -7,6 +7,8 @@ final DistrictProvider = Provider<DistrictService>((ref) {
   return DistrictService();
 });
 
+final selectedDistrictProvider = StateProvider<String?>((ref) => null);
+
 final districtGetList = FutureProvider<List<District>>((ref) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
