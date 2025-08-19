@@ -30,6 +30,8 @@ class _CreateAppointmentScreenState
   DateTime? dateTimeFrom;
   DateTime? dateTimeTo;
   final TextEditingController txtAddress = TextEditingController();
+  final TextEditingController txtClientName = TextEditingController();
+
   Future<void> _pickDateTime(bool isFrom) async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -59,6 +61,13 @@ class _CreateAppointmentScreenState
         });
       }
     }
+  }
+
+  String? _validateNull(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'กรุณากรอกอีเมล';
+    }
+    return null;
   }
 
   @override
@@ -131,7 +140,7 @@ class _CreateAppointmentScreenState
               try {
                 appointmentService.Add(accessToken.toString(), appointment);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text('บันทึกข้อมูลเรียบร้อยแล้ว'),
                     duration: Duration(seconds: 3),
                     // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
@@ -241,8 +250,6 @@ class _CreateAppointmentScreenState
 
             // Section: Address
             Container(color: Colors.white, child: _buildAddressSection()),
-            const SizedBox(height: 30),
-
             // Section: CONTACT
             _buildSectionHeader('CONTACT'),
             Container(
@@ -305,10 +312,18 @@ class _CreateAppointmentScreenState
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
-                child: Text(
-                  value,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                child: TextFormField(
+                  controller: txtClientName,
+                  decoration: InputDecoration(
+                    labelText: 'อีเมล',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: _validateNull,
                 ),
+                // Text(
+                //   value,
+                //   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                // ),
               ),
             ],
           ),

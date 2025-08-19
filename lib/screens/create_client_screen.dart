@@ -11,6 +11,8 @@ import 'package:wfs/providers/purposetype_provider.dart';
 import 'package:wfs/providers/product_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/services/client_service.dart';
+import 'package:wfs/utility/appdialogs.dart';
+import 'package:wfs/utility/validator.dart';
 
 class Item {
   final String id;
@@ -199,6 +201,59 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
         actions: [
           TextButton(
             onPressed: () {
+              String? error;
+              error = Validator.required(txtClientName.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Client Name");
+                return;
+              }
+
+              error = Validator.required(selectedPurpose);
+              if (error != null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Status");
+                return;
+              }
+
+              error = Validator.required(product);
+              if (error != null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Level");
+                return;
+              }
+
+              error = Validator.required(salesTerritory);
+              if (error != null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Territory");
+                return;
+              }
+
+              error = Validator.required(txtAddress.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Address");
+                return;
+              }
+
+              error = Validator.required(txtPhone.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Phone");
+                return;
+              }
+
+              error = Validator.required(txtEmail.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Email");
+                return;
+              }
+
+              if (selectedCompany.length == 0) {
+                AppDialogs.error(context, message: "กรุณาเลือก add company");
+                return;
+              }
+
+              if (selectedProduct.length == 0) {
+                AppDialogs.error(context, message: "กรุณาเลือก add product");
+                return;
+              }
+
               Client client = Client(
                 firstName: txtClientName.text,
                 lastName: "TestLastName",
@@ -252,21 +307,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               final accessToken = authState.accessToken;
               try {
                 clientService.Add(accessToken.toString(), client);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('บันทึกข้อมูลเรียบร้อยแล้ว'),
-                    duration: Duration(seconds: 3),
-                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
-                  ),
-                );
+                AppDialogs.success(context);
               } catch (ex) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(ex.toString()),
-                    duration: Duration(seconds: 3),
-                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
-                  ),
-                );
+                AppDialogs.error(context, message: ex.toString());
               }
             },
             child: const Text(

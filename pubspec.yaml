@@ -12,6 +12,7 @@ dependencies:
   flutter_riverpod: ^2.5.1  # สำหรับ State Management
   http: ^1.2.1       
   intl: ^0.20.2       # สำหรับเรียก API
+  awesome_dialog: ^3.2.1
 
 dev_dependencies:
   flutter_test:
