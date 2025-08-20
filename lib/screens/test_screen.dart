@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
+import 'package:wfs/providers/clientlevel_provider.dart';
+import 'package:wfs/providers/clientstatus_provider.dart';
 import 'package:wfs/providers/company_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
 import 'package:wfs/services/company_service.dart';
@@ -24,7 +26,7 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final subDistrictGetListstate = ref.watch(subDistrictGetList);
+    final ClientStatusGetListState = ref.watch(ClientStatusGetList);
     final authState = ref.watch(authProvider);
     final accessToken = authState.accessToken;
     // Company company = Company(
@@ -45,12 +47,12 @@ class HomePage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Riverpod API Example')),
       body: Center(
-        child: subDistrictGetListstate.when(
+        child: ClientStatusGetListState.when(
           data: (data) => Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                data.toList()[0].subDistrictName.toString(),
+                data.toList()[0].clientStatusName.toString(),
                 style: const TextStyle(fontSize: 20),
               ),
               const SizedBox(height: 20),
@@ -64,7 +66,6 @@ class HomePage extends ConsumerWidget {
           error: (err, stack) => Text('เกิดข้อผิดพลาด: $err'),
         ),
       ),
-      //Text("dsfsaf"),
     );
   }
 }

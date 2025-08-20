@@ -6,8 +6,9 @@ import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/product_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
+import 'package:wfs/providers/clientlevel_provider.dart';
+import 'package:wfs/providers/clientstatus_provider.dart';
 import 'package:wfs/providers/company_provider.dart';
-import 'package:wfs/providers/purposetype_provider.dart';
 import 'package:wfs/providers/product_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/services/client_service.dart';
@@ -33,6 +34,8 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   String? product;
   String? commany;
   String? salesTerritory;
+  String? selectClientStatus;
+  String? selectClientLevel;
   DateTime? dateTimeFrom;
   DateTime? dateTimeTo;
   final TextEditingController txtAddress = TextEditingController();
@@ -261,8 +264,8 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 phone: txtPhone.text,
                 email: txtEmail.text,
                 salesTerritoryID: salesTerritory,
-                clientStatusID: salesTerritory,
-                clientLevelID: salesTerritory,
+                clientStatusID: selectClientStatus,
+                clientLevelID: selectClientLevel,
                 noted: "xxxxxxxxxxxxxxx",
                 availableTimeStart: "09:00",
                 availableTimeEnd: "16:00",
@@ -688,24 +691,26 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
                   Consumer(
                     builder: (context, ref, _) {
-                      final ProductGetListState = ref.watch(ProductGetList);
-                      return ProductGetListState.when(
-                        data: (Product) {
+                      final clientLevelGetListState = ref.watch(
+                        clientLevelGetList,
+                      );
+                      return clientLevelGetListState.when(
+                        data: (clientLevel) {
                           return SizedBox(
                             width: 300,
                             child: DropdownButton<String>(
                               isExpanded: true,
                               hint: const Text('เลือก'),
-                              value: product,
-                              items: Product.map((p) {
+                              value: selectClientLevel,
+                              items: clientLevel.map((p) {
                                 return DropdownMenuItem<String>(
-                                  value: p.productID,
-                                  child: Text(p.productName.toString()),
+                                  value: p.clientLevelID,
+                                  child: Text(p.clientLevelName.toString()),
                                 );
                               }).toList(),
                               onChanged: (value) {
                                 setState(() {
-                                  product = value;
+                                  selectClientLevel = value;
                                 });
                               },
                             ),
@@ -818,26 +823,26 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
                   Consumer(
                     builder: (context, ref, _) {
-                      final perposeTypeGetListState = ref.watch(
-                        perposeTypeGetList,
+                      final ClientStatusGetListState = ref.watch(
+                        ClientStatusGetList,
                       );
-                      return perposeTypeGetListState.when(
-                        data: (perposeType) {
+                      return ClientStatusGetListState.when(
+                        data: (clientStatus) {
                           return SizedBox(
                             width: 300,
                             child: DropdownButton<String>(
                               isExpanded: true,
                               hint: const Text('เลือก'),
-                              value: selectedPurpose,
-                              items: perposeType.map((p) {
+                              value: selectClientStatus,
+                              items: clientStatus.map((p) {
                                 return DropdownMenuItem<String>(
-                                  value: p.purposeTypeID,
-                                  child: Text(p.purposeTypeName.toString()),
+                                  value: p.clientStatusID,
+                                  child: Text(p.clientStatusName.toString()),
                                 );
                               }).toList(),
                               onChanged: (value) {
                                 setState(() {
-                                  selectedPurpose = value;
+                                  selectClientStatus = value;
                                 });
                               },
                             ),

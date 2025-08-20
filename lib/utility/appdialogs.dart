@@ -32,7 +32,7 @@ class AppDialogs {
       dialogType: DialogType.noHeader,
       customHeader: Icon(Icons.cancel, color: Colors.green, size: 50),
       animType: AnimType.leftSlide,
-      title: 'ผิดพลาด ❌',
+      title: 'กรอกข้อมูลไม่ครบ ❌',
       desc: message ?? 'ไม่สามารถบันทึกข้อมูลได้',
       btnOkOnPress: () {},
     ).show();

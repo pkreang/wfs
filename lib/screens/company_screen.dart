@@ -286,11 +286,11 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                     Row(
                       children: [
                         Text(
-                          company.companyName,
+                          company.companyName.toString(),
                           style: const TextStyle(fontSize: 17),
                         ),
                         const SizedBox(width: 8),
-                        _buildStatusTag(company.isActive),
+                        _buildStatusTag(company.isActive!),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -308,7 +308,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            company.companyName,
+                            company.companyName.toString(),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey.shade600,

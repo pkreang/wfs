@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/models/company_model.dart';
+import 'package:wfs/models/companyaddress.dart';
 import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/product_model.dart';
 import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
+import 'package:wfs/providers/clientstatus_provider.dart';
 import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
-import 'package:wfs/providers/provincedistrictsubdistrictDropdown_provider.dart';
-import 'package:wfs/providers/purposetype_provider.dart';
-import 'package:wfs/providers/product_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
 import 'package:wfs/services/company_service.dart';
@@ -36,6 +35,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
   Province? selectedProvince;
   District? selectedDistrict;
   Subdistrict? selectedSubdistrict;
+  String? selectStatus;
   String? product;
   String? commany;
   String? salesTerritory;
@@ -48,74 +48,8 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
   List<Product> selectedProduct = [];
   List<Company> selectedCompany = [];
 
-  void _showPopupProduct(AsyncValue<List<Product>> productGetList) async {
-    final result = await showDialog<List<Product>>(
-      context: context,
-      builder: (context) {
-        List<Product> tempSelected = List.from(selectedProduct);
-
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text("เลือก Product"),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return SizedBox(
-                width: double.maxFinite,
-                height: 250,
-                child: productGetList.when(
-                  data: (Products) => ListView.builder(
-                    itemCount: Products.length,
-                    itemBuilder: (context, index) {
-                      final Product = Products[index];
-                      final isSelected = tempSelected.contains(Product);
-
-                      return CheckboxListTile(
-                        title: Text(Product.productName.toString()),
-                        value: isSelected,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            if (value == true) {
-                              tempSelected.add(Product);
-                            } else {
-                              tempSelected.remove(Product);
-                            }
-                          });
-                        },
-                      );
-                    },
-                  ),
-                  loading: () => Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text("Error: $e")),
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("ยกเลิก"),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, tempSelected),
-              child: Text("ตกลง"),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result != null) {
-      setState(() {
-        selectedProduct = result;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final ProductGetListState = ref.watch(ProductGetList);
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F7),
       appBar: AppBar(
@@ -149,15 +83,9 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 return;
               }
 
-              // error = Validator.required(selectedPurpose);
-              // if (error != null) {
-              //   AppDialogs.error(context, message: "กรุณาเลือก Status");
-              //   return;
-              // }
-
-              error = Validator.required(txtAddress.text);
+              error = Validator.required(selectStatus);
               if (error != null) {
-                AppDialogs.error(context, message: error + "Address");
+                AppDialogs.error(context, message: "กรุณาเลือก Status");
                 return;
               }
 
@@ -167,17 +95,52 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 return;
               }
 
+              error = Validator.required(txtAddress.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + "Address");
+                return;
+              }
+
+              if (selectedProvince == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Province");
+                return;
+              }
+
+              if (selectedDistrict == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก District");
+                return;
+              }
+
+              if (selectedSubdistrict == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก SubDistrict");
+                return;
+              }
+
               Company company = Company(
-                companyName: "CompanyTesataaaaa",
+                companyName: "CompanyTest Tessdfast sdffadasdf9999",
                 taxID: "123457890",
                 salesTerritoryID: "09A69122-4BE0-4201-8B53-3AEF1C24EBDC",
                 noted: "xxxxxxxxxxxxxxx",
                 isActive: true,
+                createdDate: DateTime.now().toIso8601String(),
+                modifiedDate: DateTime.now().toIso8601String(),
                 createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
                 modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                companyID: "sadf",
-                createdDate: DateTime.now(),
-                modifiedDate: DateTime.now(),
+                CompanyAddresses: [
+                  CompanyAddress(
+                    address: "123 ABC Rd.",
+                    provinceID: 1,
+                    districtID: 13,
+                    latitude: null,
+                    isPrimary: true,
+                    createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                    modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                    countryID: 1,
+                    subDistrictID: 2583,
+                    longitude: null,
+                    isActive: true,
+                  ),
+                ],
               );
               CompanyService companyService = new CompanyService();
               final authState = ref.watch(authProvider);
@@ -221,8 +184,8 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
             color: Colors.white,
             child: Column(
               children: [
-                _buildInfoRowAddress('Address', ''),
                 _buildTappableRowSaleTerritory('Territory', ''),
+                _buildInfoRowAddress('Address', ''),
                 _buildTappableRowProvince('Province', ''),
                 _buildTappableRowDistrict('Distric', ''),
                 _buildTappableRowSubDistrict('SubDistric', ''),
@@ -355,47 +318,6 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
     );
   }
 
-  Widget _buildTappableRowProduct(
-    String label,
-    String value,
-    AsyncValue<List<Product>> productGetList, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {},
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, bottom: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      _showPopupProduct(productGetList);
-                    },
-                    icon: Icon(Icons.add),
-                    iconSize: 20,
-                    color: Colors.white,
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.green),
-                      shape: MaterialStateProperty.all(CircleBorder()),
-                    ),
-                  ),
-                  Text(label, style: const TextStyle(fontSize: 16)),
-                  const Spacer(),
-                ],
-              ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildTappableRowSaleTerritory(
     String label,
     String value, {
@@ -406,7 +328,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
         // TODO: Implement navigation or show picker for this row
       },
       child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16),
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
         child: Column(
           children: [
             SizedBox(
@@ -471,7 +393,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
         // TODO: Implement navigation or show picker for this row
       },
       child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16),
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
         child: Column(
           children: [
             SizedBox(
@@ -538,7 +460,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
         // TODO: Implement navigation or show picker for this row
       },
       child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16),
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
         child: Column(
           children: [
             SizedBox(
@@ -608,7 +530,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
         // TODO: Implement navigation or show picker for this row
       },
       child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16),
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
         child: Column(
           children: [
             SizedBox(
@@ -691,38 +613,38 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                   ),
                   const Spacer(),
 
-                  // Consumer(
-                  //   builder: (context, ref, _) {
-                  //     final perposeTypeGetListState = ref.watch(
-                  //       perposeTypeGetList,
-                  //     );
-                  //     return perposeTypeGetListState.when(
-                  //       data: (perposeType) {
-                  //         return SizedBox(
-                  //           width: 300,
-                  //           child: DropdownButton<String>(
-                  //             isExpanded: true,
-                  //             hint: const Text('เลือก'),
-                  //             value: selectedPurpose,
-                  //             items: perposeType.map((p) {
-                  //               return DropdownMenuItem<String>(
-                  //                 value: p.purposeTypeID,
-                  //                 child: Text(p.purposeTypeName.toString()),
-                  //               );
-                  //             }).toList(),
-                  //             onChanged: (value) {
-                  //               setState(() {
-                  //                 selectedPurpose = value;
-                  //               });
-                  //             },
-                  //           ),
-                  //         );
-                  //       },
-                  //       loading: () => const CircularProgressIndicator(),
-                  //       error: (err, _) => Text('Error: $err'),
-                  //     );
-                  //   },
-                  // ),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final ClientStatusGetListState = ref.watch(
+                        ClientStatusGetList,
+                      );
+                      return ClientStatusGetListState.when(
+                        data: (clientStatus) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectStatus,
+                              items: clientStatus.map((p) {
+                                return DropdownMenuItem<String>(
+                                  value: p.clientStatusID,
+                                  child: Text(p.clientStatusName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectStatus = value;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),

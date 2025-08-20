@@ -1,60 +1,69 @@
+import 'package:wfs/models/companyaddress.dart';
+
 class Company {
-  final String companyID;
-  final String salesTerritoryID;
-  final bool isActive;
-  final DateTime createdDate;
-  final DateTime modifiedDate;
-  final String taxID;
-  final String companyName;
-  final String noted;
-  final String createdBy;
-  final String modifiedBy;
+  String? companyName;
+  String? taxID;
+  String? noted;
+  String? createdBy;
+  String? modifiedBy;
+  String? companyID;
+  String? salesTerritoryID;
+  bool? isActive;
+  String? createdDate;
+  String? modifiedDate;
+  List<CompanyAddress>? CompanyAddresses;
 
   Company({
-    required this.companyID,
-    required this.salesTerritoryID,
-    required this.isActive,
-    required this.createdDate,
-    required this.modifiedDate,
-    required this.taxID,
-    required this.companyName,
-    required this.noted,
-    required this.createdBy,
-    required this.modifiedBy,
+    this.companyName,
+    this.taxID,
+    this.noted,
+    this.createdBy,
+    this.modifiedBy,
+    this.companyID,
+    this.salesTerritoryID,
+    this.isActive,
+    this.createdDate,
+    this.modifiedDate,
+    this.CompanyAddresses,
   });
 
-  factory Company.fromJson(Map<String, dynamic> json) {
-    return Company(
-      companyID: json['CompanyID'] ?? '',
-      salesTerritoryID: json['SalesTerritoryID'] ?? '',
-      isActive: json['IsActive'] ?? false,
-      createdDate: DateTime.parse(
-        json['CreatedDate'] ?? DateTime.now().toIso8601String(),
-      ),
-      modifiedDate: DateTime.parse(
-        json['ModifiedDate'] ?? DateTime.now().toIso8601String(),
-      ),
-      taxID: json['TaxID'] ?? '',
-      companyName: json['CompanyName'] ?? '',
-      noted: json['Noted'] ?? '',
-      createdBy: json['CreatedBy'] ?? '',
-      modifiedBy: json['ModifiedBy'] ?? '',
-    );
+  Company.fromJson(Map<String, dynamic> json) {
+    companyName = json['CompanyName'];
+    taxID = json['TaxID'];
+    noted = json['Noted'];
+    createdBy = json['CreatedBy'];
+    modifiedBy = json['ModifiedBy'];
+    companyID = json['CompanyID'];
+    salesTerritoryID = json['SalesTerritoryID'];
+    isActive = json['IsActive'];
+    createdDate = json['CreatedDate'];
+    modifiedDate = json['ModifiedDate'];
+    if (json['CompanyAddresses'] != null) {
+      CompanyAddresses = <CompanyAddress>[];
+      json['CompanyAddresses'].forEach((v) {
+        CompanyAddresses!.add(new CompanyAddress.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'CompanyID': companyID,
-      'SalesTerritoryID': salesTerritoryID,
-      'IsActive': isActive,
-      'CreatedDate': createdDate.toIso8601String(),
-      'ModifiedDate': modifiedDate.toIso8601String(),
-      'TaxID': taxID,
-      'CompanyName': companyName,
-      'Noted': noted,
-      'CreatedBy': createdBy,
-      'ModifiedBy': modifiedBy,
-    };
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['CompanyName'] = this.companyName;
+    data['TaxID'] = this.taxID;
+    data['Noted'] = this.noted;
+    data['CreatedBy'] = this.createdBy;
+    data['ModifiedBy'] = this.modifiedBy;
+    data['CompanyID'] = this.companyID;
+    data['SalesTerritoryID'] = this.salesTerritoryID;
+    data['IsActive'] = this.isActive;
+    data['CreatedDate'] = this.createdDate;
+    data['ModifiedDate'] = this.modifiedDate;
+    if (this.CompanyAddresses != null) {
+      data['CompanyAddresses'] = this.CompanyAddresses!
+          .map((v) => v.toJson())
+          .toList();
+    }
+    return data;
   }
 }
 

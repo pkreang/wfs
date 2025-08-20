@@ -42,9 +42,9 @@ final filteredCompaniesProvider = Provider<AsyncValue<List<Company>>>((ref) {
 
       final filtered = companies.where((company) {
         final query = searchQuery.toLowerCase();
-        return company.companyName.toLowerCase().contains(query) ||
-            company.taxID.toLowerCase().contains(query) ||
-            company.noted.toLowerCase().contains(query);
+        return company.companyName!.toLowerCase().contains(query) ||
+            company.taxID!.toLowerCase().contains(query) ||
+            company.noted!.toLowerCase().contains(query);
       }).toList();
 
       return AsyncValue.data(filtered);
@@ -64,8 +64,8 @@ final companySectionsProvider = Provider<Map<String, List<Company>>>((ref) {
       final sections = <String, List<Company>>{};
 
       for (final company in companies) {
-        final firstLetter = company.companyName.isNotEmpty
-            ? company.companyName[0].toUpperCase()
+        final firstLetter = company.companyName!.isNotEmpty
+            ? company.companyName!.toUpperCase()
             : '#';
 
         if (!sections.containsKey(firstLetter)) {

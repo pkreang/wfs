@@ -37,28 +37,32 @@ class CompanyService {
   }
 
   Future<Company> Add(String accessToken, Company company) async {
-    String jsonString = '''
-    {
-   "CompanyName": "CompanyTesataaaa"  ,
-    "TaxID" : "123457890"    ,    
-    "SalesTerritoryID"  : "09A69122-4BE0-4201-8B53-3AEF1C24EBDC" ,   
-    "Noted"  : "xxxxxxxxxxxxxxx"  ,
-    "IsActive" : true  ,
-    "CreatedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6" ,      
-    "ModifiedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-    "CompanyAddress": [{
-        "Address":"123/4 Sukhumvit Road",
-        "CountryID":1,
-        "ProvinceID":1,
-        "DistrictID":13,
-        "SubDistrictID":2583,
-        "Latitude": null,
-        "Longitude":null,
-        "IsPrimary": true  ,
-        "IsActive": true    
-    }]
-    }
-    ''';
+    // String jsonString = '''
+    //   {
+    //   "CompanyName": "CompanyTest Tessdfast asdf9999"  ,
+    // "TaxID" : "123457890"    ,
+    // "SalesTerritoryID"  : "09A69122-4BE0-4201-8B53-3AEF1C24EBDC" ,
+    // "Noted"  : "xxxxxxxxxxxxxxx"  ,
+    // "IsActive" : true  ,
+    // "CreatedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6" ,
+    // "ModifiedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+    // "CompanyAddresses":[
+    //      {
+    //                 "Address": "123 ABC Rd.",
+    //                 "ProvinceID": 1,
+    //                 "DistrictID": 13,
+    //                 "Latitude": null,
+    //                 "IsPrimary": true,
+    //                 "CreatedBy": "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+    //                 "ModifiedBy": "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+    //                 "CountryID": 1,
+    //                 "SubDistrictID": 2583,
+    //                 "Longitude": null,
+    //                 "IsActive": true
+    //             }
+    // ]
+    //   }
+    //   ''';
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -70,7 +74,7 @@ class CompanyService {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
         },
-        body: jsonString, // json.encode(company),
+        body: json.encode(company),
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

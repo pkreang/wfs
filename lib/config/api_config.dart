@@ -49,4 +49,8 @@ class ApiConfig {
   static const String getListSubDistrictUrl =
       '$baseUrl/address/subdistrict/?IsActive=true';
   static const String addClientUrl = '$baseUrl/client/';
+  static const String getListClientLevelUrl =
+      '$baseUrl/client/level/?IsActive=true';
+  static const String getListClientStatusUrl =
+      '$baseUrl/client/status/?IsActive=true';
 }
