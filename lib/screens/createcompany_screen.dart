@@ -115,7 +115,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 AppDialogs.error(context, message: "กรุณาเลือก SubDistrict");
                 return;
               }
-
+              final authState = ref.watch(authProvider);
               Company company = Company(
                 companyName: "CompanyTest Tessdfast sdffadasdf9999",
                 taxID: "123457890",
@@ -123,9 +123,9 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 noted: "xxxxxxxxxxxxxxx",
                 isActive: true,
                 createdDate: DateTime.now().toIso8601String(),
-                modifiedDate: DateTime.now().toIso8601String(),
-                createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                modifiedDate: null,
+                createdBy: authState.userID,
+                modifiedBy: null,
                 CompanyAddresses: [
                   CompanyAddress(
                     address: "123 ABC Rd.",
@@ -143,7 +143,6 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 ],
               );
               CompanyService companyService = new CompanyService();
-              final authState = ref.watch(authProvider);
               final accessToken = authState.accessToken;
               try {
                 companyService.Add(accessToken.toString(), company);

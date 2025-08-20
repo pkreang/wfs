@@ -4,11 +4,18 @@ import 'package:intl/intl.dart';
 import 'package:wfs/main.dart';
 import 'package:wfs/models/appointmentaddresss_model.dart';
 import 'package:wfs/models/appointments_model.dart';
+import 'package:wfs/models/district_model.dart';
+import 'package:wfs/models/province_model.dart';
+import 'package:wfs/models/subdistrict_model.dart';
+import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/providers/company_provider.dart';
+import 'package:wfs/providers/district_provider.dart';
+import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/purposetype_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
+import 'package:wfs/providers/subdistrict_provider.dart';
 import 'package:wfs/services/appointment_service.dart';
 
 class CreateAppointmentScreen extends ConsumerStatefulWidget {
@@ -26,6 +33,9 @@ class _CreateAppointmentScreenState
   String? commany;
   DateTime? dateTimeFrom;
   DateTime? dateTimeTo;
+  Province? selectedProvince;
+  District? selectedDistrict;
+  Subdistrict? selectedSubdistrict;
   final TextEditingController txtAddress = TextEditingController();
   final TextEditingController txtClientName = TextEditingController();
 
@@ -94,10 +104,12 @@ class _CreateAppointmentScreenState
         actions: [
           TextButton(
             onPressed: () {
+              final authState = ref.watch(authProvider);
+              final accessToken = authState.accessToken;
               Appointments appointment = Appointments(
                 appointmentTitle: "นัดพบลูกค้า", //
                 appointmentTypeID: "7DEEC491-A5AE-4856-B981-7E91870179FF", //
-                userID: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6", //
+                userID: authState.userID, //
                 clientID: selectedItem,
                 companyID: commany,
                 appointmentDateTimeFrom: dateTimeFrom?.toIso8601String(),
@@ -117,18 +129,20 @@ class _CreateAppointmentScreenState
                   isPrimary: true,
                   isActive: true,
                 ),
-                appointmentProducts: [
-                  "0DB167F6-8AC9-4D31-A4BD-F3784F2489AD",
-                ], //
+                appointmentProducts: null,
+                // [
+                //   "0DB167F6-8AC9-4D31-A4BD-F3784F2489AD",
+                // ], //
                 isActive: true,
-                createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6", //
-                modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6", //
+                createdBy: authState.userID, //
+                modifiedBy: authState.userID,
               );
               AppointmentService appointmentService = new AppointmentService();
-              final authState = ref.watch(authProvider);
-              final accessToken = authState.accessToken;
+
               try {
                 appointmentService.Add(accessToken.toString(), appointment);
+                final newValue = ref.refresh(appointmentsProvider);
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('บันทึกข้อมูลเรียบร้อยแล้ว'),
@@ -168,8 +182,7 @@ class _CreateAppointmentScreenState
                 _buildInfoRow(
                   'Client Name',
                   clientGetByIdProviderState.when(
-                    data: (client) =>
-                        client.firstName! + ' ' + client.lastName!,
+                    data: (client) => client.firstName!,
                     loading: () => "Loading",
                     error: (err, stack) => err.toString(),
                   ),
@@ -236,7 +249,18 @@ class _CreateAppointmentScreenState
           const SizedBox(height: 30),
 
           // Section: Address
-          Container(color: Colors.white, child: _buildAddressSection()),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                _buildAddressSection(),
+                _buildTappableRowProvince("Province", ""),
+                _buildTappableRowDistrict("District", ""),
+                _buildTappableRowSubDistrict("SubDistrict", ""),
+              ],
+            ),
+          ),
+
           // Section: CONTACT
           _buildSectionHeader('CONTACT'),
           Container(
@@ -282,6 +306,203 @@ class _CreateAppointmentScreenState
       child: Text(
         title,
         style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowProvince(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final provincesProviderState = ref.watch(
+                        provincesProvider,
+                      );
+                      return provincesProviderState.when(
+                        data: (provinces) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<Province>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedProvince,
+                              items: provinces.map((p) {
+                                return DropdownMenuItem<Province>(
+                                  value: p,
+                                  child: Text(p.provinceName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedProvince = value;
+                                  selectedDistrict = null;
+                                  selectedSubdistrict = null;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowDistrict(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final districtGetListState = ref.watch(
+                        districtsProvider(
+                          selectedProvince == null
+                              ? ""
+                              : selectedProvince!.provinceID.toString(),
+                        ),
+                      );
+                      return districtGetListState.when(
+                        data: (district) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<District>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedDistrict,
+                              items: district.map((p) {
+                                return DropdownMenuItem<District>(
+                                  value: p,
+                                  child: Text(p.districtName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedDistrict = value;
+                                  selectedSubdistrict = null;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowSubDistrict(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final districtGetListState = ref.watch(
+                        subdistrictsProvider(
+                          selectedDistrict == null
+                              ? ""
+                              : selectedDistrict!.districtID.toString(),
+                        ),
+                      );
+                      return districtGetListState.when(
+                        data: (district) {
+                          return SizedBox(
+                            width: 295,
+                            child: DropdownButton<Subdistrict>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedSubdistrict,
+                              items: district.map((p) {
+                                return DropdownMenuItem<Subdistrict>(
+                                  value: p,
+                                  child: Text(p.subDistrictName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedSubdistrict = value;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
       ),
     );
   }
@@ -460,54 +681,26 @@ class _CreateAppointmentScreenState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.only(left: 16.0, top: 12.0),
-          child: Text(
-            'Address',
-            style: TextStyle(fontSize: 16, color: Colors.blue),
-          ),
+          padding: EdgeInsets.only(left: 16.0, top: 12),
+          child: Text('Address', style: TextStyle(fontSize: 16)),
         ),
-        Expanded(
-          child: Column(
-            children: [
-              _buildAddressTextField('2118 Thornridge'),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              _buildAddressTextField('Street'),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              _buildAddressTextField('Cir. Syracuse'),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              Row(
-                children: [
-                  Expanded(child: _buildAddressTextField('Connecticut')),
-                  Container(
-                    width: 0.5,
-                    height: 44,
-                    color: Colors.grey.shade300,
-                  ),
-                  SizedBox(width: 100, child: _buildAddressTextField('35624')),
-                ],
-              ),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              _buildAddressTextField('USA'),
-            ],
-          ),
-        ),
+        Expanded(child: Column(children: [_buildAddressTextField('')])),
       ],
     );
   }
 
   // TextField สำหรับกรอกที่อยู่
   Widget _buildAddressTextField(String hint) {
-    return SizedBox(
-      height: 44,
-      child: TextField(
-        controller: txtAddress,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade400),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+    return Padding(
+      padding: EdgeInsets.only(left: 16.0),
+      child: SizedBox(
+        height: 44,
+        child: TextField(
+          controller: txtAddress,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.grey.shade400),
+            border: InputBorder.none,
           ),
         ),
       ),

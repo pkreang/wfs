@@ -229,7 +229,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    email = "systemadmin@mail.com";
+    // email = "systemadmin@mail.com";
+    // password = "abcd1234";
+
+    email = "john@mail.com";
     password = "abcd1234";
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

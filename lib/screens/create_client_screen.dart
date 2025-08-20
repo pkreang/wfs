@@ -4,13 +4,19 @@ import 'package:wfs/models/client_model.dart';
 import 'package:wfs/models/clientaddresses.dart';
 import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/company_model.dart';
+import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/product_model.dart';
+import 'package:wfs/models/province_model.dart';
+import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/clientlevel_provider.dart';
 import 'package:wfs/providers/clientstatus_provider.dart';
 import 'package:wfs/providers/company_provider.dart';
+import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/product_provider.dart';
+import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
+import 'package:wfs/providers/subdistrict_provider.dart';
 import 'package:wfs/services/client_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -38,6 +44,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   String? selectClientLevel;
   DateTime? dateTimeFrom;
   DateTime? dateTimeTo;
+  Province? selectedProvince;
+  District? selectedDistrict;
+  Subdistrict? selectedSubdistrict;
   final TextEditingController txtAddress = TextEditingController();
   final TextEditingController txtClientName = TextEditingController();
   final TextEditingController txtPhone = TextEditingController();
@@ -211,13 +220,13 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 return;
               }
 
-              error = Validator.required(selectedPurpose);
+              error = Validator.required(selectClientStatus);
               if (error != null) {
                 AppDialogs.error(context, message: "กรุณาเลือก Status");
                 return;
               }
 
-              error = Validator.required(product);
+              error = Validator.required(selectClientLevel);
               if (error != null) {
                 AppDialogs.error(context, message: "กรุณาเลือก Level");
                 return;
@@ -232,6 +241,21 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               error = Validator.required(txtAddress.text);
               if (error != null) {
                 AppDialogs.error(context, message: error + " Address");
+                return;
+              }
+
+              if (selectedProvince == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Province");
+                return;
+              }
+
+              if (selectedDistrict == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก District");
+                return;
+              }
+
+              if (selectedSubdistrict == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก SubDistrict");
                 return;
               }
 
@@ -256,7 +280,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 AppDialogs.error(context, message: "กรุณาเลือก add product");
                 return;
               }
-
+              final authState = ref.watch(authProvider);
               Client client = Client(
                 firstName: txtClientName.text,
                 lastName: "TestLastName",
@@ -270,8 +294,8 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 availableTimeStart: "09:00",
                 availableTimeEnd: "16:00",
                 isActive: true,
-                createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                createdBy: authState.userID,
+                modifiedBy: null,
                 clientAddresses: [
                   ClientAddresses(
                     address: "123/4 Sukhumvit Road",
@@ -286,8 +310,8 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   ),
                 ],
                 clientID: "",
-                createdDate: "2025-08-17T09:15:41.557000",
-                modifiedDate: "2025-08-17T09:15:41.557000",
+                createdDate: DateTime.now().toIso8601String(),
+                modifiedDate: null,
                 clientProducts: selectedProduct
                     .map((f) => f.productID!)
                     .toList(),
@@ -306,7 +330,6 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     .toList(),
               );
               ClientService clientService = new ClientService();
-              final authState = ref.watch(authProvider);
               final accessToken = authState.accessToken;
               try {
                 clientService.Add(accessToken.toString(), client);
@@ -348,8 +371,16 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
           const SizedBox(height: 30),
           Container(
             color: Colors.white,
-            child: Column(children: [_buildInfoRowAddress('Address', '')]),
+            child: Column(
+              children: [
+                _buildInfoRowAddress('Address', ''),
+                _buildTappableRowProvince("Province", ""),
+                _buildTappableRowDistrict("District", ""),
+                _buildTappableRowSubDistrict("SubDistrict", ""),
+              ],
+            ),
           ),
+
           Container(
             color: Colors.white,
             child: Column(children: [_buildInfoRowPhone('Phone', '')]),
@@ -467,6 +498,203 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
+  Widget _buildTappableRowProvince(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final provincesProviderState = ref.watch(
+                        provincesProvider,
+                      );
+                      return provincesProviderState.when(
+                        data: (provinces) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<Province>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedProvince,
+                              items: provinces.map((p) {
+                                return DropdownMenuItem<Province>(
+                                  value: p,
+                                  child: Text(p.provinceName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedProvince = value;
+                                  selectedDistrict = null;
+                                  selectedSubdistrict = null;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowDistrict(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final districtGetListState = ref.watch(
+                        districtsProvider(
+                          selectedProvince == null
+                              ? ""
+                              : selectedProvince!.provinceID.toString(),
+                        ),
+                      );
+                      return districtGetListState.when(
+                        data: (district) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<District>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedDistrict,
+                              items: district.map((p) {
+                                return DropdownMenuItem<District>(
+                                  value: p,
+                                  child: Text(p.districtName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedDistrict = value;
+                                  selectedSubdistrict = null;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableRowSubDistrict(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final districtGetListState = ref.watch(
+                        subdistrictsProvider(
+                          selectedDistrict == null
+                              ? ""
+                              : selectedDistrict!.districtID.toString(),
+                        ),
+                      );
+                      return districtGetListState.when(
+                        data: (district) {
+                          return SizedBox(
+                            width: 295,
+                            child: DropdownButton<Subdistrict>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: selectedSubdistrict,
+                              items: district.map((p) {
+                                return DropdownMenuItem<Subdistrict>(
+                                  value: p,
+                                  child: Text(p.subDistrictName.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedSubdistrict = value;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Widget สำหรับแถวข้อมูลธรรมดา (Label: Value)
   Widget _buildInfoRowClient(String label, String value) {
     return Padding(
@@ -499,12 +727,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
   Widget _buildInfoRowPhone(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        top: 16,
-        bottom: 16,
-        right: 16,
-      ),
+      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
       child: Column(
         children: [
           Row(
@@ -528,12 +751,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
   Widget _buildInfoRowEmail(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        top: 16,
-        bottom: 16,
-        right: 16,
-      ),
+      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
       child: Column(
         children: [
           Row(

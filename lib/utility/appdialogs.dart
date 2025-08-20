@@ -8,7 +8,7 @@ class AppDialogs {
       dialogType: DialogType.noHeader,
       customHeader: Icon(Icons.check_circle, color: Colors.green, size: 50),
       animType: AnimType.bottomSlide,
-      title: 'สำเร็จ ✅',
+      title: 'สำเร็จ',
       desc: message ?? 'บันทึกข้อมูลเรียบร้อยแล้ว',
       btnOkOnPress: () {},
     ).show();
@@ -32,7 +32,7 @@ class AppDialogs {
       dialogType: DialogType.noHeader,
       customHeader: Icon(Icons.cancel, color: Colors.green, size: 50),
       animType: AnimType.leftSlide,
-      title: 'กรอกข้อมูลไม่ครบ ❌',
+      title: 'กรอกข้อมูลไม่ครบ',
       desc: message ?? 'ไม่สามารถบันทึกข้อมูลได้',
       btnOkOnPress: () {},
     ).show();

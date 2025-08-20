@@ -89,11 +89,11 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
     // Watch provider ที่เก็บข้อมูลบริษัททั้งหมดจาก API เพื่อนำจำนวนมาแสดง
     // **หมายเหตุ**: โค้ดนี้สันนิษฐานว่า provider ของคุณชื่อ `companyProvider`
     // หากใช้ชื่ออื่น กรุณาแก้ไขตามความเหมาะสม
-    final allCompaniesAsync = ref.watch(clientProvider);
+    final allClientAsync = ref.watch(clientProvider);
 
     // สร้างข้อความจำนวนจากสถานะของ AsyncValue
-    final countText = allCompaniesAsync.when(
-      data: (companies) => '${companies.length} Entry',
+    final countText = allClientAsync.when(
+      data: (clients) => '${clients.length} Entry',
       loading: () => 'Loading...',
       error: (err, stack) => 'Error',
     );
