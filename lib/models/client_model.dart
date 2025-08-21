@@ -1,4 +1,4 @@
-import 'package:wfs/models/clientaddresses.dart';
+import 'package:wfs/models/clientaddresses_model.dart';
 import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/clientlevel_model.dart';
 import 'package:wfs/models/clientstatus_model.dart';
@@ -93,6 +93,12 @@ class Client {
         company!.add(new Company.fromJson(v));
       });
     }
+    if (json['addresses'] != null) {
+      clientAddresses = <ClientAddresses>[];
+      json['addresses'].forEach((v) {
+        clientAddresses!.add(new ClientAddresses.fromJson(v));
+      });
+    }
     if (json['ClientAddresses'] != null) {
       clientAddresses = <ClientAddresses>[];
       json['ClientAddresses'].forEach((v) {
@@ -142,10 +148,14 @@ class Client {
       data['company'] = this.company!.map((v) => v.toJson()).toList();
     }
     if (this.clientAddresses != null) {
+      data['addresses'] = this.clientAddresses!.map((v) => v.toJson()).toList();
+    }
+    if (this.clientAddresses != null) {
       data['ClientAddresses'] = this.clientAddresses!
           .map((v) => v.toJson())
           .toList();
     }
+
     if (this.clientProducts != null) {
       data['ClientProducts'] = this.clientProducts;
     }

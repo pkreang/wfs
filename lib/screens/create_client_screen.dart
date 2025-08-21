@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/models/client_model.dart';
-import 'package:wfs/models/clientaddresses.dart';
+import 'package:wfs/models/clientaddresses_model.dart';
 import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/district_model.dart';
@@ -9,6 +9,7 @@ import 'package:wfs/models/product_model.dart';
 import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
+import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/providers/clientlevel_provider.dart';
 import 'package:wfs/providers/clientstatus_provider.dart';
 import 'package:wfs/providers/company_provider.dart';
@@ -17,6 +18,7 @@ import 'package:wfs/providers/product_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
+import 'package:wfs/screens/clientscreen_screen.dart';
 import 'package:wfs/services/client_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -51,6 +53,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   final TextEditingController txtClientName = TextEditingController();
   final TextEditingController txtPhone = TextEditingController();
   final TextEditingController txtEmail = TextEditingController();
+  final TextEditingController txtPostcode = TextEditingController();
+  final TextEditingController txtLastName = TextEditingController();
+
   List<Product> selectedProduct = [];
   List<Company> selectedCompany = [];
   void _showPopupCompany(AsyncValue<List<Company>> companyGetList) async {
@@ -220,6 +225,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 return;
               }
 
+              error = Validator.required(txtLastName.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + "Last Name");
+                return;
+              }
+
               error = Validator.required(selectClientStatus);
               if (error != null) {
                 AppDialogs.error(context, message: "กรุณาเลือก Status");
@@ -281,9 +292,10 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 return;
               }
               final authState = ref.watch(authProvider);
+
               Client client = Client(
                 firstName: txtClientName.text,
-                lastName: "TestLastName",
+                lastName: txtLastName.text,
                 address: "123 Bangkok",
                 phone: txtPhone.text,
                 email: txtEmail.text,
@@ -295,7 +307,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 availableTimeEnd: "16:00",
                 isActive: true,
                 createdBy: authState.userID,
-                modifiedBy: null,
+                modifiedBy: authState.userID,
                 clientAddresses: [
                   ClientAddresses(
                     address: "123/4 Sukhumvit Road",
@@ -311,7 +323,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 ],
                 clientID: "",
                 createdDate: DateTime.now().toIso8601String(),
-                modifiedDate: null,
+                modifiedDate: DateTime.now().toIso8601String(),
                 clientProducts: selectedProduct
                     .map((f) => f.productID!)
                     .toList(),
@@ -333,7 +345,20 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               final accessToken = authState.accessToken;
               try {
                 clientService.Add(accessToken.toString(), client);
+                // ignore: unused_result
+                ref.refresh(clientCompaniesProvider);
+                // ignore: unused_result
+                ref.refresh(clientProvider);
+                // ignore: unused_result
+                ref.refresh(clientSectionsProvider);
+
                 AppDialogs.success(context);
+                Future.delayed(const Duration(seconds: 3), () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ClientScreen()),
+                  );
+                });
               } catch (ex) {
                 AppDialogs.error(context, message: ex.toString());
               }
@@ -354,7 +379,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
           _buildSectionHeader('CLIENT INFO'),
           Container(
             color: Colors.white,
-            child: Column(children: [_buildInfoRowClient('Client Name', '')]),
+            child: Column(
+              children: [
+                _buildInfoRowClient('Client Name', ''),
+                _buildInfoRowLastName('Last Name', ''),
+              ],
+            ),
           ),
           const SizedBox(height: 30),
           Container(
@@ -377,6 +407,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 _buildTappableRowProvince("Province", ""),
                 _buildTappableRowDistrict("District", ""),
                 _buildTappableRowSubDistrict("SubDistrict", ""),
+                _buildInfoRowPostcode('Post Code', ''),
               ],
             ),
           ),
@@ -541,6 +572,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                                   selectedProvince = value;
                                   selectedDistrict = null;
                                   selectedSubdistrict = null;
+                                  txtPostcode.text = "";
                                 });
                               },
                             ),
@@ -608,6 +640,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                                 setState(() {
                                   selectedDistrict = value;
                                   selectedSubdistrict = null;
+                                  txtPostcode.text = "";
                                 });
                               },
                             ),
@@ -674,6 +707,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                               onChanged: (value) {
                                 setState(() {
                                   selectedSubdistrict = value;
+                                  txtPostcode.text = value?.postCode ?? "";
                                 });
                               },
                             ),
@@ -714,6 +748,35 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 width: 280,
                 child: TextField(
                   controller: txtClientName,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 1, indent: 0, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRowLastName(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: 16.0,
+        top: 16,
+        bottom: 16,
+        right: 16,
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(label, style: const TextStyle(fontSize: 16)),
+              const Spacer(),
+              SizedBox(
+                width: 280,
+                child: TextField(
+                  controller: txtLastName,
                   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                 ),
               ),
@@ -791,6 +854,30 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 width: 300,
                 child: TextField(
                   controller: txtAddress,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 1, indent: 0, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRowPostcode(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(label, style: const TextStyle(fontSize: 16)),
+              const Spacer(),
+              SizedBox(
+                width: 300,
+                child: TextField(
+                  controller: txtPostcode,
                   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                 ),
               ),

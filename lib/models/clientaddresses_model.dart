@@ -8,7 +8,6 @@ class ClientAddresses {
   int? longitude;
   bool? isPrimary;
   bool? isActive;
-
   ClientAddresses({
     this.address,
     this.countryID,

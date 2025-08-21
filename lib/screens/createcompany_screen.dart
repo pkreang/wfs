@@ -8,10 +8,12 @@ import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/clientstatus_provider.dart';
+import 'package:wfs/providers/company_provider.dart';
 import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
+import 'package:wfs/screens/company_screen.dart';
 import 'package:wfs/services/company_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -45,6 +47,9 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
   final TextEditingController txtClientName = TextEditingController();
   final TextEditingController txtPhone = TextEditingController();
   final TextEditingController txtEmail = TextEditingController();
+  final TextEditingController txtCompanyName = TextEditingController();
+  final TextEditingController txtTaxID = TextEditingController();
+
   List<Product> selectedProduct = [];
   List<Company> selectedCompany = [];
 
@@ -77,9 +82,15 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
           TextButton(
             onPressed: () {
               String? error;
-              error = Validator.required(txtClientName.text);
+              error = Validator.required(txtCompanyName.text);
               if (error != null) {
-                AppDialogs.error(context, message: error + " Client Name");
+                AppDialogs.error(context, message: error + " Company Name");
+                return;
+              }
+
+              error = Validator.required(txtTaxID.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Tax ID");
                 return;
               }
 
@@ -117,15 +128,15 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
               }
               final authState = ref.watch(authProvider);
               Company company = Company(
-                companyName: "CompanyTest Tessdfast sdffadasdf9999",
-                taxID: "123457890",
+                companyName: txtCompanyName.text,
+                taxID: txtTaxID.text,
                 salesTerritoryID: "09A69122-4BE0-4201-8B53-3AEF1C24EBDC",
                 noted: "xxxxxxxxxxxxxxx",
                 isActive: true,
                 createdDate: DateTime.now().toIso8601String(),
-                modifiedDate: null,
+                modifiedDate: DateTime.now().toIso8601String(),
                 createdBy: authState.userID,
-                modifiedBy: null,
+                modifiedBy: authState.userID,
                 CompanyAddresses: [
                   CompanyAddress(
                     address: "123 ABC Rd.",
@@ -146,9 +157,22 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
               final accessToken = authState.accessToken;
               try {
                 companyService.Add(accessToken.toString(), company);
+                // ignore: unused_result
+                ref.refresh(filteredCompaniesProvider);
+                // ignore: unused_result
+                ref.refresh(companiesProvider);
+                // ignore: unused_result
+                ref.refresh(companySectionsProvider);
+
                 AppDialogs.success(context);
+                Future.delayed(const Duration(seconds: 3), () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CompanyScreen()),
+                  );
+                });
               } catch (ex) {
-                AppDialogs.error(context);
+                AppDialogs.error(context, message: ex.toString());
               }
             },
             child: const Text(
@@ -167,7 +191,12 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
           _buildSectionHeader('CLIENT INFO'),
           Container(
             color: Colors.white,
-            child: Column(children: [_buildInfoRowClient('Company Name', '')]),
+            child: Column(
+              children: [
+                _buildInfoRowClientCompany('Company Name', ''),
+                _buildInfoRowClientTaxID('Tax ID', ''),
+              ],
+            ),
           ),
           const SizedBox(height: 30),
           Container(
@@ -256,7 +285,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
   }
 
   // Widget สำหรับแถวข้อมูลธรรมดา (Label: Value)
-  Widget _buildInfoRowClient(String label, String value) {
+  Widget _buildInfoRowClientCompany(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(
         left: 16.0,
@@ -273,7 +302,31 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
               SizedBox(
                 width: 250,
                 child: TextField(
-                  controller: txtClientName,
+                  controller: txtCompanyName,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 1, indent: 0, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRowClientTaxID(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(label, style: const TextStyle(fontSize: 16)),
+              const Spacer(),
+              SizedBox(
+                width: 250,
+                child: TextField(
+                  controller: txtTaxID,
                   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                 ),
               ),

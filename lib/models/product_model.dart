@@ -26,6 +26,9 @@ class Product {
   });
 
   Product.fromJson(Map<String, dynamic> json) {
+    if (json.length == 5) {
+      json = json["Product"];
+    }
     productID = json['ProductID'];
     productName = json['ProductName'];
     productDescription = json['ProductDescription'];

@@ -302,7 +302,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
                           child: Icon(
-                            Icons.location_on,
+                            Icons.phone,
                             color: Colors.grey.shade600,
                             size: 20,
                           ),
@@ -310,7 +310,56 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            client.firstName.toString(),
+                            client.phone.toString(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2.0),
+                          child: Icon(
+                            Icons.location_on,
+                            color: Colors.grey.shade600,
+                            size: 20,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            client.clientAddresses?.isNotEmpty == true
+                                ? client.clientAddresses!.first.address ??
+                                      "ไม่มีที่อยู่"
+                                : "ไม่มีที่อยู่",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2.0),
+                          child: Icon(
+                            Icons.production_quantity_limits,
+                            color: Colors.grey.shade600,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            client.products?.isNotEmpty == true
+                                ? client.products!.first.productName ??
+                                      "ไม่มีสินค้า"
+                                : "ไม่มีสินค้า",
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey.shade600,

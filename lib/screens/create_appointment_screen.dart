@@ -5,18 +5,24 @@ import 'package:wfs/main.dart';
 import 'package:wfs/models/appointmentaddresss_model.dart';
 import 'package:wfs/models/appointments_model.dart';
 import 'package:wfs/models/district_model.dart';
+import 'package:wfs/models/product_model.dart';
 import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/providers/appointment_provider.dart';
+import 'package:wfs/providers/appointmentstatus_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/providers/company_provider.dart';
 import 'package:wfs/providers/district_provider.dart';
+import 'package:wfs/providers/product_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/purposetype_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
+import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/services/appointment_service.dart';
+import 'package:wfs/utility/appdialogs.dart';
+import 'package:wfs/utility/validator.dart';
 
 class CreateAppointmentScreen extends ConsumerStatefulWidget {
   const CreateAppointmentScreen({super.key});
@@ -30,7 +36,8 @@ class _CreateAppointmentScreenState
     extends ConsumerState<CreateAppointmentScreen> {
   String? selectedPurpose;
   String? salesTerritory;
-  String? commany;
+  String? appointmentStatus;
+  String? company;
   DateTime? dateTimeFrom;
   DateTime? dateTimeTo;
   Province? selectedProvince;
@@ -38,7 +45,9 @@ class _CreateAppointmentScreenState
   Subdistrict? selectedSubdistrict;
   final TextEditingController txtAddress = TextEditingController();
   final TextEditingController txtClientName = TextEditingController();
+  final TextEditingController txtNote = TextEditingController();
 
+  List<Product> selectedProduct = [];
   Future<void> _pickDateTime(bool isFrom) async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -47,9 +56,20 @@ class _CreateAppointmentScreenState
       lastDate: DateTime(2100),
     );
     if (pickedDate != null) {
-      TimeOfDay? pickedTime = await showTimePicker(
+      // TimeOfDay? pickedTime = await showTimePicker(
+      //   context: context,
+      //   initialTime: const TimeOfDay(hour: 9, minute: 0),
+      //   initialEntryMode: TimePickerEntryMode.input,
+      // );
+      final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
-        initialTime: const TimeOfDay(hour: 9, minute: 0),
+        initialTime: TimeOfDay.now(),
+        builder: (BuildContext context, Widget? child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+            child: child!,
+          );
+        },
       );
       if (pickedTime != null) {
         DateTime fullDateTime = DateTime(
@@ -70,12 +90,109 @@ class _CreateAppointmentScreenState
     }
   }
 
+  void _showPopupProduct(AsyncValue<List<Product>> productGetList) async {
+    final result = await showDialog<List<Product>>(
+      context: context,
+      builder: (context) {
+        List<Product> tempSelected = List.from(selectedProduct);
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text("เลือก Product"),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return SizedBox(
+                width: double.maxFinite,
+                height: 250,
+                child: productGetList.when(
+                  data: (Products) => ListView.builder(
+                    itemCount: Products.length,
+                    itemBuilder: (context, index) {
+                      final Product = Products[index];
+                      final isSelected = tempSelected.contains(Product);
+
+                      return CheckboxListTile(
+                        title: Text(Product.productName.toString()),
+                        value: isSelected,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            if (value == true) {
+                              tempSelected.add(Product);
+                            } else {
+                              tempSelected.remove(Product);
+                            }
+                          });
+                        },
+                      );
+                    },
+                  ),
+                  loading: () => Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(child: Text("Error: $e")),
+                ),
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("ยกเลิก"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, tempSelected),
+              child: Text("ตกลง"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        selectedProduct = result;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ProductGetListState = ref.watch(ProductGetList);
     final selectedItem = ref.watch(selectedItemProvider);
     final clientGetByIdProviderState = ref.watch(
       clientGetByIdProvider(selectedItem.toString()),
     );
+    String? clientName = clientGetByIdProviderState.when(
+      data: (client) => client.firstName!,
+      loading: () => "Loading",
+      error: (err, stack) => err.toString(),
+    );
+    String? phone = clientGetByIdProviderState.when(
+      data: (client) => client.phone!,
+      loading: () => "Loading",
+      error: (err, stack) => err.toString(),
+    );
+
+    String? email = clientGetByIdProviderState.when(
+      data: (client) => client.email!,
+      loading: () => "Loading",
+      error: (err, stack) => err.toString(),
+    );
+    // clientGetByIdProviderState.when(
+    //   data: (value) {
+    //     if (txtAddress.text.isEmpty) {
+    //       txtAddress.text = value.address ?? "";
+    //     }
+    //     if (selectedProvince == null) {
+    //       selectedProvince = value.;
+    //     }
+    //     // District? selectedDistrict;
+    //     // Subdistrict? selectedSubdistrict;
+    //   },
+    //   loading: () {},
+    //   error: (err, stack) {},
+    // );
+
     //String? selectedProvinceId;
     return Scaffold(
       // ใช้สีพื้นหลังที่ใกล้เคียงกับ iOS Form
@@ -104,6 +221,96 @@ class _CreateAppointmentScreenState
         actions: [
           TextButton(
             onPressed: () {
+              String? error;
+              error = Validator.required(clientName);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Client Name");
+                return;
+              }
+
+              error = Validator.required(selectedPurpose);
+              if (error != null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Purpose");
+                return;
+              }
+
+              error = Validator.required(selectedPurpose);
+              if (error != null) {
+                AppDialogs.error(context, message: error + "Purpose");
+                return;
+              }
+
+              error = Validator.required(salesTerritory);
+              if (error != null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Territory");
+                return;
+              }
+
+              error = Validator.required(appointmentStatus);
+              if (error != null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Status");
+                return;
+              }
+
+              if (dateTimeFrom == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Starts");
+                return;
+              }
+
+              if (dateTimeTo == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Ends");
+                return;
+              }
+
+              error = Validator.required(txtNote.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Note");
+                return;
+              }
+
+              error = Validator.required(txtAddress.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Address");
+                return;
+              }
+
+              if (selectedProvince == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Province");
+                return;
+              }
+
+              if (selectedDistrict == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก District");
+                return;
+              }
+
+              if (selectedSubdistrict == null) {
+                AppDialogs.error(context, message: "กรุณาเลือก SubDistrict");
+                return;
+              }
+
+              error = Validator.required(phone);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Mobile");
+                return;
+              }
+
+              error = Validator.required(email);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " Email");
+                return;
+              }
+
+              error = Validator.required(company);
+              if (error != null) {
+                AppDialogs.error(context, message: "กรุณาเลือก Company");
+                return;
+              }
+
+              if (selectedProduct.length == 0) {
+                AppDialogs.error(context, message: "กรุณาเลือก Product");
+                return;
+              }
               final authState = ref.watch(authProvider);
               final accessToken = authState.accessToken;
               Appointments appointment = Appointments(
@@ -111,12 +318,12 @@ class _CreateAppointmentScreenState
                 appointmentTypeID: "7DEEC491-A5AE-4856-B981-7E91870179FF", //
                 userID: authState.userID, //
                 clientID: selectedItem,
-                companyID: commany,
+                companyID: company,
                 appointmentDateTimeFrom: dateTimeFrom?.toIso8601String(),
                 appointmentDateTimeTo: dateTimeTo?.toIso8601String(),
-                appointmentStatusID: "4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B", //
+                appointmentStatusID: appointmentStatus, //
                 purposeTypeID: selectedPurpose,
-                noted: null, //
+                noted: txtNote.text, //
                 assignedBy: null, //
                 appointmentAddress: AppointmentAddresss(
                   address: txtAddress.text,
@@ -129,7 +336,9 @@ class _CreateAppointmentScreenState
                   isPrimary: true,
                   isActive: true,
                 ),
-                appointmentProducts: null,
+                appointmentProducts: selectedProduct
+                    .map((p) => p.productID!)
+                    .toList(),
                 // [
                 //   "0DB167F6-8AC9-4D31-A4BD-F3784F2489AD",
                 // ], //
@@ -141,23 +350,17 @@ class _CreateAppointmentScreenState
 
               try {
                 appointmentService.Add(accessToken.toString(), appointment);
-                final newValue = ref.refresh(appointmentsProvider);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('บันทึกข้อมูลเรียบร้อยแล้ว'),
-                    duration: Duration(seconds: 3),
-                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
-                  ),
-                );
+                // ignore: unused_result
+                ref.refresh(appointmentsProvider);
+                AppDialogs.success(context);
+                Future.delayed(const Duration(seconds: 3), () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DashboardScreen()),
+                  );
+                });
               } catch (ex) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(ex.toString()),
-                    duration: Duration(seconds: 3),
-                    // action: SnackBarAction(label: 'ปิด', onPressed: () {}),
-                  ),
-                );
+                AppDialogs.error(context, message: ex.toString());
               }
             },
             child: const Text(
@@ -179,20 +382,14 @@ class _CreateAppointmentScreenState
             color: Colors.white,
             child: Column(
               children: [
-                _buildInfoRow(
-                  'Client Name',
-                  clientGetByIdProviderState.when(
-                    data: (client) => client.firstName!,
-                    loading: () => "Loading",
-                    error: (err, stack) => err.toString(),
-                  ),
-                ),
+                _buildInfoRow('Client Name', clientName ?? ""),
                 _buildTappableRowPurpose('Purpose', 'Initial Visit'),
                 _buildTappableRowTerritory(
                   'Territory',
                   'North East US',
                   showDivider: false,
                 ),
+                _buildTappableRowStatus('Status', '', showDivider: false),
               ],
             ),
           ),
@@ -215,7 +412,7 @@ class _CreateAppointmentScreenState
                       ),
                       _buildDateTimeChip(
                         DateFormat(
-                          'h;mm a',
+                          'HH:mm',
                         ).format(dateTimeFrom ?? DateTime.now()),
                       ),
                     ],
@@ -226,7 +423,7 @@ class _CreateAppointmentScreenState
                 ListTile(
                   title: Row(
                     children: [
-                      Text("Starts", style: const TextStyle(fontSize: 16)),
+                      Text("Ends", style: const TextStyle(fontSize: 16)),
                       const Spacer(),
                       _buildDateTimeChip(
                         DateFormat(
@@ -235,7 +432,7 @@ class _CreateAppointmentScreenState
                       ),
                       _buildDateTimeChip(
                         DateFormat(
-                          'h:mm a',
+                          'HH:mm',
                         ).format(dateTimeTo ?? DateTime.now()),
                       ),
                     ],
@@ -253,6 +450,7 @@ class _CreateAppointmentScreenState
             color: Colors.white,
             child: Column(
               children: [
+                _buildNote(),
                 _buildAddressSection(),
                 _buildTappableRowProvince("Province", ""),
                 _buildTappableRowDistrict("District", ""),
@@ -267,22 +465,8 @@ class _CreateAppointmentScreenState
             color: Colors.white,
             child: Column(
               children: [
-                _buildContactRow(
-                  'Mobile',
-                  clientGetByIdProviderState.when(
-                    data: (client) => client.phone!,
-                    loading: () => "Loading",
-                    error: (err, stack) => err.toString(),
-                  ),
-                ),
-                _buildContactRow(
-                  'Email',
-                  clientGetByIdProviderState.when(
-                    data: (client) => client.email!,
-                    loading: () => "Loading",
-                    error: (err, stack) => err.toString(),
-                  ),
-                ),
+                _buildContactRowMobile('Mobile', phone ?? ""),
+                _buildContactRow('Email', email ?? ""),
                 _buildContactRowCompany(
                   'Company',
                   'Happy Happy',
@@ -292,12 +476,91 @@ class _CreateAppointmentScreenState
             ),
           ),
           const SizedBox(height: 30),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                _buildTappableRowProduct(
+                  'Add Product',
+                  '',
+                  ProductGetListState,
+                ),
+                SizedBox(height: 20),
+                Center(
+                  child: selectedProduct.length > 0
+                      ? Text(
+                          "Product ที่เลือก:",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        )
+                      : Text(""),
+                ),
+                SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: selectedProduct
+                      .map(
+                        (e) => Chip(
+                          label: Text(e.productName.toString()),
+                          deleteIcon: Icon(Icons.close),
+                          onDeleted: () {
+                            setState(() {
+                              selectedProduct.remove(e);
+                            });
+                          },
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
   // --- Helper Widgets for building UI sections ---
+  Widget _buildTappableRowProduct(
+    String label,
+    String value,
+    AsyncValue<List<Product>> productGetList, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {},
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, bottom: 16, top: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      _showPopupProduct(productGetList);
+                    },
+                    icon: Icon(Icons.add),
+                    iconSize: 20,
+                    color: Colors.white,
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
+                      shape: MaterialStateProperty.all(CircleBorder()),
+                    ),
+                  ),
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
 
   // Widget สำหรับหัวข้อของแต่ละ Section (เช่น CLIENT INFO)
   Widget _buildSectionHeader(String title) {
@@ -595,6 +858,71 @@ class _CreateAppointmentScreenState
     );
   }
 
+  Widget _buildTappableRowStatus(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement navigation or show picker for this row
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 44, // ความสูงมาตรฐานของ iOS list item
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const Spacer(),
+
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final appointmentStatusGetListState = ref.watch(
+                        appointmentStatusGetList,
+                      );
+                      return appointmentStatusGetListState.when(
+                        data: (statuss) {
+                          return SizedBox(
+                            width: 300,
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              hint: const Text('เลือก'),
+                              value: appointmentStatus,
+                              items: statuss.map((p) {
+                                return DropdownMenuItem<String>(
+                                  value: p.appointmentStatusID,
+                                  child: Text(
+                                    p.appointmentStatusName.toString(),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  appointmentStatus = value;
+                                });
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (err, _) => Text('Error: $err'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (showDivider)
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Widget สำหรับแถวที่กดได้ (มีลูกศร >)
   Widget _buildTappableRowPurpose(
     String label,
@@ -689,10 +1017,23 @@ class _CreateAppointmentScreenState
     );
   }
 
+  Widget _buildNote() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 16.0, top: 12),
+          child: Text('Note', style: TextStyle(fontSize: 16)),
+        ),
+        Expanded(child: Column(children: [_buildNoteTextField('')])),
+      ],
+    );
+  }
+
   // TextField สำหรับกรอกที่อยู่
   Widget _buildAddressTextField(String hint) {
     return Padding(
-      padding: EdgeInsets.only(left: 16.0),
+      padding: EdgeInsets.only(left: 16.0, right: 16),
       child: SizedBox(
         height: 44,
         child: TextField(
@@ -700,7 +1041,24 @@ class _CreateAppointmentScreenState
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: Colors.grey.shade400),
-            border: InputBorder.none,
+            //border: InputBorder.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoteTextField(String hint) {
+    return Padding(
+      padding: EdgeInsets.only(left: 16.0, right: 16),
+      child: SizedBox(
+        height: 44,
+        child: TextField(
+          controller: txtNote,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.grey.shade400),
+            //border: InputBorder.none,
           ),
         ),
       ),
@@ -714,7 +1072,7 @@ class _CreateAppointmentScreenState
     bool showDivider = true,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0),
+      padding: const EdgeInsets.only(left: 16.0, right: 16),
       child: Column(
         children: [
           SizedBox(
@@ -727,11 +1085,33 @@ class _CreateAppointmentScreenState
                   value,
                   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                 ),
-                IconButton(
-                  onPressed: () {
-                    // TODO: Implement remove contact logic
-                  },
-                  icon: Icon(Icons.cancel, color: Colors.grey.shade400),
+              ],
+            ),
+          ),
+          if (showDivider) const Divider(height: 1, indent: 0, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactRowMobile(
+    String label,
+    String value, {
+    bool showDivider = true,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0, right: 16),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 44,
+            child: Row(
+              children: [
+                Text(label, style: const TextStyle(fontSize: 16)),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                 ),
               ],
             ),
@@ -763,14 +1143,14 @@ class _CreateAppointmentScreenState
                       companyGetListProvider,
                     );
                     return companyGetListProviderState.when(
-                      data: (company) {
+                      data: (companys) {
                         return SizedBox(
                           width: 300,
                           child: DropdownButton<String>(
                             isExpanded: true,
                             hint: const Text('เลือก'),
-                            value: commany,
-                            items: company.map((p) {
+                            value: company,
+                            items: companys.map((p) {
                               return DropdownMenuItem<String>(
                                 value: p.companyID,
                                 child: Text(p.companyName.toString()),
@@ -778,7 +1158,7 @@ class _CreateAppointmentScreenState
                             }).toList(),
                             onChanged: (value) {
                               setState(() {
-                                commany = value;
+                                company = value;
                               });
                             },
                           ),
