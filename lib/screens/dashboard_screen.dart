@@ -12,58 +12,56 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appointmentsAsyncValue = ref.watch(appointmentsProvider);
 
-    return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            return ref.refresh(appointmentsProvider);
-          },
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildSummarySection(),
-              const SizedBox(height: 24),
+    return SafeArea(
+      child: RefreshIndicator(
+        onRefresh: () async {
+          return ref.refresh(appointmentsProvider);
+        },
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 24),
+            _buildSummarySection(),
+            const SizedBox(height: 24),
 
-              _buildSectionHeader(context, "Today's Appointments"),
+            _buildSectionHeader(context, "Today's Appointments"),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-              appointmentsAsyncValue.when(
-                loading: () => const Center(
-                  heightFactor: 5,
-                  child: CircularProgressIndicator(),
-                ),
-                error: (error, stackTrace) =>
-                    Center(heightFactor: 5, child: Text('Error: $error')),
-                data: (appointments) {
-                  if (appointments.isEmpty) {
-                    return const Center(
-                      heightFactor: 5,
-                      child: Text('No appointments found.'),
-                    );
-                  }
-
-                  String? lastTimeHeader;
-                  return Column(
-                    children: appointments.map((appointment) {
-                      final timeHeader = DateFormat(
-                        'HH:00',
-                      ).format(appointment.dateTime);
-                      final bool showHeader = timeHeader != lastTimeHeader;
-                      lastTimeHeader = timeHeader;
-
-                      return _buildAppointmentItem(
-                        appointment: appointment,
-                        showHeader: showHeader,
-                      );
-                    }).toList(),
-                  );
-                },
+            appointmentsAsyncValue.when(
+              loading: () => const Center(
+                heightFactor: 5,
+                child: CircularProgressIndicator(),
               ),
-            ],
-          ),
+              error: (error, stackTrace) =>
+                  Center(heightFactor: 5, child: Text('Error: $error')),
+              data: (appointments) {
+                if (appointments.isEmpty) {
+                  return const Center(
+                    heightFactor: 5,
+                    child: Text('No appointments found.'),
+                  );
+                }
+
+                String? lastTimeHeader;
+                return Column(
+                  children: appointments.map((appointment) {
+                    final timeHeader = DateFormat(
+                      'HH:00',
+                    ).format(appointment.dateTime);
+                    final bool showHeader = timeHeader != lastTimeHeader;
+                    lastTimeHeader = timeHeader;
+
+                    return _buildAppointmentItem(
+                      appointment: appointment,
+                      showHeader: showHeader,
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -388,6 +386,9 @@ class DashboardScreen extends ConsumerWidget {
                     Icons.location_on_outlined,
                     appointment.customerAddress,
                   ),
+                  _buildInfoRow(Icons.favorite_border, appointment.noted),
+                  const SizedBox(height: 8),
+                  _buildInfoRow(Icons.phone, appointment.customerAddress),
                   _buildInfoRow(Icons.favorite_border, appointment.noted),
                 ],
               ),

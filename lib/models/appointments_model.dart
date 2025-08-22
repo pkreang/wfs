@@ -6,8 +6,8 @@ class Appointments {
   String? userID;
   String? clientID;
   String? companyID;
-  String? appointmentDateTimeFrom;
-  String? appointmentDateTimeTo;
+  DateTime? appointmentDateTimeFrom;
+  DateTime? appointmentDateTimeTo;
   String? appointmentStatusID;
   String? purposeTypeID;
   String? noted;
@@ -43,8 +43,8 @@ class Appointments {
     userID = json['UserID'];
     clientID = json['ClientID'];
     companyID = json['CompanyID'];
-    appointmentDateTimeFrom = json['AppointmentDateTimeFrom'];
-    appointmentDateTimeTo = json['AppointmentDateTimeTo'];
+    appointmentDateTimeFrom = DateTime.parse(json['AppointmentDateTimeFrom']);
+    appointmentDateTimeTo = DateTime.parse(json['AppointmentDateTimeTo']);
     appointmentStatusID = json['AppointmentStatusID'];
     purposeTypeID = json['PurposeTypeID'];
     noted = json['Noted'];
@@ -52,7 +52,9 @@ class Appointments {
     appointmentAddress = json['AppointmentAddress'] != null
         ? new AppointmentAddresss.fromJson(json['AppointmentAddress'])
         : null;
-    appointmentProducts = json['AppointmentProducts'].cast<String>();
+    appointmentProducts = json['AppointmentProducts'] != null
+        ? json['AppointmentProducts'].cast<String>()
+        : null;
     isActive = json['IsActive'];
     createdBy = json['CreatedBy'];
     modifiedBy = json['ModifiedBy'];

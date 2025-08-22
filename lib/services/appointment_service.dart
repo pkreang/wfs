@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
+import 'package:wfs/models/appointment_model.dart';
 import 'package:wfs/models/appointments_model.dart';
-import '../models/appointment_model.dart'; // Import model ที่เราสร้างขึ้น
 
 class AppointmentService {
   Future<List<Appointment>> fetchAppointments(
@@ -50,7 +50,7 @@ class AppointmentService {
   Future<Appointments> Edit(
     String accessToken,
     String guid,
-    Appointment appointment,
+    Appointments appointment,
   ) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
@@ -139,7 +139,7 @@ class AppointmentService {
     }
   }
 
-  Future<Appointment> GetById(String accessToken, String guid) async {
+  Future<Appointments> GetById(String accessToken, String guid) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -157,7 +157,7 @@ class AppointmentService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final dynamic appointmentListJson = data['appointment'];
-      return Appointment.fromJson(appointmentListJson);
+      return Appointments.fromJson(appointmentListJson);
     } else {
       throw Exception(
         'Failed to load appointments. Status code: ${response.statusCode}',
@@ -165,7 +165,7 @@ class AppointmentService {
     }
   }
 
-  Future<List<Appointment>> GetByDate(String accessToken, String date) async {
+  Future<List<Appointments>> GetByDate(String accessToken, String date) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -184,7 +184,7 @@ class AppointmentService {
       final data = json.decode(response.body);
       final List<dynamic> appointmentListJson = data['appointments'];
       return appointmentListJson
-          .map((json) => Appointment.fromJson(json))
+          .map((json) => Appointments.fromJson(json))
           .toList();
     } else {
       throw Exception(
@@ -193,7 +193,7 @@ class AppointmentService {
     }
   }
 
-  Future<List<Appointment>> GetSummary(String accessToken, String date) async {
+  Future<List<Appointments>> GetSummary(String accessToken, String date) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -212,7 +212,7 @@ class AppointmentService {
       final data = json.decode(response.body);
       final List<dynamic> appointmentListJson = data['appointments'];
       return appointmentListJson
-          .map((json) => Appointment.fromJson(json))
+          .map((json) => Appointments.fromJson(json))
           .toList();
     } else {
       throw Exception(

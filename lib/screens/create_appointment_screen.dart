@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:wfs/main.dart';
 import 'package:wfs/models/appointmentaddresss_model.dart';
@@ -19,7 +20,6 @@ import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/purposetype_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
-import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/services/appointment_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -46,7 +46,7 @@ class _CreateAppointmentScreenState
   final TextEditingController txtAddress = TextEditingController();
   final TextEditingController txtClientName = TextEditingController();
   final TextEditingController txtNote = TextEditingController();
-
+  final TextEditingController txtPostCode = TextEditingController();
   List<Product> selectedProduct = [];
   Future<void> _pickDateTime(bool isFrom) async {
     DateTime? pickedDate = await showDatePicker(
@@ -289,6 +289,12 @@ class _CreateAppointmentScreenState
                 return;
               }
 
+              error = Validator.required(txtPostCode.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + " PostCode");
+                return;
+              }
+
               error = Validator.required(phone);
               if (error != null) {
                 AppDialogs.error(context, message: error + " Mobile");
@@ -319,8 +325,8 @@ class _CreateAppointmentScreenState
                 userID: authState.userID, //
                 clientID: selectedItem,
                 companyID: company,
-                appointmentDateTimeFrom: dateTimeFrom?.toIso8601String(),
-                appointmentDateTimeTo: dateTimeTo?.toIso8601String(),
+                appointmentDateTimeFrom: dateTimeFrom,
+                appointmentDateTimeTo: dateTimeTo,
                 appointmentStatusID: appointmentStatus, //
                 purposeTypeID: selectedPurpose,
                 noted: txtNote.text, //
@@ -328,9 +334,9 @@ class _CreateAppointmentScreenState
                 appointmentAddress: AppointmentAddresss(
                   address: txtAddress.text,
                   countryID: 1, //
-                  provinceID: 1, //
-                  districtID: 13, //
-                  subDistrictID: 2583, //
+                  provinceID: selectedProvince?.provinceID ?? null, //1
+                  districtID: selectedDistrict?.districtID ?? null, //13
+                  subDistrictID: selectedSubdistrict?.subDistrictID ?? null, //
                   latitude: null,
                   longitude: null,
                   isPrimary: true,
@@ -354,10 +360,7 @@ class _CreateAppointmentScreenState
                 ref.refresh(appointmentsProvider);
                 AppDialogs.success(context);
                 Future.delayed(const Duration(seconds: 3), () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => DashboardScreen()),
-                  );
+                  context.push('/dashboard');
                 });
               } catch (ex) {
                 AppDialogs.error(context, message: ex.toString());
@@ -455,6 +458,7 @@ class _CreateAppointmentScreenState
                 _buildTappableRowProvince("Province", ""),
                 _buildTappableRowDistrict("District", ""),
                 _buildTappableRowSubDistrict("SubDistrict", ""),
+                _buildPostCodeSection(),
               ],
             ),
           ),
@@ -616,6 +620,7 @@ class _CreateAppointmentScreenState
                                   selectedProvince = value;
                                   selectedDistrict = null;
                                   selectedSubdistrict = null;
+                                  txtPostCode.text = "";
                                 });
                               },
                             ),
@@ -683,6 +688,7 @@ class _CreateAppointmentScreenState
                                 setState(() {
                                   selectedDistrict = value;
                                   selectedSubdistrict = null;
+                                  txtPostCode.text = "";
                                 });
                               },
                             ),
@@ -749,6 +755,7 @@ class _CreateAppointmentScreenState
                               onChanged: (value) {
                                 setState(() {
                                   selectedSubdistrict = value;
+                                  txtPostCode.text = value?.postCode ?? "";
                                 });
                               },
                             ),
@@ -1017,6 +1024,19 @@ class _CreateAppointmentScreenState
     );
   }
 
+  Widget _buildPostCodeSection() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 16.0, top: 12),
+          child: Text('PostCode', style: TextStyle(fontSize: 16)),
+        ),
+        Expanded(child: Column(children: [_buildPostCodeTextField('')])),
+      ],
+    );
+  }
+
   Widget _buildNote() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1038,6 +1058,23 @@ class _CreateAppointmentScreenState
         height: 44,
         child: TextField(
           controller: txtAddress,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.grey.shade400),
+            //border: InputBorder.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPostCodeTextField(String hint) {
+    return Padding(
+      padding: EdgeInsets.only(left: 16.0, right: 16),
+      child: SizedBox(
+        height: 44,
+        child: TextField(
+          controller: txtPostCode,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: Colors.grey.shade400),

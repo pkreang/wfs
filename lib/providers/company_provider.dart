@@ -15,11 +15,11 @@ final companiesDataProvider = StateProvider<AsyncValue<List<Company>>>(
 final companiesProvider = FutureProvider<List<Company>>((ref) async {
   final authState = ref.watch(authProvider);
   final companyService = ref.read(companyServiceProvider);
-  final shouldLoad = ref.watch(companyLoadTriggerProvider);
+  //final shouldLoad = ref.watch(companyLoadTriggerProvider);
 
-  if (!shouldLoad) {
-    return [];
-  }
+  // if (!shouldLoad) {
+  //   return [];
+  // }
 
   if (authState.accessToken == null) {
     throw Exception('No access token available');

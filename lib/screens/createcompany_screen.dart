@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/companyaddress.dart';
 import 'package:wfs/models/district_model.dart';
@@ -13,7 +14,6 @@ import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
-import 'package:wfs/screens/company_screen.dart';
 import 'package:wfs/services/company_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -49,6 +49,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
   final TextEditingController txtEmail = TextEditingController();
   final TextEditingController txtCompanyName = TextEditingController();
   final TextEditingController txtTaxID = TextEditingController();
+  final TextEditingController txtPostCode = TextEditingController();
 
   List<Product> selectedProduct = [];
   List<Company> selectedCompany = [];
@@ -126,6 +127,12 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 AppDialogs.error(context, message: "กรุณาเลือก SubDistrict");
                 return;
               }
+
+              error = Validator.required(txtPostCode.text);
+              if (error != null) {
+                AppDialogs.error(context, message: error + "PostCode");
+                return;
+              }
               final authState = ref.watch(authProvider);
               Company company = Company(
                 companyName: txtCompanyName.text,
@@ -139,15 +146,16 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 modifiedBy: authState.userID,
                 CompanyAddresses: [
                   CompanyAddress(
-                    address: "123 ABC Rd.",
-                    provinceID: 1,
-                    districtID: 13,
+                    address: txtAddress.text, //"123 ABC Rd.",
+                    provinceID: selectedProvince?.provinceID ?? null, //1,
+                    districtID: selectedDistrict?.districtID ?? null, // 13,
                     latitude: null,
                     isPrimary: true,
                     createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
                     modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
                     countryID: 1,
-                    subDistrictID: 2583,
+                    subDistrictID:
+                        selectedSubdistrict?.subDistrictID ?? null, // 2583,
                     longitude: null,
                     isActive: true,
                   ),
@@ -166,10 +174,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
 
                 AppDialogs.success(context);
                 Future.delayed(const Duration(seconds: 3), () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CompanyScreen()),
-                  );
+                  context.push('/company');
                 });
               } catch (ex) {
                 AppDialogs.error(context, message: ex.toString());
@@ -217,6 +222,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 _buildTappableRowProvince('Province', ''),
                 _buildTappableRowDistrict('Distric', ''),
                 _buildTappableRowSubDistrict('SubDistric', ''),
+                _buildInfoRowPostCode('PostCode', ''),
               ],
             ),
           ),
@@ -370,6 +376,33 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
     );
   }
 
+  Widget _buildInfoRowPostCode(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 16, color: Colors.blue),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: 300,
+                child: TextField(
+                  controller: txtPostCode,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 1, indent: 0, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTappableRowSaleTerritory(
     String label,
     String value, {
@@ -481,6 +514,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                                   selectedProvince = value;
                                   selectedDistrict = null;
                                   selectedSubdistrict = null;
+                                  txtPostCode.text = "";
                                 });
                               },
                             ),
@@ -551,6 +585,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                                 setState(() {
                                   selectedDistrict = value;
                                   selectedSubdistrict = null;
+                                  txtPostCode.text = "";
                                 });
                               },
                             ),
@@ -620,6 +655,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                               onChanged: (value) {
                                 setState(() {
                                   selectedSubdistrict = value;
+                                  txtPostCode.text = value?.postCode ?? "";
                                 });
                               },
                             ),

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/models/appointment_model.dart';
 import 'package:wfs/models/appointments_model.dart';
-import '../models/appointment_model.dart';
 import '../services/appointment_service.dart';
 import 'auth_provider.dart';
 
@@ -21,7 +21,7 @@ final appointmentsProvider = FutureProvider<List<Appointment>>((ref) async {
   return appointmentService.fetchAppointments(accessToken, authState.userID!);
 });
 
-final appointmentGetByIdProvider = FutureProvider.family<Appointment, String>((
+final appointmentGetByIdProvider = FutureProvider.family<Appointments, String>((
   ref,
   guid,
 ) async {
@@ -37,7 +37,7 @@ final appointmentGetByIdProvider = FutureProvider.family<Appointment, String>((
   return appointmentService.GetById(accessToken, guid);
 });
 final appointmentGetByDateProvider =
-    FutureProvider.family<List<Appointment>, String>((ref, date) async {
+    FutureProvider.family<List<Appointments>, String>((ref, date) async {
       final authState = ref.watch(authProvider);
       final accessToken = authState.accessToken;
 
@@ -50,7 +50,7 @@ final appointmentGetByDateProvider =
       return appointmentService.GetByDate(accessToken, date);
     });
 final appointmentGetSummaryProvider =
-    FutureProvider.family<List<Appointment>, String>((ref, date) async {
+    FutureProvider.family<List<Appointments>, String>((ref, date) async {
       final authState = ref.watch(authProvider);
       final accessToken = authState.accessToken;
 
@@ -65,7 +65,7 @@ final appointmentGetSummaryProvider =
 final appointmentEditProvider =
     FutureProvider.family<
       Appointments,
-      ({String guid, Appointment appointment})
+      ({String guid, Appointments appointment})
     >((ref, params) async {
       final authState = ref.watch(authProvider);
       final accessToken = authState.accessToken;

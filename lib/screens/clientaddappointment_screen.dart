@@ -318,7 +318,10 @@ class _ClientAddAppointmentScreenState
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              client.firstName.toString(),
+                              client.clientAddresses?.isNotEmpty == true
+                                  ? client.clientAddresses!.first.address ??
+                                        "ไม่มีที่อยู่"
+                                  : "ไม่มีที่อยู่",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey.shade600,

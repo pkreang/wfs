@@ -44,6 +44,12 @@ class Company {
         CompanyAddresses!.add(new CompanyAddress.fromJson(v));
       });
     }
+    if (json['addresses'] != null) {
+      CompanyAddresses = <CompanyAddress>[];
+      json['addresses'].forEach((v) {
+        CompanyAddresses!.add(new CompanyAddress.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {

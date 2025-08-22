@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/models/clientaddresses_model.dart';
 import 'package:wfs/models/clientcompanies_model.dart';
@@ -18,7 +19,6 @@ import 'package:wfs/providers/product_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
-import 'package:wfs/screens/clientscreen_screen.dart';
 import 'package:wfs/services/client_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -310,11 +310,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 modifiedBy: authState.userID,
                 clientAddresses: [
                   ClientAddresses(
-                    address: "123/4 Sukhumvit Road",
+                    address: txtAddress.text, //"123/4 Sukhumvit Road",
                     countryID: 1,
-                    provinceID: 1,
-                    districtID: 13,
-                    subDistrictID: 2583,
+                    provinceID: selectedProvince?.provinceID ?? null, // 1,
+                    districtID: selectedDistrict?.districtID ?? null, //13,
+                    subDistrictID:
+                        selectedSubdistrict?.subDistrictID ?? null, // 2583,
                     latitude: null,
                     longitude: null,
                     isPrimary: true,
@@ -354,10 +355,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
                 AppDialogs.success(context);
                 Future.delayed(const Duration(seconds: 3), () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ClientScreen()),
-                  );
+                  context.push('/clients');
                 });
               } catch (ex) {
                 AppDialogs.error(context, message: ex.toString());

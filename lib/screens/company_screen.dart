@@ -308,7 +308,10 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            company.companyName.toString(),
+                            company.CompanyAddresses?.isNotEmpty == true
+                                ? company.CompanyAddresses!.first.address ??
+                                      "ไม่มีที่อยู่"
+                                : "ไม่มีที่อยู่",
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey.shade600,
