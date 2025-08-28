@@ -388,7 +388,7 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   _buildInfoRow(Icons.favorite_border, appointment.noted),
                   const SizedBox(height: 8),
-                  _buildInfoRow(Icons.phone, appointment.customerAddress),
+                  _buildInfoRow(Icons.phone, appointment.noted),
                   _buildInfoRow(Icons.favorite_border, appointment.noted),
                 ],
               ),

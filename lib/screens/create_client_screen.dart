@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wfs/main.dart';
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/models/clientaddresses_model.dart';
 import 'package:wfs/models/clientcompanies_model.dart';
@@ -49,6 +50,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   Province? selectedProvince;
   District? selectedDistrict;
   Subdistrict? selectedSubdistrict;
+  String? postCode;
   final TextEditingController txtAddress = TextEditingController();
   final TextEditingController txtClientName = TextEditingController();
   final TextEditingController txtPhone = TextEditingController();
@@ -192,29 +194,24 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   Widget build(BuildContext context) {
     final ProductGetListState = ref.watch(ProductGetList);
     final companyGetListProviderState = ref.watch(companyGetListProvider);
+    final selectedItem = ref.watch(selectedItemProvider);
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F7),
       appBar: AppBar(
         backgroundColor: const Color(0xFFF2F2F7),
         elevation: 0,
-
+        title: Text("Create Client"),
         leading: TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
           child: const Text(
-            'Cancel',
+            '< Back',
             style: TextStyle(color: Colors.blue, fontSize: 16),
           ),
         ),
         leadingWidth: 80,
-
-        title: const Text(
-          'New Client',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
         centerTitle: true,
-
         actions: [
           TextButton(
             onPressed: () {
@@ -362,7 +359,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               }
             },
             child: const Text(
-              'Add',
+              'Create',
               style: TextStyle(
                 color: Colors.blue,
                 fontSize: 16,
@@ -374,50 +371,53 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       ),
       body: ListView(
         children: [
-          _buildSectionHeader('CLIENT INFO'),
           Container(
             color: Colors.white,
             child: Column(
               children: [
-                _buildInfoRowClient('Client Name', ''),
+                _buildInfoRowClient("Client Name", selectedItem.toString()),
+                const Divider(height: 1, indent: 0, thickness: 0.5),
                 _buildInfoRowLastName('Last Name', ''),
+                const Divider(height: 1, indent: 0, thickness: 0.5),
+                _buildTappableRowStatus('status', ''),
+                const Divider(height: 1, indent: 0, thickness: 0.5),
+                _buildTappableRowLevel('level', '', showDivider: false),
+                const Divider(height: 1, indent: 0, thickness: 0.5),
+                _buildTappableRowSaleTerritory('territory', ''),
+                const Divider(height: 1, indent: 0, thickness: 0.5),
               ],
             ),
+          ),
+          Container(
+            color: Colors.white,
+            child: Column(children: [SizedBox(height: 20)]),
           ),
           const SizedBox(height: 30),
           Container(
             color: Colors.white,
-            child: Column(
-              children: [
-                SizedBox(height: 20),
-                _buildTappableRowStatus('Status', ''),
-                _buildTappableRowLevel('Level', '', showDivider: false),
-                _buildTappableRowSaleTerritory('Territory', ''),
-              ],
-            ),
+            child: Column(children: [_buildInfoRowPhone('Mobile', '')]),
           ),
-          const SizedBox(height: 30),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                _buildInfoRowAddress('Address', ''),
-                _buildTappableRowProvince("Province", ""),
-                _buildTappableRowDistrict("District", ""),
-                _buildTappableRowSubDistrict("SubDistrict", ""),
-                _buildInfoRowPostcode('Post Code', ''),
-              ],
-            ),
-          ),
-
-          Container(
-            color: Colors.white,
-            child: Column(children: [_buildInfoRowPhone('Phone', '')]),
-          ),
+          const Divider(height: 1, indent: 0, thickness: 0.5),
           Container(
             color: Colors.white,
             child: Column(children: [_buildInfoRowEmail('Email', '')]),
           ),
+          const Divider(height: 1, indent: 0, thickness: 0.5),
+          const SizedBox(height: 30),
+          Container(color: Colors.white, child: _buildAddressSection()),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                //_buildInfoRowAddress('Address', ''),
+                // _buildTappableRowProvince("Province", ""),
+                // _buildTappableRowDistrict("District", ""),
+                // _buildTappableRowSubDistrict("SubDistrict", ""),
+                // _buildInfoRowPostcode('Post Code', ''),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 30),
           const Padding(
             padding: const EdgeInsets.only(left: 16.0),
@@ -514,15 +514,211 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
+  Widget _buildAddressSection() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 16.0, top: 12.0, right: 16),
+          child: Text(
+            'Address',
+            style: TextStyle(fontSize: 16, color: Colors.black),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            children: [
+              _buildAddressTextField(''),
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+              _buildAddressProvince('Street'),
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+              _buildAddressDistrict('Cir. Syracuse'),
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+              Row(
+                children: [
+                  Expanded(child: _buildAddressSubDistrict('Connecticut')),
+                  Container(
+                    width: 0.5,
+                    height: 44,
+                    color: Colors.grey.shade300,
+                  ),
+                  SizedBox(
+                    width: 100,
+                    child: _buildAddressTextField(postCode ?? ""),
+                  ),
+                ],
+              ),
+              const Divider(height: 1, indent: 0, thickness: 0.5),
+              _buildAddressTextField('THAILAND'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddressTextField(String hint) {
+    return SizedBox(
+      height: 44,
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.black),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddressDistrict(String hint) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 36),
+      child: SizedBox(
+        height: 44,
+        child: Consumer(
+          builder: (context, ref, _) {
+            final districtGetListState = ref.watch(
+              districtsProvider(
+                selectedProvince == null
+                    ? ""
+                    : selectedProvince!.provinceID.toString(),
+              ),
+            );
+            return districtGetListState.when(
+              data: (district) {
+                return SizedBox(
+                  width: 300,
+                  child: DropdownButton<District>(
+                    isExpanded: true,
+                    hint: const Text('เลือก'),
+                    value: selectedDistrict,
+                    items: district.map((p) {
+                      return DropdownMenuItem<District>(
+                        value: p,
+                        child: Text(p.districtName.toString()),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedDistrict = value;
+                        selectedSubdistrict = null;
+                        txtPostcode.text = "";
+                        postCode = "";
+                      });
+                    },
+                  ),
+                );
+              },
+              loading: () => const CircularProgressIndicator(),
+              error: (err, _) => Text('Error: $err'),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddressSubDistrict(String hint) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 18),
+      child: SizedBox(
+        height: 44,
+        child: Consumer(
+          builder: (context, ref, _) {
+            final districtGetListState = ref.watch(
+              subdistrictsProvider(
+                selectedDistrict == null
+                    ? ""
+                    : selectedDistrict!.districtID.toString(),
+              ),
+            );
+            return districtGetListState.when(
+              data: (district) {
+                return SizedBox(
+                  width: 200,
+                  child: DropdownButton<Subdistrict>(
+                    isExpanded: true,
+                    hint: const Text('เลือก'),
+                    value: selectedSubdistrict,
+                    items: district.map((p) {
+                      return DropdownMenuItem<Subdistrict>(
+                        value: p,
+                        child: Text(p.subDistrictName.toString()),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedSubdistrict = value;
+                        txtPostcode.text = value?.postCode ?? "";
+                        postCode = value?.postCode ?? "";
+                      });
+                    },
+                  ),
+                );
+              },
+              loading: () => const CircularProgressIndicator(),
+              error: (err, _) => Text('Error: $err'),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddressProvince(String hint) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 36),
+      child: SizedBox(
+        height: 44,
+        child: Consumer(
+          builder: (context, ref, _) {
+            final provincesProviderState = ref.watch(provincesProvider);
+            return provincesProviderState.when(
+              data: (provinces) {
+                return SizedBox(
+                  width: 300,
+                  child: DropdownButton<Province>(
+                    isExpanded: true,
+                    hint: const Text('เลือก'),
+                    value: selectedProvince,
+                    items: provinces.map((p) {
+                      return DropdownMenuItem<Province>(
+                        value: p,
+                        child: Text(p.provinceName.toString()),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedProvince = value;
+                        selectedDistrict = null;
+                        selectedSubdistrict = null;
+                        txtPostcode.text = "";
+                        postCode = "";
+                      });
+                    },
+                  ),
+                );
+              },
+              loading: () => const CircularProgressIndicator(),
+              error: (err, _) => Text('Error: $err'),
+            );
+          },
+        ),
+      ),
+    );
+  }
   // --- Helper Widgets for building UI sections ---
 
   // Widget สำหรับหัวข้อของแต่ละ Section (เช่น CLIENT INFO)
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Text(title, style: TextStyle(color: Colors.black, fontSize: 20)),
       ),
     );
   }
@@ -741,17 +937,16 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
           Row(
             children: [
               Text(label, style: const TextStyle(fontSize: 16)),
-              const Spacer(),
-              SizedBox(
-                width: 280,
-                child: TextField(
-                  controller: txtClientName,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+              SizedBox(width: 40),
+              Padding(
+                padding: const EdgeInsets.only(left: 0),
+                child: SizedBox(
+                  width: 170,
+                  child: Text("John Doe", style: const TextStyle(fontSize: 16)),
                 ),
               ),
             ],
           ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
         ],
       ),
     );
@@ -759,28 +954,30 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
   Widget _buildInfoRowLastName(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        top: 16,
-        bottom: 16,
-        right: 16,
-      ),
+      padding: const EdgeInsets.only(left: 16.0, right: 16),
       child: Column(
         children: [
           Row(
             children: [
               Text(label, style: const TextStyle(fontSize: 16)),
-              const Spacer(),
+              SizedBox(width: 35),
               SizedBox(
-                width: 280,
+                width: 200,
                 child: TextField(
                   controller: txtLastName,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                  decoration: const InputDecoration(
+                    hintStyle: TextStyle(color: Colors.black),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ],
           ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
         ],
       ),
     );
@@ -788,23 +985,35 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
   Widget _buildInfoRowPhone(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
+      padding: const EdgeInsets.only(
+        left: 16.0,
+        bottom: 16,
+        right: 16,
+        top: 16,
+      ),
       child: Column(
         children: [
           Row(
             children: [
               Text(label, style: const TextStyle(fontSize: 16)),
-              const Spacer(),
+              SizedBox(width: 65),
               SizedBox(
-                width: 300,
+                width: 200,
                 child: TextField(
                   controller: txtPhone,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                  decoration: InputDecoration(
+                    hintStyle: TextStyle(color: Colors.black),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
             ],
           ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
         ],
       ),
     );
@@ -812,23 +1021,35 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
   Widget _buildInfoRowEmail(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
+      padding: const EdgeInsets.only(
+        left: 16.0,
+        bottom: 16,
+        right: 16,
+        top: 16,
+      ),
       child: Column(
         children: [
           Row(
             children: [
               Text(label, style: const TextStyle(fontSize: 16)),
-              const Spacer(),
+              SizedBox(width: 75),
               SizedBox(
-                width: 300,
+                width: 200,
                 child: TextField(
                   controller: txtEmail,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                  decoration: InputDecoration(
+                    hintStyle: TextStyle(color: Colors.black),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
             ],
           ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
         ],
       ),
     );
@@ -969,6 +1190,76 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
+  // Widget _buildTappableRowLevel(
+  //   String label,
+  //   String value, {
+  //   bool showDivider = true,
+  // }) {
+  //   return InkWell(
+  //     onTap: () {
+  //       // TODO: Implement navigation or show picker for this row
+  //     },
+  //     child: Padding(
+  //       padding: const EdgeInsets.only(left: 16.0, right: 16),
+  //       child: Column(
+  //         children: [
+  //           SizedBox(
+  //             height: 44, // ความสูงมาตรฐานของ iOS list item
+  //             child: Row(
+  //               children: [
+  //                 Text(
+  //                   label,
+  //                   style: const TextStyle(fontSize: 16, color: Colors.blue),
+  //                 ),
+  //                 const VerticalDivider(
+  //                   color: Colors.grey,
+  //                   thickness: 0.5,
+  //                   width: 87,
+  //                 ),
+
+  //                 Consumer(
+  //                   builder: (context, ref, _) {
+  //                     final clientLevelGetListState = ref.watch(
+  //                       clientLevelGetList,
+  //                     );
+  //                     return clientLevelGetListState.when(
+  //                       data: (clientLevel) {
+  //                         return SizedBox(
+  //                           width: 260,
+  //                           child: DropdownButton<String>(
+  //                             isExpanded: true,
+  //                             hint: const Text('เลือก'),
+  //                             value: selectClientLevel,
+  //                             items: clientLevel.map((p) {
+  //                               return DropdownMenuItem<String>(
+  //                                 value: p.clientLevelID,
+  //                                 child: Text(p.clientLevelName.toString()),
+  //                               );
+  //                             }).toList(),
+  //                             onChanged: (value) {
+  //                               setState(() {
+  //                                 selectClientLevel = value;
+  //                               });
+  //                             },
+  //                           ),
+  //                         );
+  //                       },
+  //                       loading: () => const CircularProgressIndicator(),
+  //                       error: (err, _) => Text('Error: $err'),
+  //                     );
+  //                   },
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           if (showDivider)
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Widget _buildTappableRowLevel(
     String label,
     String value, {
@@ -990,18 +1281,19 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     label,
                     style: const TextStyle(fontSize: 16, color: Colors.blue),
                   ),
-                  const Spacer(),
-
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final clientLevelGetListState = ref.watch(
-                        clientLevelGetList,
-                      );
-                      return clientLevelGetListState.when(
-                        data: (clientLevel) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<String>(
+                  const SizedBox(width: 36),
+                  const VerticalDivider(color: Colors.grey, thickness: 0.5),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: 210,
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        final clientLevelGetListState = ref.watch(
+                          clientLevelGetList,
+                        );
+                        return clientLevelGetListState.when(
+                          data: (clientLevel) {
+                            return DropdownButton<String>(
                               isExpanded: true,
                               hint: const Text('เลือก'),
                               value: selectClientLevel,
@@ -1016,19 +1308,17 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                                   selectClientLevel = value;
                                 });
                               },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
+                            );
+                          },
+                          loading: () => const CircularProgressIndicator(),
+                          error: (err, _) => Text('Error: $err'),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
           ],
         ),
       ),
@@ -1056,7 +1346,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     label,
                     style: const TextStyle(fontSize: 16, color: Colors.blue),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 12),
+                  const VerticalDivider(color: Colors.grey, thickness: 0.5),
+                  const SizedBox(width: 10),
                   Consumer(
                     builder: (context, ref, _) {
                       final saleTerritorieGetListState = ref.watch(
@@ -1065,7 +1357,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       return saleTerritorieGetListState.when(
                         data: (territory) {
                           return SizedBox(
-                            width: 300,
+                            width: 210,
                             child: DropdownButton<String>(
                               isExpanded: true,
                               hint: const Text('เลือก'),
@@ -1092,8 +1384,6 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 ],
               ),
             ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
           ],
         ),
       ),
@@ -1122,18 +1412,19 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     label,
                     style: const TextStyle(fontSize: 16, color: Colors.blue),
                   ),
-                  const Spacer(),
-
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final ClientStatusGetListState = ref.watch(
-                        ClientStatusGetList,
-                      );
-                      return ClientStatusGetListState.when(
-                        data: (clientStatus) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<String>(
+                  const SizedBox(width: 24),
+                  const VerticalDivider(color: Colors.grey, thickness: 0.5),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: 210,
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        final clientStatusGetListState = ref.watch(
+                          ClientStatusGetList,
+                        );
+                        return clientStatusGetListState.when(
+                          data: (clientStatus) {
+                            return DropdownButton<String>(
                               isExpanded: true,
                               hint: const Text('เลือก'),
                               value: selectClientStatus,
@@ -1148,19 +1439,17 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                                   selectClientStatus = value;
                                 });
                               },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
+                            );
+                          },
+                          loading: () => const CircularProgressIndicator(),
+                          error: (err, _) => Text('Error: $err'),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
           ],
         ),
       ),
