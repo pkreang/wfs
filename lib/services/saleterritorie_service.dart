@@ -2,9 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
 import 'package:wfs/models/saleterritorie_model.dart';
+import 'package:wfs/models/territory_model.dart';
+
+import '../http/api_client.dart';
 
 class SaleterritorieService {
-  Future<List<SaleTerritorie>> GetList(String accessToken) async {
+  final apiClient = ApiClient(ApiConfig.baseUrl);
+  Future<List<SaleTerritorie>> GetLists(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -27,5 +31,20 @@ class SaleterritorieService {
         'Failed to load Clients. Status code: ${response.statusCode}',
       );
     }
+  }
+
+  Future<List<Territory>> GetList(String accessToken) async {
+    final territories = await apiClient.get(
+      path: "/sale/territory/?IsActive=true",
+      decode: (json) {
+        final map = json as Map<String, dynamic>;
+        final list = map['sale_territorie'] as List? ?? const [];
+
+        return Territory.listFromJson(list);
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+
+    return territories;
   }
 }

@@ -12,7 +12,6 @@ import 'package:wfs/providers/clientstatus_provider.dart';
 import 'package:wfs/providers/company_provider.dart';
 import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
-import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
 import 'package:wfs/services/company_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
@@ -425,38 +424,38 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                     style: const TextStyle(fontSize: 16, color: Colors.blue),
                   ),
                   const Spacer(),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final saleTerritorieGetListState = ref.watch(
-                        saleTerritorieGetList,
-                      );
-                      return saleTerritorieGetListState.when(
-                        data: (territory) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<String>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: salesTerritory,
-                              items: territory.map((p) {
-                                return DropdownMenuItem<String>(
-                                  value: p.salesTerritoryID,
-                                  child: Text(p.salesTerritoryName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  salesTerritory = value;
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
+                  // Consumer(
+                  //   builder: (context, ref, _) {
+                  //     final saleTerritorieGetListState = ref.watch(
+                  //       saleTerritorieGetList,
+                  //     );
+                  //     return saleTerritorieGetListState.when(
+                  //       data: (territory) {
+                  //         return SizedBox(
+                  //           width: 300,
+                  //           child: DropdownButton<String>(
+                  //             isExpanded: true,
+                  //             hint: const Text('เลือก'),
+                  //             value: salesTerritory,
+                  //             items: territory.map((p) {
+                  //               return DropdownMenuItem<String>(
+                  //                 value: p.salesTerritoryID,
+                  //                 child: Text(p.salesTerritoryName.toString()),
+                  //               );
+                  //             }).toList(),
+                  //             onChanged: (value) {
+                  //               setState(() {
+                  //                 salesTerritory = value;
+                  //               });
+                  //             },
+                  //           ),
+                  //         );
+                  //       },
+                  //       loading: () => const CircularProgressIndicator(),
+                  //       error: (err, _) => Text('Error: $err'),
+                  //     );
+                  //   },
+                  // ),
                 ],
               ),
             ),

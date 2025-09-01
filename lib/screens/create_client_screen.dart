@@ -9,7 +9,10 @@ import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/product_model.dart';
 import 'package:wfs/models/province_model.dart';
+import 'package:wfs/models/sales_territory.dart';
 import 'package:wfs/models/subdistrict_model.dart';
+import 'package:wfs/models/territory_model.dart';
+import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/providers/clientlevel_provider.dart';
@@ -23,6 +26,8 @@ import 'package:wfs/providers/subdistrict_provider.dart';
 import 'package:wfs/services/client_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
+import 'package:wfs/widgets/app_cupertino_option.dart';
+import 'package:wfs/widgets/app_text.dart';
 
 class Item {
   final String id;
@@ -42,7 +47,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   String? selectedPurpose;
   String? product;
   String? commany;
-  String? salesTerritory;
+  String? salesTerritorys;
   String? selectClientStatus;
   String? selectClientLevel;
   DateTime? dateTimeFrom;
@@ -51,12 +56,18 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   District? selectedDistrict;
   Subdistrict? selectedSubdistrict;
   String? postCode;
+  SalesTerritory? salesTerritory;
+  bool isCanEdit = true;
   final TextEditingController txtAddress = TextEditingController();
   final TextEditingController txtClientName = TextEditingController();
   final TextEditingController txtPhone = TextEditingController();
   final TextEditingController txtEmail = TextEditingController();
   final TextEditingController txtPostcode = TextEditingController();
   final TextEditingController txtLastName = TextEditingController();
+
+  static const colorGrey = Color(0xFFC7C7CC);
+  static const borderWidth = 0.33;
+  static const borderSide = BorderSide(color: colorGrey, width: borderWidth);
 
   List<Product> selectedProduct = [];
   List<Company> selectedCompany = [];
@@ -240,11 +251,11 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 return;
               }
 
-              error = Validator.required(salesTerritory);
-              if (error != null) {
-                AppDialogs.error(context, message: "กรุณาเลือก Territory");
-                return;
-              }
+              // error = Validator.required(salesTerritory);
+              // if (error != null) {
+              //   AppDialogs.error(context, message: "กรุณาเลือก Territory");
+              //   return;
+              // }
 
               error = Validator.required(txtAddress.text);
               if (error != null) {
@@ -296,7 +307,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 address: "123 Bangkok",
                 phone: txtPhone.text,
                 email: txtEmail.text,
-                salesTerritoryID: salesTerritory,
+                // salesTerritoryID: salesTerritory,
                 clientStatusID: selectClientStatus,
                 clientLevelID: selectClientLevel,
                 noted: "xxxxxxxxxxxxxxx",
@@ -375,140 +386,155 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
             color: Colors.white,
             child: Column(
               children: [
-                _buildInfoRowClient("Client Name", selectedItem.toString()),
-                const Divider(height: 1, indent: 0, thickness: 0.5),
-                _buildInfoRowLastName('Last Name', ''),
-                const Divider(height: 1, indent: 0, thickness: 0.5),
-                _buildTappableRowStatus('status', ''),
-                const Divider(height: 1, indent: 0, thickness: 0.5),
-                _buildTappableRowLevel('level', '', showDivider: false),
-                const Divider(height: 1, indent: 0, thickness: 0.5),
-                _buildTappableRowSaleTerritory('territory', ''),
-                const Divider(height: 1, indent: 0, thickness: 0.5),
-              ],
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: Column(children: [SizedBox(height: 20)]),
-          ),
-          const SizedBox(height: 30),
-          Container(
-            color: Colors.white,
-            child: Column(children: [_buildInfoRowPhone('Mobile', '')]),
-          ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
-          Container(
-            color: Colors.white,
-            child: Column(children: [_buildInfoRowEmail('Email', '')]),
-          ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
-          const SizedBox(height: 30),
-          Container(color: Colors.white, child: _buildAddressSection()),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                //_buildInfoRowAddress('Address', ''),
-                // _buildTappableRowProvince("Province", ""),
-                // _buildTappableRowDistrict("District", ""),
-                // _buildTappableRowSubDistrict("SubDistrict", ""),
-                // _buildInfoRowPostcode('Post Code', ''),
+                infoTile(
+                  label: 'territory',
+                  value: AppText(
+                    label: salesTerritory?.salesTerritoryName ?? '',
+                  ),
+                  onTap: isCanEdit
+                      ? () => openTerritorySheet(
+                          context,
+                          salesTerritory?.salesTerritoryID ?? '',
+                        )
+                      : null,
+                  isHideIcon: !isCanEdit,
+                  isShowBorderBottom: true,
+                ),
+
+                // _buildInfoRowClient("Client Name", selectedItem.toString()),
+                // const Divider(height: 1, indent: 0, thickness: 0.5),
+                // _buildInfoRowLastName('Last Name', ''),
+                // const Divider(height: 1, indent: 0, thickness: 0.5),
+                // _buildTappableRowStatus('status', ''),
+                // const Divider(height: 1, indent: 0, thickness: 0.5),
+                // _buildTappableRowLevel('level', '', showDivider: false),
+                // const Divider(height: 1, indent: 0, thickness: 0.5),
+                // _buildTappableRowSaleTerritory('territory', ''),
+                // const Divider(height: 1, indent: 0, thickness: 0.5),
               ],
             ),
           ),
 
-          const SizedBox(height: 30),
-          const Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Text("LINKED COMPANY"),
-          ),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                SizedBox(height: 20),
-                _buildTappableRowCompany(
-                  'add company',
-                  '',
-                  companyGetListProviderState,
-                ),
-                SizedBox(height: 20),
-                Center(
-                  child: selectedCompany.length > 0
-                      ? Text(
-                          "Company ที่เลือก:",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      : Text(""),
-                ),
-                SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: selectedCompany
-                      .map(
-                        (e) => Chip(
-                          label: Text(e.companyName.toString()),
-                          deleteIcon: Icon(Icons.close),
-                          onDeleted: () {
-                            setState(() {
-                              selectedCompany.remove(e);
-                            });
-                          },
-                        ),
-                      )
-                      .toList(),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 30),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Text("LINKED PRODUCT"),
-          ),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                SizedBox(height: 20),
-                _buildTappableRowProduct(
-                  'add product',
-                  '',
-                  ProductGetListState,
-                ),
-                SizedBox(height: 20),
-                Center(
-                  child: selectedCompany.length > 0
-                      ? Text(
-                          "Product ที่เลือก:",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      : Text(""),
-                ),
-                SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: selectedProduct
-                      .map(
-                        (e) => Chip(
-                          label: Text(e.productName.toString()),
-                          deleteIcon: Icon(Icons.close),
-                          onDeleted: () {
-                            setState(() {
-                              selectedProduct.remove(e);
-                            });
-                          },
-                        ),
-                      )
-                      .toList(),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 30),
+          // Container(
+          //   color: Colors.white,
+          //   child: Column(children: [SizedBox(height: 20)]),
+          // ),
+          // const SizedBox(height: 30),
+          // Container(
+          //   color: Colors.white,
+          //   child: Column(children: [_buildInfoRowPhone('Mobile', '')]),
+          // ),
+          // const Divider(height: 1, indent: 0, thickness: 0.5),
+          // Container(
+          //   color: Colors.white,
+          //   child: Column(children: [_buildInfoRowEmail('Email', '')]),
+          // ),
+          // const Divider(height: 1, indent: 0, thickness: 0.5),
+          // const SizedBox(height: 30),
+          // Container(color: Colors.white, child: _buildAddressSection()),
+          // Container(
+          // color: Colors.white,
+          // child: Column(
+          //   children: [
+          //_buildInfoRowAddress('Address', ''),
+          // _buildTappableRowProvince("Province", ""),
+          // _buildTappableRowDistrict("District", ""),
+          // _buildTappableRowSubDistrict("SubDistrict", ""),
+          // _buildInfoRowPostcode('Post Code', ''),
+          //     ],
+          //   ),
+          // ),
+          // const SizedBox(height: 30),
+          // const Padding(
+          //   padding: const EdgeInsets.only(left: 16.0),
+          //   child: Text("LINKED COMPANY"),
+          // ),
+          // Container(
+          //   color: Colors.white,
+          //   child: Column(
+          //     children: [
+          //       SizedBox(height: 20),
+          //       _buildTappableRowCompany(
+          //         'add company',
+          //         '',
+          //         companyGetListProviderState,
+          //       ),
+          //       SizedBox(height: 20),
+          //       Center(
+          //         child: selectedCompany.length > 0
+          //             ? Text(
+          //                 "Company ที่เลือก:",
+          //                 style: TextStyle(fontWeight: FontWeight.bold),
+          //               )
+          //             : Text(""),
+          //       ),
+          //       SizedBox(height: 10),
+          //       Wrap(
+          //         spacing: 8,
+          //         runSpacing: 8,
+          //         children: selectedCompany
+          //             .map(
+          //               (e) => Chip(
+          //                 label: Text(e.companyName.toString()),
+          //                 deleteIcon: Icon(Icons.close),
+          //                 onDeleted: () {
+          //                   setState(() {
+          //                     selectedCompany.remove(e);
+          //                   });
+          //                 },
+          //               ),
+          //             )
+          //             .toList(),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // const SizedBox(height: 30),
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 16.0),
+          //   child: Text("LINKED PRODUCT"),
+          // ),
+          // Container(
+          //   color: Colors.white,
+          //   child: Column(
+          //     children: [
+          //       SizedBox(height: 20),
+          //       _buildTappableRowProduct(
+          //         'add product',
+          //         '',
+          //         ProductGetListState,
+          //       ),
+          //       SizedBox(height: 20),
+          //       Center(
+          //         child: selectedCompany.length > 0
+          //             ? Text(
+          //                 "Product ที่เลือก:",
+          //                 style: TextStyle(fontWeight: FontWeight.bold),
+          //               )
+          //             : Text(""),
+          //       ),
+          //       SizedBox(height: 10),
+          //       Wrap(
+          //         spacing: 8,
+          //         runSpacing: 8,
+          //         children: selectedProduct
+          //             .map(
+          //               (e) => Chip(
+          //                 label: Text(e.productName.toString()),
+          //                 deleteIcon: Icon(Icons.close),
+          //                 onDeleted: () {
+          //                   setState(() {
+          //                     selectedProduct.remove(e);
+          //                   });
+          //                 },
+          //               ),
+          //             )
+          //             .toList(),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // const SizedBox(height: 30),
         ],
       ),
     );
@@ -569,6 +595,55 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
             horizontal: 16,
             vertical: 12,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget infoTile({
+    required String label,
+    required Widget value,
+    VoidCallback? onTap,
+    double height = 44,
+    bool isShowBorderMiddle = true,
+    bool isShowBorderBottom = false,
+    bool isHideIcon = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: Color(0xFFFFFFFF),
+          border: Border(
+            top: borderSide,
+            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
+          ),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 16),
+            Container(
+              width: 100,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: BorderDirectional(
+                  end: isShowBorderMiddle
+                      ? BorderSide(color: colorGrey, width: borderWidth)
+                      : BorderSide.none,
+                ),
+              ),
+              child: AppText(label: label, textColor: const Color(0xFF007AFF)),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Align(alignment: Alignment.centerLeft, child: value),
+            ),
+            if (!isHideIcon) ...[
+              Icon(Icons.chevron_right, size: 24, color: colorGrey),
+              const SizedBox(width: 8),
+            ],
+          ],
         ),
       ),
     );
@@ -714,214 +789,214 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   // --- Helper Widgets for building UI sections ---
 
   // Widget สำหรับหัวข้อของแต่ละ Section (เช่น CLIENT INFO)
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Center(
-        child: Text(title, style: TextStyle(color: Colors.black, fontSize: 20)),
-      ),
-    );
-  }
+  // Widget _buildSectionHeader(String title) {
+  //   return Padding(
+  //     padding: const EdgeInsets.all(16.0),
+  //     child: Center(
+  //       child: Text(title, style: TextStyle(color: Colors.black, fontSize: 20)),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildTappableRowProvince(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(label, style: const TextStyle(fontSize: 16)),
-                  const Spacer(),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final provincesProviderState = ref.watch(
-                        provincesProvider,
-                      );
-                      return provincesProviderState.when(
-                        data: (provinces) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<Province>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectedProvince,
-                              items: provinces.map((p) {
-                                return DropdownMenuItem<Province>(
-                                  value: p,
-                                  child: Text(p.provinceName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedProvince = value;
-                                  selectedDistrict = null;
-                                  selectedSubdistrict = null;
-                                  txtPostcode.text = "";
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildTappableRowProvince(
+  //   String label,
+  //   String value, {
+  //   bool showDivider = true,
+  // }) {
+  //   return InkWell(
+  //     onTap: () {
+  //       // TODO: Implement navigation or show picker for this row
+  //     },
+  //     child: Padding(
+  //       padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
+  //       child: Column(
+  //         children: [
+  //           SizedBox(
+  //             height: 44, // ความสูงมาตรฐานของ iOS list item
+  //             child: Row(
+  //               children: [
+  //                 Text(label, style: const TextStyle(fontSize: 16)),
+  //                 const Spacer(),
+  //                 Consumer(
+  //                   builder: (context, ref, _) {
+  //                     final provincesProviderState = ref.watch(
+  //                       provincesProvider,
+  //                     );
+  //                     return provincesProviderState.when(
+  //                       data: (provinces) {
+  //                         return SizedBox(
+  //                           width: 300,
+  //                           child: DropdownButton<Province>(
+  //                             isExpanded: true,
+  //                             hint: const Text('เลือก'),
+  //                             value: selectedProvince,
+  //                             items: provinces.map((p) {
+  //                               return DropdownMenuItem<Province>(
+  //                                 value: p,
+  //                                 child: Text(p.provinceName.toString()),
+  //                               );
+  //                             }).toList(),
+  //                             onChanged: (value) {
+  //                               setState(() {
+  //                                 selectedProvince = value;
+  //                                 selectedDistrict = null;
+  //                                 selectedSubdistrict = null;
+  //                                 txtPostcode.text = "";
+  //                               });
+  //                             },
+  //                           ),
+  //                         );
+  //                       },
+  //                       loading: () => const CircularProgressIndicator(),
+  //                       error: (err, _) => Text('Error: $err'),
+  //                     );
+  //                   },
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           if (showDivider)
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildTappableRowDistrict(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(label, style: const TextStyle(fontSize: 16)),
-                  const Spacer(),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final districtGetListState = ref.watch(
-                        districtsProvider(
-                          selectedProvince == null
-                              ? ""
-                              : selectedProvince!.provinceID.toString(),
-                        ),
-                      );
-                      return districtGetListState.when(
-                        data: (district) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<District>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectedDistrict,
-                              items: district.map((p) {
-                                return DropdownMenuItem<District>(
-                                  value: p,
-                                  child: Text(p.districtName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedDistrict = value;
-                                  selectedSubdistrict = null;
-                                  txtPostcode.text = "";
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildTappableRowDistrict(
+  //   String label,
+  //   String value, {
+  //   bool showDivider = true,
+  // }) {
+  //   return InkWell(
+  //     onTap: () {
+  //       // TODO: Implement navigation or show picker for this row
+  //     },
+  //     child: Padding(
+  //       padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
+  //       child: Column(
+  //         children: [
+  //           SizedBox(
+  //             height: 44, // ความสูงมาตรฐานของ iOS list item
+  //             child: Row(
+  //               children: [
+  //                 Text(label, style: const TextStyle(fontSize: 16)),
+  //                 const Spacer(),
+  //                 Consumer(
+  //                   builder: (context, ref, _) {
+  //                     final districtGetListState = ref.watch(
+  //                       districtsProvider(
+  //                         selectedProvince == null
+  //                             ? ""
+  //                             : selectedProvince!.provinceID.toString(),
+  //                       ),
+  //                     );
+  //                     return districtGetListState.when(
+  //                       data: (district) {
+  //                         return SizedBox(
+  //                           width: 300,
+  //                           child: DropdownButton<District>(
+  //                             isExpanded: true,
+  //                             hint: const Text('เลือก'),
+  //                             value: selectedDistrict,
+  //                             items: district.map((p) {
+  //                               return DropdownMenuItem<District>(
+  //                                 value: p,
+  //                                 child: Text(p.districtName.toString()),
+  //                               );
+  //                             }).toList(),
+  //                             onChanged: (value) {
+  //                               setState(() {
+  //                                 selectedDistrict = value;
+  //                                 selectedSubdistrict = null;
+  //                                 txtPostcode.text = "";
+  //                               });
+  //                             },
+  //                           ),
+  //                         );
+  //                       },
+  //                       loading: () => const CircularProgressIndicator(),
+  //                       error: (err, _) => Text('Error: $err'),
+  //                     );
+  //                   },
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           if (showDivider)
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildTappableRowSubDistrict(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(label, style: const TextStyle(fontSize: 16)),
-                  const Spacer(),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final districtGetListState = ref.watch(
-                        subdistrictsProvider(
-                          selectedDistrict == null
-                              ? ""
-                              : selectedDistrict!.districtID.toString(),
-                        ),
-                      );
-                      return districtGetListState.when(
-                        data: (district) {
-                          return SizedBox(
-                            width: 295,
-                            child: DropdownButton<Subdistrict>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectedSubdistrict,
-                              items: district.map((p) {
-                                return DropdownMenuItem<Subdistrict>(
-                                  value: p,
-                                  child: Text(p.subDistrictName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedSubdistrict = value;
-                                  txtPostcode.text = value?.postCode ?? "";
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildTappableRowSubDistrict(
+  //   String label,
+  //   String value, {
+  //   bool showDivider = true,
+  // }) {
+  //   return InkWell(
+  //     onTap: () {
+  //       // TODO: Implement navigation or show picker for this row
+  //     },
+  //     child: Padding(
+  //       padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
+  //       child: Column(
+  //         children: [
+  //           SizedBox(
+  //             height: 44, // ความสูงมาตรฐานของ iOS list item
+  //             child: Row(
+  //               children: [
+  //                 Text(label, style: const TextStyle(fontSize: 16)),
+  //                 const Spacer(),
+  //                 Consumer(
+  //                   builder: (context, ref, _) {
+  //                     final districtGetListState = ref.watch(
+  //                       subdistrictsProvider(
+  //                         selectedDistrict == null
+  //                             ? ""
+  //                             : selectedDistrict!.districtID.toString(),
+  //                       ),
+  //                     );
+  //                     return districtGetListState.when(
+  //                       data: (district) {
+  //                         return SizedBox(
+  //                           width: 295,
+  //                           child: DropdownButton<Subdistrict>(
+  //                             isExpanded: true,
+  //                             hint: const Text('เลือก'),
+  //                             value: selectedSubdistrict,
+  //                             items: district.map((p) {
+  //                               return DropdownMenuItem<Subdistrict>(
+  //                                 value: p,
+  //                                 child: Text(p.subDistrictName.toString()),
+  //                               );
+  //                             }).toList(),
+  //                             onChanged: (value) {
+  //                               setState(() {
+  //                                 selectedSubdistrict = value;
+  //                                 txtPostcode.text = value?.postCode ?? "";
+  //                               });
+  //                             },
+  //                           ),
+  //                         );
+  //                       },
+  //                       loading: () => const CircularProgressIndicator(),
+  //                       error: (err, _) => Text('Error: $err'),
+  //                     );
+  //                   },
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           if (showDivider)
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // Widget สำหรับแถวข้อมูลธรรมดา (Label: Value)
   Widget _buildInfoRowClient(String label, String value) {
@@ -1055,58 +1130,58 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  Widget _buildInfoRowAddress(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        top: 16,
-        bottom: 16,
-        right: 16,
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 16)),
-              const Spacer(),
-              SizedBox(
-                width: 300,
-                child: TextField(
-                  controller: txtAddress,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
-        ],
-      ),
-    );
-  }
+  // Widget _buildInfoRowAddress(String label, String value) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(
+  //       left: 16.0,
+  //       top: 16,
+  //       bottom: 16,
+  //       right: 16,
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Text(label, style: const TextStyle(fontSize: 16)),
+  //             const Spacer(),
+  //             SizedBox(
+  //               width: 300,
+  //               child: TextField(
+  //                 controller: txtAddress,
+  //                 style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const Divider(height: 1, indent: 0, thickness: 0.5),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildInfoRowPostcode(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 16)),
-              const Spacer(),
-              SizedBox(
-                width: 300,
-                child: TextField(
-                  controller: txtPostcode,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
-        ],
-      ),
-    );
-  }
+  // Widget _buildInfoRowPostcode(String label, String value) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
+  //     child: Column(
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Text(label, style: const TextStyle(fontSize: 16)),
+  //             const Spacer(),
+  //             SizedBox(
+  //               width: 300,
+  //               child: TextField(
+  //                 controller: txtPostcode,
+  //                 style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const Divider(height: 1, indent: 0, thickness: 0.5),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildTappableRowProduct(
     String label,
@@ -1260,6 +1335,26 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   //   );
   // }
 
+  Future<void> openTerritorySheet(
+    BuildContext context,
+    String territoryID,
+  ) async {
+    final selected = await CupertinoOptionsPicker.show<Territory>(
+      context: context,
+      title: 'Territory',
+      provider: territoryGetListProvider,
+      label: (p) => p.salesTerritoryName,
+      initialKey: (p) => p.salesTerritoryID,
+      initialValue: territoryID,
+    );
+
+    if (selected == null) return;
+
+    // ref
+    //     .read(clienAddProvider(widget.appointmentID).notifier)
+    //     .setTerritory(selected);
+  }
+
   Widget _buildTappableRowLevel(
     String label,
     String value, {
@@ -1349,38 +1444,38 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   const SizedBox(width: 12),
                   const VerticalDivider(color: Colors.grey, thickness: 0.5),
                   const SizedBox(width: 10),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final saleTerritorieGetListState = ref.watch(
-                        saleTerritorieGetList,
-                      );
-                      return saleTerritorieGetListState.when(
-                        data: (territory) {
-                          return SizedBox(
-                            width: 210,
-                            child: DropdownButton<String>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: salesTerritory,
-                              items: territory.map((p) {
-                                return DropdownMenuItem<String>(
-                                  value: p.salesTerritoryID,
-                                  child: Text(p.salesTerritoryName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  salesTerritory = value;
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
+                  // Consumer(
+                  //   builder: (context, ref, _) {
+                  //     final saleTerritorieGetListState = ref.watch(
+                  //       saleTerritorieGetList,
+                  //     );
+                  //     return saleTerritorieGetListState.when(
+                  //       data: (territory) {
+                  //         return SizedBox(
+                  //           width: 210,
+                  //           child: DropdownButton<String>(
+                  //             isExpanded: true,
+                  //             hint: const Text('เลือก'),
+                  //             value: salesTerritory,
+                  //             items: territory.map((p) {
+                  //               return DropdownMenuItem<String>(
+                  //                 value: p.salesTerritoryID,
+                  //                 child: Text(p.salesTerritoryName.toString()),
+                  //               );
+                  //             }).toList(),
+                  //             onChanged: (value) {
+                  //               setState(() {
+                  //                 salesTerritory = value;
+                  //               });
+                  //             },
+                  //           ),
+                  //         );
+                  //       },
+                  //       loading: () => const CircularProgressIndicator(),
+                  //       error: (err, _) => Text('Error: $err'),
+                  //     );
+                  //   },
+                  // ),
                 ],
               ),
             ),
