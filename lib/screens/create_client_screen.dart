@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:wfs/main.dart';
+import 'package:wfs/models/appointmentstatus_model.dart';
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/models/clientaddresses_model.dart';
 import 'package:wfs/models/clientcompanies_model.dart';
+import 'package:wfs/models/clientlevel_model.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/product_model.dart';
@@ -13,6 +16,7 @@ import 'package:wfs/models/sales_territory.dart';
 import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/models/territory_model.dart';
 import 'package:wfs/providers/appointment_provider.dart';
+import 'package:wfs/providers/appointmentstatus_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/providers/clientlevel_provider.dart';
@@ -25,9 +29,12 @@ import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
 import 'package:wfs/services/client_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
+import 'package:wfs/utility/date_picker_helper.dart';
+import 'package:wfs/utility/time_picker_helper.dart';
 import 'package:wfs/utility/validator.dart';
 import 'package:wfs/widgets/app_cupertino_option.dart';
 import 'package:wfs/widgets/app_text.dart';
+import 'package:wfs/widgets/app_text_form_field.dart';
 
 class Item {
   final String id;
@@ -47,24 +54,37 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   String? selectedPurpose;
   String? product;
   String? commany;
-  String? salesTerritorys;
+  String? selectSalesTerritorys;
+  String? selectSalesTerritorysName;
   String? selectClientStatus;
+  String? selectClientStatusName;
   String? selectClientLevel;
-  DateTime? dateTimeFrom;
-  DateTime? dateTimeTo;
-  Province? selectedProvince;
-  District? selectedDistrict;
-  Subdistrict? selectedSubdistrict;
+  String? selectClientLevelName;
+  DateTime? dateTimeFrom = DateTime.now();
+  TimeOfDay? timeFrom;
+  DateTime? dateTimeTo = DateTime.now();
+  // Province? selectedProvince;
+  // District? selectedDistrict;
+  // Subdistrict? selectedSubdistrict;
+  String? selectedDistrict;
+  String? selectedDistrictName;
+  String? selectedProvince;
+  String? selectedProvinceName;
+  String? selectedSubdistrict;
+  String? selectedSubdistrictName;
   String? postCode;
   SalesTerritory? salesTerritory;
+  AppointmentStatus? appointmentStatus;
+  ClientLevel? clientLevel;
   bool isCanEdit = true;
+  Client? client;
   final TextEditingController txtAddress = TextEditingController();
   final TextEditingController txtClientName = TextEditingController();
   final TextEditingController txtPhone = TextEditingController();
   final TextEditingController txtEmail = TextEditingController();
   final TextEditingController txtPostcode = TextEditingController();
   final TextEditingController txtLastName = TextEditingController();
-
+  static const colorPrimary = Color(0xFF007AFF);
   static const colorGrey = Color(0xFFC7C7CC);
   static const borderWidth = 0.33;
   static const borderSide = BorderSide(color: colorGrey, width: borderWidth);
@@ -206,382 +226,837 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     final ProductGetListState = ref.watch(ProductGetList);
     final companyGetListProviderState = ref.watch(companyGetListProvider);
     final selectedItem = ref.watch(selectedItemProvider);
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF2F2F7),
-        elevation: 0,
-        title: Text("Create Client"),
-        leading: TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text(
-            '< Back',
-            style: TextStyle(color: Colors.blue, fontSize: 16),
-          ),
-        ),
-        leadingWidth: 80,
-        centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: () {
-              String? error;
-              error = Validator.required(txtClientName.text);
-              if (error != null) {
-                AppDialogs.error(context, message: error + " Client Name");
-                return;
-              }
-
-              error = Validator.required(txtLastName.text);
-              if (error != null) {
-                AppDialogs.error(context, message: error + "Last Name");
-                return;
-              }
-
-              error = Validator.required(selectClientStatus);
-              if (error != null) {
-                AppDialogs.error(context, message: "กรุณาเลือก Status");
-                return;
-              }
-
-              error = Validator.required(selectClientLevel);
-              if (error != null) {
-                AppDialogs.error(context, message: "กรุณาเลือก Level");
-                return;
-              }
-
-              // error = Validator.required(salesTerritory);
-              // if (error != null) {
-              //   AppDialogs.error(context, message: "กรุณาเลือก Territory");
-              //   return;
-              // }
-
-              error = Validator.required(txtAddress.text);
-              if (error != null) {
-                AppDialogs.error(context, message: error + " Address");
-                return;
-              }
-
-              if (selectedProvince == null) {
-                AppDialogs.error(context, message: "กรุณาเลือก Province");
-                return;
-              }
-
-              if (selectedDistrict == null) {
-                AppDialogs.error(context, message: "กรุณาเลือก District");
-                return;
-              }
-
-              if (selectedSubdistrict == null) {
-                AppDialogs.error(context, message: "กรุณาเลือก SubDistrict");
-                return;
-              }
-
-              error = Validator.required(txtPhone.text);
-              if (error != null) {
-                AppDialogs.error(context, message: error + " Phone");
-                return;
-              }
-
-              error = Validator.required(txtEmail.text);
-              if (error != null) {
-                AppDialogs.error(context, message: error + " Email");
-                return;
-              }
-
-              if (selectedCompany.length == 0) {
-                AppDialogs.error(context, message: "กรุณาเลือก add company");
-                return;
-              }
-
-              if (selectedProduct.length == 0) {
-                AppDialogs.error(context, message: "กรุณาเลือก add product");
-                return;
-              }
-              final authState = ref.watch(authProvider);
-
-              Client client = Client(
-                firstName: txtClientName.text,
-                lastName: txtLastName.text,
-                address: "123 Bangkok",
-                phone: txtPhone.text,
-                email: txtEmail.text,
-                // salesTerritoryID: salesTerritory,
-                clientStatusID: selectClientStatus,
-                clientLevelID: selectClientLevel,
-                noted: "xxxxxxxxxxxxxxx",
-                availableTimeStart: "09:00",
-                availableTimeEnd: "16:00",
-                isActive: true,
-                createdBy: authState.userID,
-                modifiedBy: authState.userID,
-                clientAddresses: [
-                  ClientAddresses(
-                    address: txtAddress.text, //"123/4 Sukhumvit Road",
-                    countryID: 1,
-                    provinceID: selectedProvince?.provinceID ?? null, // 1,
-                    districtID: selectedDistrict?.districtID ?? null, //13,
-                    subDistrictID:
-                        selectedSubdistrict?.subDistrictID ?? null, // 2583,
-                    latitude: null,
-                    longitude: null,
-                    isPrimary: true,
-                    isActive: true,
-                  ),
-                ],
-                clientID: "",
-                createdDate: DateTime.now().toIso8601String(),
-                modifiedDate: DateTime.now().toIso8601String(),
-                clientProducts: selectedProduct
-                    .map((f) => f.productID!)
-                    .toList(),
-                clientCompanies: selectedCompany
-                    .map(
-                      (c) => ClientCompanies(
-                        companyID: c.companyID,
-                        position: "Staff",
-                        noted: c.noted,
-                        availableTimeStart: null,
-                        availableTimeEnd: null,
-                        createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                        modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+    return Stack(
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: Scaffold(
+            backgroundColor: Color(0xFFEEEEEE),
+            appBar: AppBar(
+              centerTitle: true,
+              backgroundColor: Color(0xFFEEEEEE),
+              leadingWidth: 100,
+              leading: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: null,
+                      style: ButtonStyle(
+                        iconColor: WidgetStateProperty.all(colorPrimary),
                       ),
-                    )
-                    .toList(),
-              );
-              ClientService clientService = new ClientService();
-              final accessToken = authState.accessToken;
-              try {
-                clientService.Add(accessToken.toString(), client);
-                // ignore: unused_result
-                ref.refresh(clientCompaniesProvider);
-                // ignore: unused_result
-                ref.refresh(clientProvider);
-                // ignore: unused_result
-                ref.refresh(clientSectionsProvider);
-
-                AppDialogs.success(context);
-                Future.delayed(const Duration(seconds: 3), () {
-                  context.push('/clients');
-                });
-              } catch (ex) {
-                AppDialogs.error(context, message: ex.toString());
-              }
-            },
-            child: const Text(
-              'Create',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        children: [
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                infoTile(
-                  label: 'territory',
-                  value: AppText(
-                    label: salesTerritory?.salesTerritoryName ?? '',
-                  ),
-                  onTap: isCanEdit
-                      ? () => openTerritorySheet(
-                          context,
-                          salesTerritory?.salesTerritoryID ?? '',
-                        )
-                      : null,
-                  isHideIcon: !isCanEdit,
-                  isShowBorderBottom: true,
+                    ),
+                    AppText(label: 'Back', textColor: colorPrimary),
+                  ],
                 ),
+              ),
+              title: AppText(
+                label: 'Create Client',
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    String? error;
+                    error = Validator.required(txtClientName.text);
+                    if (error != null) {
+                      AppDialogs.error(
+                        context,
+                        message: error + " Client Name",
+                      );
+                      return;
+                    }
 
-                // _buildInfoRowClient("Client Name", selectedItem.toString()),
-                // const Divider(height: 1, indent: 0, thickness: 0.5),
-                // _buildInfoRowLastName('Last Name', ''),
-                // const Divider(height: 1, indent: 0, thickness: 0.5),
-                // _buildTappableRowStatus('status', ''),
-                // const Divider(height: 1, indent: 0, thickness: 0.5),
-                // _buildTappableRowLevel('level', '', showDivider: false),
-                // const Divider(height: 1, indent: 0, thickness: 0.5),
-                // _buildTappableRowSaleTerritory('territory', ''),
-                // const Divider(height: 1, indent: 0, thickness: 0.5),
+                    error = Validator.required(txtLastName.text);
+                    if (error != null) {
+                      AppDialogs.error(context, message: error + "Last Name");
+                      return;
+                    }
+
+                    error = Validator.required(selectClientStatus);
+                    if (error != null) {
+                      AppDialogs.error(context, message: "กรุณาเลือก Status");
+                      return;
+                    }
+
+                    error = Validator.required(selectClientLevel);
+                    if (error != null) {
+                      AppDialogs.error(context, message: "กรุณาเลือก Level");
+                      return;
+                    }
+
+                    // error = Validator.required(salesTerritory);
+                    // if (error != null) {
+                    //   AppDialogs.error(context, message: "กรุณาเลือก Territory");
+                    //   return;
+                    // }
+
+                    error = Validator.required(txtAddress.text);
+                    if (error != null) {
+                      AppDialogs.error(context, message: error + " Address");
+                      return;
+                    }
+
+                    if (selectedProvince == null) {
+                      AppDialogs.error(context, message: "กรุณาเลือก Province");
+                      return;
+                    }
+
+                    if (selectedDistrict == null) {
+                      AppDialogs.error(context, message: "กรุณาเลือก District");
+                      return;
+                    }
+
+                    if (selectedSubdistrict == null) {
+                      AppDialogs.error(
+                        context,
+                        message: "กรุณาเลือก SubDistrict",
+                      );
+                      return;
+                    }
+
+                    error = Validator.required(txtPhone.text);
+                    if (error != null) {
+                      AppDialogs.error(context, message: error + " Phone");
+                      return;
+                    }
+
+                    error = Validator.required(txtEmail.text);
+                    if (error != null) {
+                      AppDialogs.error(context, message: error + " Email");
+                      return;
+                    }
+
+                    if (selectedCompany.length == 0) {
+                      AppDialogs.error(
+                        context,
+                        message: "กรุณาเลือก add company",
+                      );
+                      return;
+                    }
+
+                    if (selectedProduct.length == 0) {
+                      AppDialogs.error(
+                        context,
+                        message: "กรุณาเลือก add product",
+                      );
+                      return;
+                    }
+                    final authState = ref.watch(authProvider);
+
+                    Client client = Client(
+                      firstName: txtClientName.text,
+                      lastName: txtLastName.text,
+                      address: "123 Bangkok",
+                      phone: txtPhone.text,
+                      email: txtEmail.text,
+                      // salesTerritoryID: salesTerritory,
+                      clientStatusID: selectClientStatus,
+                      clientLevelID: selectClientLevel,
+                      noted: "xxxxxxxxxxxxxxx",
+                      availableTimeStart: "09:00",
+                      availableTimeEnd: "16:00",
+                      isActive: true,
+                      createdBy: authState.userID,
+                      modifiedBy: authState.userID,
+                      clientAddresses: [
+                        ClientAddresses(
+                          address: txtAddress.text, //"123/4 Sukhumvit Road",
+                          countryID: 1,
+                          // provinceID:
+                          //     selectedProvince?.provinceID ?? null, // 1,
+                          // districtID:
+                          //     selectedDistrict?.districtID ?? null, //13,
+                          // subDistrictID:
+                          //     selectedSubdistrict?.subDistrictID ??
+                          //     null, // 2583,
+                          latitude: null,
+                          longitude: null,
+                          isPrimary: true,
+                          isActive: true,
+                        ),
+                      ],
+                      clientID: "",
+                      createdDate: DateTime.now().toIso8601String(),
+                      modifiedDate: DateTime.now().toIso8601String(),
+                      clientProducts: selectedProduct
+                          .map((f) => f.productID!)
+                          .toList(),
+                      clientCompanies: selectedCompany
+                          .map(
+                            (c) => ClientCompanies(
+                              companyID: c.companyID,
+                              position: "Staff",
+                              noted: c.noted,
+                              availableTimeStart: null,
+                              availableTimeEnd: null,
+                              createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                              modifiedBy:
+                                  "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                            ),
+                          )
+                          .toList(),
+                    );
+                    ClientService clientService = new ClientService();
+                    final accessToken = authState.accessToken;
+                    try {
+                      clientService.Add(accessToken.toString(), client);
+                      // ignore: unused_result
+                      ref.refresh(clientCompaniesProvider);
+                      // ignore: unused_result
+                      ref.refresh(clientProvider);
+                      // ignore: unused_result
+                      ref.refresh(clientSectionsProvider);
+
+                      AppDialogs.success(context);
+                      Future.delayed(const Duration(seconds: 3), () {
+                        context.push('/clients');
+                      });
+                    } catch (ex) {
+                      AppDialogs.error(context, message: ex.toString());
+                    }
+                  },
+                  style: TextButton.styleFrom(foregroundColor: colorPrimary),
+                  child: AppText(label: 'Done', textColor: colorPrimary),
+                ),
               ],
             ),
-          ),
-
-          // Container(
-          //   color: Colors.white,
-          //   child: Column(children: [SizedBox(height: 20)]),
-          // ),
-          // const SizedBox(height: 30),
-          // Container(
-          //   color: Colors.white,
-          //   child: Column(children: [_buildInfoRowPhone('Mobile', '')]),
-          // ),
-          // const Divider(height: 1, indent: 0, thickness: 0.5),
-          // Container(
-          //   color: Colors.white,
-          //   child: Column(children: [_buildInfoRowEmail('Email', '')]),
-          // ),
-          // const Divider(height: 1, indent: 0, thickness: 0.5),
-          // const SizedBox(height: 30),
-          // Container(color: Colors.white, child: _buildAddressSection()),
-          // Container(
-          // color: Colors.white,
-          // child: Column(
-          //   children: [
-          //_buildInfoRowAddress('Address', ''),
-          // _buildTappableRowProvince("Province", ""),
-          // _buildTappableRowDistrict("District", ""),
-          // _buildTappableRowSubDistrict("SubDistrict", ""),
-          // _buildInfoRowPostcode('Post Code', ''),
-          //     ],
-          //   ),
-          // ),
-          // const SizedBox(height: 30),
-          // const Padding(
-          //   padding: const EdgeInsets.only(left: 16.0),
-          //   child: Text("LINKED COMPANY"),
-          // ),
-          // Container(
-          //   color: Colors.white,
-          //   child: Column(
-          //     children: [
-          //       SizedBox(height: 20),
-          //       _buildTappableRowCompany(
-          //         'add company',
-          //         '',
-          //         companyGetListProviderState,
-          //       ),
-          //       SizedBox(height: 20),
-          //       Center(
-          //         child: selectedCompany.length > 0
-          //             ? Text(
-          //                 "Company ที่เลือก:",
-          //                 style: TextStyle(fontWeight: FontWeight.bold),
-          //               )
-          //             : Text(""),
-          //       ),
-          //       SizedBox(height: 10),
-          //       Wrap(
-          //         spacing: 8,
-          //         runSpacing: 8,
-          //         children: selectedCompany
-          //             .map(
-          //               (e) => Chip(
-          //                 label: Text(e.companyName.toString()),
-          //                 deleteIcon: Icon(Icons.close),
-          //                 onDeleted: () {
-          //                   setState(() {
-          //                     selectedCompany.remove(e);
-          //                   });
-          //                 },
-          //               ),
-          //             )
-          //             .toList(),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // const SizedBox(height: 30),
-          // Padding(
-          //   padding: const EdgeInsets.only(left: 16.0),
-          //   child: Text("LINKED PRODUCT"),
-          // ),
-          // Container(
-          //   color: Colors.white,
-          //   child: Column(
-          //     children: [
-          //       SizedBox(height: 20),
-          //       _buildTappableRowProduct(
-          //         'add product',
-          //         '',
-          //         ProductGetListState,
-          //       ),
-          //       SizedBox(height: 20),
-          //       Center(
-          //         child: selectedCompany.length > 0
-          //             ? Text(
-          //                 "Product ที่เลือก:",
-          //                 style: TextStyle(fontWeight: FontWeight.bold),
-          //               )
-          //             : Text(""),
-          //       ),
-          //       SizedBox(height: 10),
-          //       Wrap(
-          //         spacing: 8,
-          //         runSpacing: 8,
-          //         children: selectedProduct
-          //             .map(
-          //               (e) => Chip(
-          //                 label: Text(e.productName.toString()),
-          //                 deleteIcon: Icon(Icons.close),
-          //                 onDeleted: () {
-          //                   setState(() {
-          //                     selectedProduct.remove(e);
-          //                   });
-          //                 },
-          //               ),
-          //             )
-          //             .toList(),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // const SizedBox(height: 30),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddressSection() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 16.0, top: 12.0, right: 16),
-          child: Text(
-            'Address',
-            style: TextStyle(fontSize: 16, color: Colors.black),
-          ),
-        ),
-        Expanded(
-          child: Column(
-            children: [
-              _buildAddressTextField(''),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              _buildAddressProvince('Street'),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              _buildAddressDistrict('Cir. Syracuse'),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              Row(
-                children: [
-                  Expanded(child: _buildAddressSubDistrict('Connecticut')),
-                  Container(
-                    width: 0.5,
-                    height: 44,
-                    color: Colors.grey.shade300,
+            body: ListView(
+              children: [
+                Container(
+                  color: Colors.white,
+                  child: Column(
+                    children: [
+                      // infoTile(
+                      //   label: 'territory',
+                      //   value: AppText(
+                      //     label: salesTerritory?.salesTerritoryName ?? '',
+                      //   ),
+                      //   onTap: isCanEdit
+                      //       ? () => openTerritorySheet(
+                      //           context,
+                      //           salesTerritory?.salesTerritoryID ?? '',
+                      //         )
+                      //       : null,
+                      //   isHideIcon: !isCanEdit,
+                      //   isShowBorderBottom: true,
+                      // ),
+                      // infoTile(
+                      //   label: 'status',
+                      //   value: AppText(
+                      //     label: appointmentStatus?.appointmentStatusName ?? '',
+                      //   ),
+                      //   onTap: isCanEdit
+                      //       ? () => openStatusSheet(
+                      //           context,
+                      //           appointmentStatus?.appointmentStatusID ?? '',
+                      //         )
+                      //       : null,
+                      //   isHideIcon: !isCanEdit,
+                      //   isShowBorderBottom: true,
+                      // ),
+                      // infoTile(
+                      //   label: 'level',
+                      //   value: AppText(
+                      //     label: clientLevel?.clientLevelName ?? '',
+                      //   ),
+                      //   onTap: isCanEdit
+                      //       ? () => openLevelSheet(
+                      //           context,
+                      //           clientLevel?.clientLevelID ?? '',
+                      //         )
+                      //       : null,
+                      //   isHideIcon: !isCanEdit,
+                      //   isShowBorderBottom: true,
+                      // ),
+                      buildContent(client),
+                      // _buildInfoRowClient("Client Name", selectedItem.toString()),
+                      // const Divider(height: 1, indent: 0, thickness: 0.5),
+                      // _buildInfoRowLastName('Last Name', ''),
+                      // const Divider(height: 1, indent: 0, thickness: 0.5),
+                      // _buildTappableRowStatus('status', ''),
+                      // const Divider(height: 1, indent: 0, thickness: 0.5),
+                      // _buildTappableRowLevel('level', '', showDivider: false),
+                      // const Divider(height: 1, indent: 0, thickness: 0.5),
+                      // _buildTappableRowSaleTerritory('territory', ''),
+                      // const Divider(height: 1, indent: 0, thickness: 0.5),
+                    ],
                   ),
-                  SizedBox(
-                    width: 100,
-                    child: _buildAddressTextField(postCode ?? ""),
-                  ),
-                ],
-              ),
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-              _buildAddressTextField('THAILAND'),
-            ],
+                ),
+
+                // Container(
+                //   color: Colors.white,
+                //   child: Column(children: [SizedBox(height: 20)]),
+                // ),
+                // const SizedBox(height: 30),
+                // Container(
+                //   color: Colors.white,
+                //   child: Column(children: [_buildInfoRowPhone('Mobile', '')]),
+                // ),
+                // const Divider(height: 1, indent: 0, thickness: 0.5),
+                // Container(
+                //   color: Colors.white,
+                //   child: Column(children: [_buildInfoRowEmail('Email', '')]),
+                // ),
+                // const Divider(height: 1, indent: 0, thickness: 0.5),
+                // const SizedBox(height: 30),
+                // Container(color: Colors.white, child: _buildAddressSection()),
+                // Container(
+                // color: Colors.white,
+                // child: Column(
+                //   children: [
+                //_buildInfoRowAddress('Address', ''),
+                // _buildTappableRowProvince("Province", ""),
+                // _buildTappableRowDistrict("District", ""),
+                // _buildTappableRowSubDistrict("SubDistrict", ""),
+                // _buildInfoRowPostcode('Post Code', ''),
+                //     ],
+                //   ),
+                // ),
+                // const SizedBox(height: 30),
+                // const Padding(
+                //   padding: const EdgeInsets.only(left: 16.0),
+                //   child: Text("LINKED COMPANY"),
+                // ),
+                // Container(
+                //   color: Colors.white,
+                //   child: Column(
+                //     children: [
+                //       SizedBox(height: 20),
+                //       _buildTappableRowCompany(
+                //         'add company',
+                //         '',
+                //         companyGetListProviderState,
+                //       ),
+                //       SizedBox(height: 20),
+                //       Center(
+                //         child: selectedCompany.length > 0
+                //             ? Text(
+                //                 "Company ที่เลือก:",
+                //                 style: TextStyle(fontWeight: FontWeight.bold),
+                //               )
+                //             : Text(""),
+                //       ),
+                //       SizedBox(height: 10),
+                //       Wrap(
+                //         spacing: 8,
+                //         runSpacing: 8,
+                //         children: selectedCompany
+                //             .map(
+                //               (e) => Chip(
+                //                 label: Text(e.companyName.toString()),
+                //                 deleteIcon: Icon(Icons.close),
+                //                 onDeleted: () {
+                //                   setState(() {
+                //                     selectedCompany.remove(e);
+                //                   });
+                //                 },
+                //               ),
+                //             )
+                //             .toList(),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                // const SizedBox(height: 30),
+                // Padding(
+                //   padding: const EdgeInsets.only(left: 16.0),
+                //   child: Text("LINKED PRODUCT"),
+                // ),
+                // Container(
+                //   color: Colors.white,
+                //   child: Column(
+                //     children: [
+                //       SizedBox(height: 20),
+                //       _buildTappableRowProduct(
+                //         'add product',
+                //         '',
+                //         ProductGetListState,
+                //       ),
+                //       SizedBox(height: 20),
+                //       Center(
+                //         child: selectedCompany.length > 0
+                //             ? Text(
+                //                 "Product ที่เลือก:",
+                //                 style: TextStyle(fontWeight: FontWeight.bold),
+                //               )
+                //             : Text(""),
+                //       ),
+                //       SizedBox(height: 10),
+                //       Wrap(
+                //         spacing: 8,
+                //         runSpacing: 8,
+                //         children: selectedProduct
+                //             .map(
+                //               (e) => Chip(
+                //                 label: Text(e.productName.toString()),
+                //                 deleteIcon: Icon(Icons.close),
+                //                 onDeleted: () {
+                //                   setState(() {
+                //                     selectedProduct.remove(e);
+                //                   });
+                //                 },
+                //               ),
+                //             )
+                //             .toList(),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                // const SizedBox(height: 30),
+              ],
+            ),
           ),
         ),
       ],
     );
   }
+
+  Widget buildContent(Client? client) {
+    // final address = client.
+    // final client = client.client;
+    // final salesTerritory = client.salesTerritory;
+    // final products = client.products;
+
+    // bool isShowCancelNote =
+    //     appointmentDetail.appointmentStatusName == 'Canceled';
+
+    // if (!_noteInitialized) {
+    //   notedController.text = appointmentDetail.noted;
+    //   _noteInitialized = true;
+    // }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 24,
+        children: [
+          // AppText(
+          //   label: '${client.firstName} ${client.lastName}',
+          //   fontSize: 26,
+          // ),
+          Column(
+            spacing: 16,
+            children: [
+              Column(
+                children: [
+                  infoTile(
+                    label: 'Client Name',
+                    value: AppTextFormField(controller: txtClientName),
+                    isShowBorderBottom: true,
+                    isHideIcon: true,
+                  ),
+                  infoTile(
+                    label: 'status',
+                    value: AppText(label: selectClientStatusName ?? ''),
+                    onTap: () =>
+                        openStatusSheet(context, selectClientStatusName ?? ""),
+                    isShowBorderBottom: true,
+                  ),
+                  infoTile(
+                    label: 'level',
+                    value: AppText(label: selectClientLevelName ?? ''),
+                    onTap: () =>
+                        openLevelSheet(context, selectClientLevelName ?? ""),
+                    isShowBorderBottom: true,
+                  ),
+                  infoTile(
+                    label: 'territory',
+                    value: AppText(label: selectSalesTerritorysName ?? ''),
+                    onTap: () => openTerritorySheet(
+                      context,
+                      selectSalesTerritorysName ?? '',
+                    ),
+                    isShowBorderBottom: true,
+                  ),
+                  // infoTile(
+                  //   label: 'note',
+                  //   value: AppTextFormField(),
+                  //   isShowBorderBottom: true,
+                  //   isHideIcon: true,
+                  // ),
+                ],
+              ),
+              Container(color: Colors.grey.shade300, height: 30),
+              Column(
+                children: [
+                  datetime(
+                    label: 'Starts',
+                    datetime: dateTimeFrom!.toIso8601String(),
+                    dateOnTap: isCanEdit
+                        ? () => openDatePicker(
+                            datetime: dateTimeFrom!.toIso8601String(),
+                            onSelected: (value) => setState(() {
+                              dateTimeFrom = value;
+                            }),
+                          )
+                        : null,
+                    timeOnTap: isCanEdit
+                        ? () => openTimePicker(
+                            datetime: dateTimeFrom!.toIso8601String(),
+                            onSelected: (value) => setState(() {
+                              dateTimeFrom = DateTime(
+                                dateTimeFrom!.year,
+                                dateTimeFrom!.month,
+                                dateTimeFrom!.day,
+                                value.hour,
+                                value.minute,
+                              );
+                            }),
+                          )
+                        : null,
+                  ),
+                  datetime(
+                    label: 'Ends',
+                    datetime: dateTimeTo!.toIso8601String(),
+                    dateOnTap: isCanEdit
+                        ? () => openDatePicker(
+                            datetime: dateTimeTo!.toIso8601String(),
+                            onSelected: (value) => setState(() {
+                              dateTimeTo = value;
+                            }),
+                            // limitFirstDate: dateTimeFrom!.toIso8601String(),
+                          )
+                        : null,
+                    timeOnTap: isCanEdit
+                        ? () => openTimePicker(
+                            datetime: dateTimeTo!.toIso8601String(),
+                            onSelected: (value) => setState(() {
+                              dateTimeTo = DateTime(
+                                dateTimeTo!.year,
+                                dateTimeTo!.month,
+                                dateTimeTo!.day,
+                                value.hour,
+                                value.minute,
+                              );
+                            }),
+                            // limitFirstDate: dateTimeFrom!.toIso8601String(),
+                          )
+                        : null,
+                  ),
+                ],
+              ),
+              Container(color: Colors.grey.shade300, height: 30),
+              Column(
+                children: [
+                  infoTile(
+                    label: 'mobile',
+                    value: AppTextFormField(controller: txtPhone),
+                    isShowBorderBottom: true,
+                    isHideIcon: true,
+                  ),
+                  infoTile(
+                    label: 'email',
+                    value: AppTextFormField(controller: txtEmail),
+                    isShowBorderBottom: true,
+                    isHideIcon: true,
+                  ),
+                ],
+              ),
+              Container(color: Colors.grey.shade300, height: 30),
+              addressWidget(),
+              // productTile(products: products),
+              // infoTile(
+              //   label: 'note',
+              //   value: AppTextFormField(
+              //     controller: notedController,
+              //     onChanged: (value) => ref
+              //         .read(
+              //           appointmentEditProvider(widget.appointmentID).notifier,
+              //         )
+              //         .setNoted(value),
+              //     maxLines: 5,
+              //   ),
+              //   height: 126,
+              //   isShowBorderBottom: true,
+              //   isHideIcon: true,
+              // ),
+              // GestureDetector(
+              //   onTap: () => deleteAppointment(appointmentDetail.appointmentId),
+              //   child: Container(
+              //     width: double.infinity,
+              //     height: 44,
+              //     color: Colors.white,
+              //     child: Center(
+              //       child: AppText(
+              //         label: 'Delete Appointment',
+              //         fontSize: 17,
+              //         textColor: Color(0xFFFF382B),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget addressWidget() {
+    Widget addressField({
+      required Widget child,
+      bool hasRightBorder = false,
+      bool hasBottomBorder = true,
+    }) {
+      return Container(
+        height: 44,
+        decoration: BoxDecoration(
+          border: Border(
+            right: hasRightBorder ? borderSide : BorderSide.none,
+            bottom: hasBottomBorder ? borderSide : BorderSide.none,
+          ),
+        ),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 16),
+        child: child,
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: const Border(top: borderSide, bottom: borderSide),
+      ),
+      child: Stack(
+        children: [
+          const Positioned(
+            left: 16 + 100,
+            top: 0,
+            bottom: 0,
+            child: SizedBox(
+              width: borderWidth,
+              child: ColoredBox(color: colorGrey),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(width: 16),
+              SizedBox(
+                width: 100,
+                child: Center(
+                  child: AppText(
+                    label: 'address',
+                    textColor: Color(0xFF007AFF),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    addressField(
+                      child: AppTextFormField(controller: txtAddress),
+                    ),
+                    addressField(
+                      hasRightBorder: false,
+                      child: infoTileDropdown(
+                        label: selectedSubdistrictName ?? '',
+                        value: AppText(label: selectedSubdistrictName ?? ''),
+                        onTap: () => openSubDistrictSheet(
+                          context,
+                          selectedSubdistrictName ?? "",
+                        ),
+                        isShowBorderBottom: true,
+                        isHideIcon: true,
+                      ),
+                    ),
+                    addressField(
+                      child: infoTileDropdown(
+                        label: selectedDistrictName ?? '',
+                        value: AppText(label: selectedDistrictName ?? ''),
+                        onTap: () => openDistrictSheet(
+                          context,
+                          selectedDistrictName ?? "",
+                        ),
+                        isShowBorderBottom: true,
+                        isHideIcon: true,
+                      ),
+                    ),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: addressField(
+                            hasRightBorder: true,
+                            child: infoTileDropdown(
+                              label: selectedProvinceName ?? '',
+                              value: AppText(label: selectedProvinceName ?? ''),
+                              onTap: () => openProvinceSheet(
+                                context,
+                                selectedProvinceName ?? "",
+                              ),
+                              isShowBorderBottom: true,
+                              isHideIcon: true,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: addressField(child: AppText(label: "ไทย")),
+                        ),
+                      ],
+                    ),
+                    addressField(
+                      child: AppText(label: postCode ?? ""),
+                      hasBottomBorder: false,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void openTimePicker({
+    required String datetime,
+    required Function(TimeOfDay) onSelected,
+    String? limitFirstDate,
+  }) async {
+    final picked = await showCupertinoTimeDialog(initial: datetime, context);
+
+    if (picked != null) {
+      if (limitFirstDate != null) {
+        final current = DateTime.parse(datetime);
+        final limit = DateTime.parse(limitFirstDate);
+        final limitTime = TimeOfDay(hour: limit.hour, minute: limit.minute);
+
+        if (isSameDay(limit, current) && picked.isBefore(limitTime)) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: AppText(
+                label: 'Please select a time after the appointment start time.',
+                textColor: Colors.white,
+                maxLines: 2,
+              ),
+            ),
+          );
+          return;
+        }
+      }
+
+      onSelected(picked);
+    }
+  }
+
+  void openDatePicker({
+    required String datetime,
+    required Function(DateTime) onSelected,
+    String? limitFirstDate,
+  }) async {
+    final picked = await DatePickerHelper.pickDate(
+      context,
+      initialDate: DateTime.parse(datetime),
+      limitFirstDate: limitFirstDate == null
+          ? null
+          : DateTime.parse(limitFirstDate),
+    );
+    if (picked != null) onSelected(picked);
+  }
+
+  bool isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  Widget datetime({
+    required String label,
+    required String datetime,
+    bool isShowBorderBottom = false,
+    VoidCallback? dateOnTap,
+    timeOnTap,
+  }) {
+    final dt = DateTime.parse(datetime);
+    final date = DateFormat("MMM d, yyyy").format(dt);
+    final time = DateFormat("h:mm a").format(dt);
+
+    Widget datetimeField({required String value, VoidCallback? onTap}) {
+      return GestureDetector(
+        onTap: onTap,
+        child: IntrinsicWidth(
+          child: Container(
+            height: 35,
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Color.fromRGBO(118, 118, 128, 0.12),
+              borderRadius: BorderRadius.all(Radius.circular(7)),
+            ),
+            child: AppText(label: value, fontSize: 17),
+          ),
+        ),
+      );
+    }
+
+    return infoTile(
+      label: label,
+      value: Container(
+        margin: EdgeInsets.only(right: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          spacing: 4,
+          children: [
+            datetimeField(value: date, onTap: dateOnTap),
+            datetimeField(value: time, onTap: timeOnTap),
+          ],
+        ),
+      ),
+      isShowBorderMiddle: false,
+      isShowBorderBottom: isShowBorderBottom,
+      isHideIcon: true,
+    );
+  }
+
+  // Widget _buildAddressSection() {
+  //   return Row(
+  //     crossAxisAlignment: CrossAxisAlignment.center,
+  //     children: [
+  //       const Padding(
+  //         padding: EdgeInsets.only(left: 16.0, top: 12.0, right: 16),
+  //         child: Text(
+  //           'Address',
+  //           style: TextStyle(fontSize: 16, color: Colors.black),
+  //         ),
+  //       ),
+  //       Expanded(
+  //         child: Column(
+  //           children: [
+  //             _buildAddressTextField(''),
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //             _buildAddressProvince('Street'),
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //             _buildAddressDistrict('Cir. Syracuse'),
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //             Row(
+  //               children: [
+  //                 Expanded(child: _buildAddressSubDistrict('Connecticut')),
+  //                 Container(
+  //                   width: 0.5,
+  //                   height: 44,
+  //                   color: Colors.grey.shade300,
+  //                 ),
+  //                 SizedBox(
+  //                   width: 100,
+  //                   child: _buildAddressTextField(postCode ?? ""),
+  //                 ),
+  //               ],
+  //             ),
+  //             const Divider(height: 1, indent: 0, thickness: 0.5),
+  //             _buildAddressTextField('THAILAND'),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildAddressTextField(String hint) {
     return SizedBox(
@@ -649,143 +1124,192 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  Widget _buildAddressDistrict(String hint) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 36),
-      child: SizedBox(
-        height: 44,
-        child: Consumer(
-          builder: (context, ref, _) {
-            final districtGetListState = ref.watch(
-              districtsProvider(
-                selectedProvince == null
-                    ? ""
-                    : selectedProvince!.provinceID.toString(),
-              ),
-            );
-            return districtGetListState.when(
-              data: (district) {
-                return SizedBox(
-                  width: 300,
-                  child: DropdownButton<District>(
-                    isExpanded: true,
-                    hint: const Text('เลือก'),
-                    value: selectedDistrict,
-                    items: district.map((p) {
-                      return DropdownMenuItem<District>(
-                        value: p,
-                        child: Text(p.districtName.toString()),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedDistrict = value;
-                        selectedSubdistrict = null;
-                        txtPostcode.text = "";
-                        postCode = "";
-                      });
-                    },
-                  ),
-                );
-              },
-              loading: () => const CircularProgressIndicator(),
-              error: (err, _) => Text('Error: $err'),
-            );
-          },
+  Widget infoTileDropdown({
+    required String label,
+    required Widget value,
+    VoidCallback? onTap,
+    double height = 44,
+    bool isShowBorderMiddle = true,
+    bool isShowBorderBottom = false,
+    bool isHideIcon = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: Color(0xFFFFFFFF),
+          border: Border(
+            top: borderSide,
+            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
+          ),
+        ),
+        child: Row(
+          children: [
+            // const SizedBox(width: 16),
+            // Container(
+            //   width: 100,
+            //   alignment: Alignment.center,
+            //   decoration: BoxDecoration(
+            //     border: BorderDirectional(
+            //       end: isShowBorderMiddle
+            //           ? BorderSide(color: colorGrey, width: borderWidth)
+            //           : BorderSide.none,
+            //     ),
+            //   ),
+            //   child: AppText(label: label, textColor: const Color(0xFF007AFF)),
+            // ),
+            // const SizedBox(width: 16),
+            Expanded(
+              child: Align(alignment: Alignment.centerLeft, child: value),
+            ),
+            if (!isHideIcon) ...[
+              Icon(Icons.chevron_right, size: 24, color: colorGrey),
+              const SizedBox(width: 8),
+            ],
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildAddressSubDistrict(String hint) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 18),
-      child: SizedBox(
-        height: 44,
-        child: Consumer(
-          builder: (context, ref, _) {
-            final districtGetListState = ref.watch(
-              subdistrictsProvider(
-                selectedDistrict == null
-                    ? ""
-                    : selectedDistrict!.districtID.toString(),
-              ),
-            );
-            return districtGetListState.when(
-              data: (district) {
-                return SizedBox(
-                  width: 200,
-                  child: DropdownButton<Subdistrict>(
-                    isExpanded: true,
-                    hint: const Text('เลือก'),
-                    value: selectedSubdistrict,
-                    items: district.map((p) {
-                      return DropdownMenuItem<Subdistrict>(
-                        value: p,
-                        child: Text(p.subDistrictName.toString()),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedSubdistrict = value;
-                        txtPostcode.text = value?.postCode ?? "";
-                        postCode = value?.postCode ?? "";
-                      });
-                    },
-                  ),
-                );
-              },
-              loading: () => const CircularProgressIndicator(),
-              error: (err, _) => Text('Error: $err'),
-            );
-          },
-        ),
-      ),
-    );
-  }
+  // Widget _buildAddressDistrict(String hint) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(left: 16, right: 36),
+  //     child: SizedBox(
+  //       height: 44,
+  //       child: Consumer(
+  //         builder: (context, ref, _) {
+  //           final districtGetListState = ref.watch(
+  //             districtsProvider(
+  //               selectedProvince == null
+  //                   ? ""
+  //                   : selectedProvince!.provinceID.toString(),
+  //             ),
+  //           );
+  //           return districtGetListState.when(
+  //             data: (district) {
+  //               return SizedBox(
+  //                 width: 300,
+  //                 child: DropdownButton<District>(
+  //                   isExpanded: true,
+  //                   hint: const Text('เลือก'),
+  //                   value: selectedDistrict,
+  //                   items: district.map((p) {
+  //                     return DropdownMenuItem<District>(
+  //                       value: p,
+  //                       child: Text(p.districtName.toString()),
+  //                     );
+  //                   }).toList(),
+  //                   onChanged: (value) {
+  //                     setState(() {
+  //                       selectedDistrict = value;
+  //                       selectedSubdistrict = null;
+  //                       txtPostcode.text = "";
+  //                       postCode = "";
+  //                     });
+  //                   },
+  //                 ),
+  //               );
+  //             },
+  //             loading: () => const CircularProgressIndicator(),
+  //             error: (err, _) => Text('Error: $err'),
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildAddressProvince(String hint) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 36),
-      child: SizedBox(
-        height: 44,
-        child: Consumer(
-          builder: (context, ref, _) {
-            final provincesProviderState = ref.watch(provincesProvider);
-            return provincesProviderState.when(
-              data: (provinces) {
-                return SizedBox(
-                  width: 300,
-                  child: DropdownButton<Province>(
-                    isExpanded: true,
-                    hint: const Text('เลือก'),
-                    value: selectedProvince,
-                    items: provinces.map((p) {
-                      return DropdownMenuItem<Province>(
-                        value: p,
-                        child: Text(p.provinceName.toString()),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedProvince = value;
-                        selectedDistrict = null;
-                        selectedSubdistrict = null;
-                        txtPostcode.text = "";
-                        postCode = "";
-                      });
-                    },
-                  ),
-                );
-              },
-              loading: () => const CircularProgressIndicator(),
-              error: (err, _) => Text('Error: $err'),
-            );
-          },
-        ),
-      ),
-    );
-  }
+  // Widget _buildAddressSubDistrict(String hint) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(left: 18),
+  //     child: SizedBox(
+  //       height: 44,
+  //       child: Consumer(
+  //         builder: (context, ref, _) {
+  //           final districtGetListState = ref.watch(
+  //             subdistrictsProvider(
+  //               selectedDistrict == null
+  //                   ? ""
+  //                   : selectedDistrict!.districtID.toString(),
+  //             ),
+  //           );
+  //           return districtGetListState.when(
+  //             data: (district) {
+  //               return SizedBox(
+  //                 width: 200,
+  //                 child: DropdownButton<Subdistrict>(
+  //                   isExpanded: true,
+  //                   hint: const Text('เลือก'),
+  //                   value: selectedSubdistrict,
+  //                   items: district.map((p) {
+  //                     return DropdownMenuItem<Subdistrict>(
+  //                       value: p,
+  //                       child: Text(p.subDistrictName.toString()),
+  //                     );
+  //                   }).toList(),
+  //                   onChanged: (value) {
+  //                     setState(() {
+  //                       selectedSubdistrict = value;
+  //                       txtPostcode.text = value?.postCode ?? "";
+  //                       postCode = value?.postCode ?? "";
+  //                     });
+  //                   },
+  //                 ),
+  //               );
+  //             },
+  //             loading: () => const CircularProgressIndicator(),
+  //             error: (err, _) => Text('Error: $err'),
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  // Widget _buildAddressProvince(String hint) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(left: 16, right: 36),
+  //     child: SizedBox(
+  //       height: 44,
+  //       child: Consumer(
+  //         builder: (context, ref, _) {
+  //           final provincesProviderState = ref.watch(provincesProvider);
+  //           return provincesProviderState.when(
+  //             data: (provinces) {
+  //               return SizedBox(
+  //                 width: 300,
+  //                 child: DropdownButton<Province>(
+  //                   isExpanded: true,
+  //                   hint: const Text('เลือก'),
+  //                   value: selectedProvince,
+  //                   items: provinces.map((p) {
+  //                     return DropdownMenuItem<Province>(
+  //                       value: p,
+  //                       child: Text(p.provinceName.toString()),
+  //                     );
+  //                   }).toList(),
+  //                   onChanged: (value) {
+  //                     setState(() {
+  //                       selectedProvince = value;
+  //                       selectedDistrict = null;
+  //                       selectedSubdistrict = null;
+  //                       txtPostcode.text = "";
+  //                       postCode = "";
+  //                     });
+  //                   },
+  //                 ),
+  //               );
+  //             },
+  //             loading: () => const CircularProgressIndicator(),
+  //             error: (err, _) => Text('Error: $err'),
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
   // --- Helper Widgets for building UI sections ---
 
   // Widget สำหรับหัวข้อของแต่ละ Section (เช่น CLIENT INFO)
@@ -1349,10 +1873,113 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
 
     if (selected == null) return;
+    setState(() {
+      selectSalesTerritorysName = selected.salesTerritoryName;
+      selectSalesTerritorys = selected.salesTerritoryID;
+    });
+  }
 
-    // ref
-    //     .read(clienAddProvider(widget.appointmentID).notifier)
-    //     .setTerritory(selected);
+  Future<void> openStatusSheet(BuildContext context, String statusID) async {
+    final selected = await CupertinoOptionsPicker.show<AppointmentStatus>(
+      context: context,
+      title: 'Status',
+      provider: appointmentStatusGetList,
+      label: (p) => p.appointmentStatusName.toString(),
+      initialKey: (p) => p.appointmentStatusID.toString(),
+      initialValue: statusID,
+    );
+
+    if (selected == null) return;
+    setState(() {
+      selectClientStatus = selected.appointmentStatusID;
+      selectClientStatusName = selected.appointmentStatusName;
+    });
+  }
+
+  Future<void> openLevelSheet(BuildContext context, String levelID) async {
+    final selected = await CupertinoOptionsPicker.show<ClientLevel>(
+      context: context,
+      title: 'Level',
+      provider: clientLevelGetList,
+      label: (p) => p.clientLevelName.toString(),
+      initialKey: (p) => p.clientLevelID.toString(),
+      initialValue: levelID,
+    );
+
+    if (selected == null) return;
+    setState(() {
+      selectClientLevel = selected.clientLevelID;
+      selectClientLevelName = selected.clientLevelName;
+    });
+  }
+
+  Future<void> openSubDistrictSheet(
+    BuildContext context,
+    String subdistrictID,
+  ) async {
+    final selected = await CupertinoOptionsPicker.show<Subdistrict>(
+      context: context,
+      title: 'SubDistrict',
+      provider: subdistrictsProvider(selectedDistrict ?? ""),
+      label: (p) => p.subDistrictName.toString(),
+      initialKey: (p) => p.subDistrictID.toString(),
+      initialValue: subdistrictID,
+    );
+
+    if (selected == null) return;
+    setState(() {
+      selectedSubdistrict = selected.subDistrictID.toString();
+      selectedSubdistrictName = selected.subDistrictName;
+      txtPostcode.text = selected.postCode ?? "";
+      postCode = selected.postCode ?? "";
+    });
+  }
+
+  Future<void> openDistrictSheet(
+    BuildContext context,
+    String subdistrictID,
+  ) async {
+    final selected = await CupertinoOptionsPicker.show<District>(
+      context: context,
+      title: 'District',
+      provider: districtsProvider(selectedProvince ?? ""),
+      label: (p) => p.districtName.toString(),
+      initialKey: (p) => p.districtID.toString(),
+      initialValue: subdistrictID,
+    );
+
+    if (selected == null) return;
+    setState(() {
+      selectedDistrict = selected.districtID.toString();
+      selectedDistrictName = selected.districtName;
+      selectedSubdistrict = null;
+      txtPostcode.text = "";
+      postCode = "";
+    });
+  }
+
+  Future<void> openProvinceSheet(
+    BuildContext context,
+    String subdistrictID,
+  ) async {
+    final selected = await CupertinoOptionsPicker.show<Province>(
+      context: context,
+      title: 'Province',
+      provider: provincesProvider,
+      label: (p) => p.provinceName.toString(),
+      initialKey: (p) => p.provinceID.toString(),
+      initialValue: subdistrictID,
+    );
+
+    if (selected == null) return;
+    setState(() {
+      selectedProvince = selected.provinceID.toString();
+      selectedProvinceName = selected.provinceName;
+      selectedDistrict = null;
+      selectedSubdistrict = null;
+      txtPostcode.text = "";
+      postCode = "";
+    });
   }
 
   Widget _buildTappableRowLevel(
