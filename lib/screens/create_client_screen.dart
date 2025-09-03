@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:wfs/main.dart';
 import 'package:wfs/models/appointmentstatus_model.dart';
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/models/clientaddresses_model.dart';
 import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/clientlevel_model.dart';
+import 'package:wfs/models/clientstatus_model.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/product_model.dart';
@@ -15,8 +15,6 @@ import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/sales_territory.dart';
 import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/models/territory_model.dart';
-import 'package:wfs/providers/appointment_provider.dart';
-import 'package:wfs/providers/appointmentstatus_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/providers/clientlevel_provider.dart';
@@ -61,11 +59,10 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   String? selectClientLevel;
   String? selectClientLevelName;
   DateTime? dateTimeFrom = DateTime.now();
+  DateTime? dateTimeFromTemp = DateTime.now();
   TimeOfDay? timeFrom;
   DateTime? dateTimeTo = DateTime.now();
-  // Province? selectedProvince;
-  // District? selectedDistrict;
-  // Subdistrict? selectedSubdistrict;
+  DateTime? dateTimeToTemp = DateTime.now();
   String? selectedDistrict;
   String? selectedDistrictName;
   String? selectedProvince;
@@ -91,141 +88,11 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
   List<Product> selectedProduct = [];
   List<Company> selectedCompany = [];
-  void _showPopupCompany(AsyncValue<List<Company>> companyGetList) async {
-    final result = await showDialog<List<Company>>(
-      context: context,
-      builder: (context) {
-        List<Company> tempSelected = List.from(selectedCompany);
-
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text("เลือก Company"),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return SizedBox(
-                width: double.maxFinite,
-                height: 250,
-                child: companyGetList.when(
-                  data: (companys) => ListView.builder(
-                    itemCount: companys.length,
-                    itemBuilder: (context, index) {
-                      final Company = companys[index];
-                      final isSelected = tempSelected.contains(Company);
-
-                      return CheckboxListTile(
-                        title: Text(Company.companyName.toString()),
-                        value: isSelected,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            if (value == true) {
-                              tempSelected.add(Company);
-                            } else {
-                              tempSelected.remove(Company);
-                            }
-                          });
-                        },
-                      );
-                    },
-                  ),
-                  loading: () => Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text("Error: $e")),
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("ยกเลิก"),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, tempSelected),
-              child: Text("ตกลง"),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result != null) {
-      setState(() {
-        selectedCompany = result;
-      });
-    }
-  }
-
-  void _showPopupProduct(AsyncValue<List<Product>> productGetList) async {
-    final result = await showDialog<List<Product>>(
-      context: context,
-      builder: (context) {
-        List<Product> tempSelected = List.from(selectedProduct);
-
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text("เลือก Product"),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return SizedBox(
-                width: double.maxFinite,
-                height: 250,
-                child: productGetList.when(
-                  data: (Products) => ListView.builder(
-                    itemCount: Products.length,
-                    itemBuilder: (context, index) {
-                      final Product = Products[index];
-                      final isSelected = tempSelected.contains(Product);
-
-                      return CheckboxListTile(
-                        title: Text(Product.productName.toString()),
-                        value: isSelected,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            if (value == true) {
-                              tempSelected.add(Product);
-                            } else {
-                              tempSelected.remove(Product);
-                            }
-                          });
-                        },
-                      );
-                    },
-                  ),
-                  loading: () => Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text("Error: $e")),
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("ยกเลิก"),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, tempSelected),
-              child: Text("ตกลง"),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result != null) {
-      setState(() {
-        selectedProduct = result;
-      });
-    }
-  }
+  List<Product> products = [];
+  List<Company> companys = [];
 
   @override
   Widget build(BuildContext context) {
-    final ProductGetListState = ref.watch(ProductGetList);
-    final companyGetListProviderState = ref.watch(companyGetListProvider);
-    final selectedItem = ref.watch(selectedItemProvider);
     return Stack(
       children: [
         GestureDetector(
@@ -252,7 +119,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   ],
                 ),
               ),
-              title: AppText(
+              title: const AppText(
                 label: 'Create Client',
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -270,12 +137,6 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       return;
                     }
 
-                    error = Validator.required(txtLastName.text);
-                    if (error != null) {
-                      AppDialogs.error(context, message: error + "Last Name");
-                      return;
-                    }
-
                     error = Validator.required(selectClientStatus);
                     if (error != null) {
                       AppDialogs.error(context, message: "กรุณาเลือก Status");
@@ -288,11 +149,26 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       return;
                     }
 
-                    // error = Validator.required(salesTerritory);
-                    // if (error != null) {
-                    //   AppDialogs.error(context, message: "กรุณาเลือก Territory");
-                    //   return;
-                    // }
+                    error = Validator.required(selectSalesTerritorys);
+                    if (error != null) {
+                      AppDialogs.error(
+                        context,
+                        message: "กรุณาเลือก Territory",
+                      );
+                      return;
+                    }
+
+                    error = Validator.required(txtPhone.text);
+                    if (error != null) {
+                      AppDialogs.error(context, message: error + " Mobile");
+                      return;
+                    }
+
+                    error = Validator.required(txtEmail.text);
+                    if (error != null) {
+                      AppDialogs.error(context, message: error + " Email");
+                      return;
+                    }
 
                     error = Validator.required(txtAddress.text);
                     if (error != null) {
@@ -318,31 +194,13 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       return;
                     }
 
-                    error = Validator.required(txtPhone.text);
-                    if (error != null) {
-                      AppDialogs.error(context, message: error + " Phone");
+                    if (companys.length == 0) {
+                      AppDialogs.error(context, message: "กรุณาเลือก company");
                       return;
                     }
 
-                    error = Validator.required(txtEmail.text);
-                    if (error != null) {
-                      AppDialogs.error(context, message: error + " Email");
-                      return;
-                    }
-
-                    if (selectedCompany.length == 0) {
-                      AppDialogs.error(
-                        context,
-                        message: "กรุณาเลือก add company",
-                      );
-                      return;
-                    }
-
-                    if (selectedProduct.length == 0) {
-                      AppDialogs.error(
-                        context,
-                        message: "กรุณาเลือก add product",
-                      );
+                    if (products.length == 0) {
+                      AppDialogs.error(context, message: "กรุณาเลือก product");
                       return;
                     }
                     final authState = ref.watch(authProvider);
@@ -350,15 +208,19 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     Client client = Client(
                       firstName: txtClientName.text,
                       lastName: txtLastName.text,
-                      address: "123 Bangkok",
+                      address: txtAddress.text,
                       phone: txtPhone.text,
                       email: txtEmail.text,
-                      // salesTerritoryID: salesTerritory,
+                      salesTerritoryID: selectSalesTerritorys,
                       clientStatusID: selectClientStatus,
                       clientLevelID: selectClientLevel,
                       noted: "xxxxxxxxxxxxxxx",
-                      availableTimeStart: "09:00",
-                      availableTimeEnd: "16:00",
+                      availableTimeStart: DateFormat(
+                        'HH:mm',
+                      ).format(dateTimeFrom!), //"09:00",
+                      availableTimeEnd: DateFormat(
+                        'HH:mm',
+                      ).format(dateTimeTo!), //"16:00",
                       isActive: true,
                       createdBy: authState.userID,
                       modifiedBy: authState.userID,
@@ -366,13 +228,11 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                         ClientAddresses(
                           address: txtAddress.text, //"123/4 Sukhumvit Road",
                           countryID: 1,
-                          // provinceID:
-                          //     selectedProvince?.provinceID ?? null, // 1,
-                          // districtID:
-                          //     selectedDistrict?.districtID ?? null, //13,
-                          // subDistrictID:
-                          //     selectedSubdistrict?.subDistrictID ??
-                          //     null, // 2583,
+                          provinceID: int.parse(selectedProvince!), // 1,
+                          districtID: int.parse(selectedDistrict!), //13,
+                          subDistrictID: int.parse(
+                            selectedSubdistrict!,
+                          ), // 2583,
                           latitude: null,
                           longitude: null,
                           isPrimary: true,
@@ -382,10 +242,10 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       clientID: "",
                       createdDate: DateTime.now().toIso8601String(),
                       modifiedDate: DateTime.now().toIso8601String(),
-                      clientProducts: selectedProduct
+                      clientProducts: products
                           .map((f) => f.productID!)
                           .toList(),
-                      clientCompanies: selectedCompany
+                      clientCompanies: companys
                           .map(
                             (c) => ClientCompanies(
                               companyID: c.companyID,
@@ -428,185 +288,8 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               children: [
                 Container(
                   color: Colors.white,
-                  child: Column(
-                    children: [
-                      // infoTile(
-                      //   label: 'territory',
-                      //   value: AppText(
-                      //     label: salesTerritory?.salesTerritoryName ?? '',
-                      //   ),
-                      //   onTap: isCanEdit
-                      //       ? () => openTerritorySheet(
-                      //           context,
-                      //           salesTerritory?.salesTerritoryID ?? '',
-                      //         )
-                      //       : null,
-                      //   isHideIcon: !isCanEdit,
-                      //   isShowBorderBottom: true,
-                      // ),
-                      // infoTile(
-                      //   label: 'status',
-                      //   value: AppText(
-                      //     label: appointmentStatus?.appointmentStatusName ?? '',
-                      //   ),
-                      //   onTap: isCanEdit
-                      //       ? () => openStatusSheet(
-                      //           context,
-                      //           appointmentStatus?.appointmentStatusID ?? '',
-                      //         )
-                      //       : null,
-                      //   isHideIcon: !isCanEdit,
-                      //   isShowBorderBottom: true,
-                      // ),
-                      // infoTile(
-                      //   label: 'level',
-                      //   value: AppText(
-                      //     label: clientLevel?.clientLevelName ?? '',
-                      //   ),
-                      //   onTap: isCanEdit
-                      //       ? () => openLevelSheet(
-                      //           context,
-                      //           clientLevel?.clientLevelID ?? '',
-                      //         )
-                      //       : null,
-                      //   isHideIcon: !isCanEdit,
-                      //   isShowBorderBottom: true,
-                      // ),
-                      buildContent(client),
-                      // _buildInfoRowClient("Client Name", selectedItem.toString()),
-                      // const Divider(height: 1, indent: 0, thickness: 0.5),
-                      // _buildInfoRowLastName('Last Name', ''),
-                      // const Divider(height: 1, indent: 0, thickness: 0.5),
-                      // _buildTappableRowStatus('status', ''),
-                      // const Divider(height: 1, indent: 0, thickness: 0.5),
-                      // _buildTappableRowLevel('level', '', showDivider: false),
-                      // const Divider(height: 1, indent: 0, thickness: 0.5),
-                      // _buildTappableRowSaleTerritory('territory', ''),
-                      // const Divider(height: 1, indent: 0, thickness: 0.5),
-                    ],
-                  ),
+                  child: Column(children: [buildContent()]),
                 ),
-
-                // Container(
-                //   color: Colors.white,
-                //   child: Column(children: [SizedBox(height: 20)]),
-                // ),
-                // const SizedBox(height: 30),
-                // Container(
-                //   color: Colors.white,
-                //   child: Column(children: [_buildInfoRowPhone('Mobile', '')]),
-                // ),
-                // const Divider(height: 1, indent: 0, thickness: 0.5),
-                // Container(
-                //   color: Colors.white,
-                //   child: Column(children: [_buildInfoRowEmail('Email', '')]),
-                // ),
-                // const Divider(height: 1, indent: 0, thickness: 0.5),
-                // const SizedBox(height: 30),
-                // Container(color: Colors.white, child: _buildAddressSection()),
-                // Container(
-                // color: Colors.white,
-                // child: Column(
-                //   children: [
-                //_buildInfoRowAddress('Address', ''),
-                // _buildTappableRowProvince("Province", ""),
-                // _buildTappableRowDistrict("District", ""),
-                // _buildTappableRowSubDistrict("SubDistrict", ""),
-                // _buildInfoRowPostcode('Post Code', ''),
-                //     ],
-                //   ),
-                // ),
-                // const SizedBox(height: 30),
-                // const Padding(
-                //   padding: const EdgeInsets.only(left: 16.0),
-                //   child: Text("LINKED COMPANY"),
-                // ),
-                // Container(
-                //   color: Colors.white,
-                //   child: Column(
-                //     children: [
-                //       SizedBox(height: 20),
-                //       _buildTappableRowCompany(
-                //         'add company',
-                //         '',
-                //         companyGetListProviderState,
-                //       ),
-                //       SizedBox(height: 20),
-                //       Center(
-                //         child: selectedCompany.length > 0
-                //             ? Text(
-                //                 "Company ที่เลือก:",
-                //                 style: TextStyle(fontWeight: FontWeight.bold),
-                //               )
-                //             : Text(""),
-                //       ),
-                //       SizedBox(height: 10),
-                //       Wrap(
-                //         spacing: 8,
-                //         runSpacing: 8,
-                //         children: selectedCompany
-                //             .map(
-                //               (e) => Chip(
-                //                 label: Text(e.companyName.toString()),
-                //                 deleteIcon: Icon(Icons.close),
-                //                 onDeleted: () {
-                //                   setState(() {
-                //                     selectedCompany.remove(e);
-                //                   });
-                //                 },
-                //               ),
-                //             )
-                //             .toList(),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                // const SizedBox(height: 30),
-                // Padding(
-                //   padding: const EdgeInsets.only(left: 16.0),
-                //   child: Text("LINKED PRODUCT"),
-                // ),
-                // Container(
-                //   color: Colors.white,
-                //   child: Column(
-                //     children: [
-                //       SizedBox(height: 20),
-                //       _buildTappableRowProduct(
-                //         'add product',
-                //         '',
-                //         ProductGetListState,
-                //       ),
-                //       SizedBox(height: 20),
-                //       Center(
-                //         child: selectedCompany.length > 0
-                //             ? Text(
-                //                 "Product ที่เลือก:",
-                //                 style: TextStyle(fontWeight: FontWeight.bold),
-                //               )
-                //             : Text(""),
-                //       ),
-                //       SizedBox(height: 10),
-                //       Wrap(
-                //         spacing: 8,
-                //         runSpacing: 8,
-                //         children: selectedProduct
-                //             .map(
-                //               (e) => Chip(
-                //                 label: Text(e.productName.toString()),
-                //                 deleteIcon: Icon(Icons.close),
-                //                 onDeleted: () {
-                //                   setState(() {
-                //                     selectedProduct.remove(e);
-                //                   });
-                //                 },
-                //               ),
-                //             )
-                //             .toList(),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                // const SizedBox(height: 30),
               ],
             ),
           ),
@@ -615,30 +298,13 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  Widget buildContent(Client? client) {
-    // final address = client.
-    // final client = client.client;
-    // final salesTerritory = client.salesTerritory;
-    // final products = client.products;
-
-    // bool isShowCancelNote =
-    //     appointmentDetail.appointmentStatusName == 'Canceled';
-
-    // if (!_noteInitialized) {
-    //   notedController.text = appointmentDetail.noted;
-    //   _noteInitialized = true;
-    // }
-
+  Widget buildContent() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 24,
         children: [
-          // AppText(
-          //   label: '${client.firstName} ${client.lastName}',
-          //   fontSize: 26,
-          // ),
           Column(
             spacing: 16,
             children: [
@@ -673,15 +339,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     ),
                     isShowBorderBottom: true,
                   ),
-                  // infoTile(
-                  //   label: 'note',
-                  //   value: AppTextFormField(),
-                  //   isShowBorderBottom: true,
-                  //   isHideIcon: true,
-                  // ),
                 ],
               ),
-              Container(color: Colors.grey.shade300, height: 30),
+              Container(color: Color(0xFFEEEEEE), height: 30),
               Column(
                 children: [
                   datetime(
@@ -719,7 +379,6 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                             onSelected: (value) => setState(() {
                               dateTimeTo = value;
                             }),
-                            // limitFirstDate: dateTimeFrom!.toIso8601String(),
                           )
                         : null,
                     timeOnTap: isCanEdit
@@ -734,13 +393,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                                 value.minute,
                               );
                             }),
-                            // limitFirstDate: dateTimeFrom!.toIso8601String(),
                           )
                         : null,
                   ),
                 ],
               ),
-              Container(color: Colors.grey.shade300, height: 30),
+              Container(color: Color(0xFFEEEEEE), height: 30),
               Column(
                 children: [
                   infoTile(
@@ -757,39 +415,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   ),
                 ],
               ),
-              Container(color: Colors.grey.shade300, height: 30),
+              Container(color: Color(0xFFEEEEEE), height: 30),
               addressWidget(),
-              // productTile(products: products),
-              // infoTile(
-              //   label: 'note',
-              //   value: AppTextFormField(
-              //     controller: notedController,
-              //     onChanged: (value) => ref
-              //         .read(
-              //           appointmentEditProvider(widget.appointmentID).notifier,
-              //         )
-              //         .setNoted(value),
-              //     maxLines: 5,
-              //   ),
-              //   height: 126,
-              //   isShowBorderBottom: true,
-              //   isHideIcon: true,
-              // ),
-              // GestureDetector(
-              //   onTap: () => deleteAppointment(appointmentDetail.appointmentId),
-              //   child: Container(
-              //     width: double.infinity,
-              //     height: 44,
-              //     color: Colors.white,
-              //     child: Center(
-              //       child: AppText(
-              //         label: 'Delete Appointment',
-              //         fontSize: 17,
-              //         textColor: Color(0xFFFF382B),
-              //       ),
-              //     ),
-              //   ),
-              // ),
+              Container(color: Color(0xFFEEEEEE), height: 30),
+              companyTile(companys: companys),
+              Container(color: Color(0xFFEEEEEE), height: 30),
+              productTile(products: products),
             ],
           ),
         ],
@@ -837,7 +468,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(width: 16),
-              SizedBox(
+              const SizedBox(
                 width: 100,
                 child: Center(
                   child: AppText(
@@ -984,9 +615,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
         child: IntrinsicWidth(
           child: Container(
             height: 35,
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             alignment: Alignment.center,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Color.fromRGBO(118, 118, 128, 0.12),
               borderRadius: BorderRadius.all(Radius.circular(7)),
             ),
@@ -999,7 +630,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     return infoTile(
       label: label,
       value: Container(
-        margin: EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(right: 20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           spacing: 4,
@@ -1015,64 +646,316 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  // Widget _buildAddressSection() {
-  //   return Row(
-  //     crossAxisAlignment: CrossAxisAlignment.center,
-  //     children: [
-  //       const Padding(
-  //         padding: EdgeInsets.only(left: 16.0, top: 12.0, right: 16),
-  //         child: Text(
-  //           'Address',
-  //           style: TextStyle(fontSize: 16, color: Colors.black),
-  //         ),
-  //       ),
-  //       Expanded(
-  //         child: Column(
-  //           children: [
-  //             _buildAddressTextField(''),
-  //             const Divider(height: 1, indent: 0, thickness: 0.5),
-  //             _buildAddressProvince('Street'),
-  //             const Divider(height: 1, indent: 0, thickness: 0.5),
-  //             _buildAddressDistrict('Cir. Syracuse'),
-  //             const Divider(height: 1, indent: 0, thickness: 0.5),
-  //             Row(
-  //               children: [
-  //                 Expanded(child: _buildAddressSubDistrict('Connecticut')),
-  //                 Container(
-  //                   width: 0.5,
-  //                   height: 44,
-  //                   color: Colors.grey.shade300,
-  //                 ),
-  //                 SizedBox(
-  //                   width: 100,
-  //                   child: _buildAddressTextField(postCode ?? ""),
-  //                 ),
-  //               ],
-  //             ),
-  //             const Divider(height: 1, indent: 0, thickness: 0.5),
-  //             _buildAddressTextField('THAILAND'),
-  //           ],
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
-
-  Widget _buildAddressTextField(String hint) {
-    return SizedBox(
-      height: 44,
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.black),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+  Widget companyTile({
+    required List<Company> companys,
+    bool isShowBorderBottom = false,
+  }) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: borderSide, bottom: borderSide),
+      ),
+      child: Stack(
+        children: [
+          const Positioned(
+            left: 16 + 100,
+            top: 0,
+            bottom: 0,
+            child: SizedBox(
+              width: borderWidth,
+              child: ColoredBox(color: colorGrey),
+            ),
           ),
-        ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(width: 16),
+              const SizedBox(
+                width: 100,
+                child: Center(
+                  child: AppText(
+                    label: 'companys',
+                    textColor: Color(0xFF007AFF),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: companys.length,
+                      itemBuilder: (_, index) {
+                        final company = companys[index];
+
+                        return Container(
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: colorGrey,
+                                width: borderWidth,
+                              ),
+                            ),
+                          ),
+                          height: 44,
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () => removeCompany(company, companys),
+                                child: const Padding(
+                                  padding: EdgeInsets.only(left: 16),
+                                  child: Icon(
+                                    Icons.remove_circle,
+                                    color: Color(0xFFFF382B),
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => openCompanySheet(
+                                    context: context,
+                                    companyID: company.companyID ?? "",
+                                    isUpdate: true,
+                                    companys: companys,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 16),
+                                    child: AppText(
+                                      label: company.companyName ?? "",
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    GestureDetector(
+                      onTap: () => openCompanySheet(
+                        context: context,
+                        companyID: "",
+                        companys: companys,
+                      ),
+                      child: const SizedBox(
+                        height: 44,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 16),
+                            Icon(
+                              Icons.add_circle,
+                              color: Color(0xFF31C859),
+                              size: 24,
+                            ),
+                            SizedBox(width: 16),
+                            AppText(label: 'add company'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
+  }
+
+  Widget productTile({
+    required List<Product> products,
+    bool isShowBorderBottom = false,
+  }) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: borderSide, bottom: borderSide),
+      ),
+      child: Stack(
+        children: [
+          const Positioned(
+            left: 16 + 100,
+            top: 0,
+            bottom: 0,
+            child: SizedBox(
+              width: borderWidth,
+              child: ColoredBox(color: colorGrey),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(width: 16),
+              const SizedBox(
+                width: 100,
+                child: Center(
+                  child: AppText(
+                    label: 'products',
+                    textColor: Color(0xFF007AFF),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: products.length,
+                      itemBuilder: (_, index) {
+                        final product = products[index];
+
+                        return Container(
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: colorGrey,
+                                width: borderWidth,
+                              ),
+                            ),
+                          ),
+                          height: 44,
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () => removeProduct(product, products),
+                                child: const Padding(
+                                  padding: EdgeInsets.only(left: 16),
+                                  child: Icon(
+                                    Icons.remove_circle,
+                                    color: Color(0xFFFF382B),
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => openProdctSheet(
+                                    context: context,
+                                    productID: product.productID ?? "",
+                                    isUpdate: true,
+                                    products: products,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 16),
+                                    child: AppText(
+                                      label: product.productName ?? "",
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    GestureDetector(
+                      onTap: () => openProdctSheet(
+                        context: context,
+                        productID: "",
+                        products: products,
+                      ),
+                      child: const SizedBox(
+                        height: 44,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 16),
+                            Icon(
+                              Icons.add_circle,
+                              color: Color(0xFF31C859),
+                              size: 24,
+                            ),
+                            SizedBox(width: 16),
+                            AppText(label: 'add product'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void removeProduct(Product product, List<Product> products) {
+    setState(() {
+      products.remove(product);
+    });
+  }
+
+  void removeCompany(Company company, List<Company> companys) {
+    setState(() {
+      companys.remove(company);
+    });
+  }
+
+  Future<void> openCompanySheet({
+    required BuildContext context,
+    required String companyID,
+    bool isUpdate = false,
+    required List<Company>? companys,
+  }) async {
+    final selected = await CupertinoOptionsPicker.show<Company>(
+      context: context,
+      title: 'Company',
+      provider: companyGetListProvider,
+      label: (p) => p.companyName ?? "",
+      initialKey: (p) => p.companyID ?? "",
+      initialValue: companyID,
+    );
+
+    if (selected == null) return;
+
+    if (isUpdate) {
+      setState(() {
+        companys?.remove(selected);
+      });
+    } else {
+      setState(() {
+        companys?.add(selected);
+      });
+    }
+  }
+
+  Future<void> openProdctSheet({
+    required BuildContext context,
+    required String productID,
+    bool isUpdate = false,
+    required List<Product>? products,
+  }) async {
+    final selected = await CupertinoOptionsPicker.show<Product>(
+      context: context,
+      title: 'Product',
+      provider: ProductGetList,
+      label: (p) => p.productName ?? "",
+      initialKey: (p) => p.productID ?? "",
+      initialValue: productID,
+    );
+
+    if (selected == null) return;
+
+    if (isUpdate) {
+      setState(() {
+        products?.remove(selected);
+      });
+    } else {
+      setState(() {
+        products?.add(selected);
+      });
+    }
   }
 
   Widget infoTile({
@@ -1089,7 +972,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       child: Container(
         height: height,
         decoration: BoxDecoration(
-          color: Color(0xFFFFFFFF),
+          color: const Color(0xFFFFFFFF),
           border: Border(
             top: borderSide,
             bottom: isShowBorderBottom ? borderSide : BorderSide.none,
@@ -1104,7 +987,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               decoration: BoxDecoration(
                 border: BorderDirectional(
                   end: isShowBorderMiddle
-                      ? BorderSide(color: colorGrey, width: borderWidth)
+                      ? const BorderSide(color: colorGrey, width: borderWidth)
                       : BorderSide.none,
                 ),
               ),
@@ -1138,7 +1021,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       child: Container(
         height: height,
         decoration: BoxDecoration(
-          color: Color(0xFFFFFFFF),
+          color: const Color(0xFFFFFFFF),
           border: Border(
             top: borderSide,
             bottom: isShowBorderBottom ? borderSide : BorderSide.none,
@@ -1146,20 +1029,6 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
         ),
         child: Row(
           children: [
-            // const SizedBox(width: 16),
-            // Container(
-            //   width: 100,
-            //   alignment: Alignment.center,
-            //   decoration: BoxDecoration(
-            //     border: BorderDirectional(
-            //       end: isShowBorderMiddle
-            //           ? BorderSide(color: colorGrey, width: borderWidth)
-            //           : BorderSide.none,
-            //     ),
-            //   ),
-            //   child: AppText(label: label, textColor: const Color(0xFF007AFF)),
-            // ),
-            // const SizedBox(width: 16),
             Expanded(
               child: Align(alignment: Alignment.centerLeft, child: value),
             ),
@@ -1172,692 +1041,6 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       ),
     );
   }
-
-  // Widget _buildAddressDistrict(String hint) {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(left: 16, right: 36),
-  //     child: SizedBox(
-  //       height: 44,
-  //       child: Consumer(
-  //         builder: (context, ref, _) {
-  //           final districtGetListState = ref.watch(
-  //             districtsProvider(
-  //               selectedProvince == null
-  //                   ? ""
-  //                   : selectedProvince!.provinceID.toString(),
-  //             ),
-  //           );
-  //           return districtGetListState.when(
-  //             data: (district) {
-  //               return SizedBox(
-  //                 width: 300,
-  //                 child: DropdownButton<District>(
-  //                   isExpanded: true,
-  //                   hint: const Text('เลือก'),
-  //                   value: selectedDistrict,
-  //                   items: district.map((p) {
-  //                     return DropdownMenuItem<District>(
-  //                       value: p,
-  //                       child: Text(p.districtName.toString()),
-  //                     );
-  //                   }).toList(),
-  //                   onChanged: (value) {
-  //                     setState(() {
-  //                       selectedDistrict = value;
-  //                       selectedSubdistrict = null;
-  //                       txtPostcode.text = "";
-  //                       postCode = "";
-  //                     });
-  //                   },
-  //                 ),
-  //               );
-  //             },
-  //             loading: () => const CircularProgressIndicator(),
-  //             error: (err, _) => Text('Error: $err'),
-  //           );
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildAddressSubDistrict(String hint) {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(left: 18),
-  //     child: SizedBox(
-  //       height: 44,
-  //       child: Consumer(
-  //         builder: (context, ref, _) {
-  //           final districtGetListState = ref.watch(
-  //             subdistrictsProvider(
-  //               selectedDistrict == null
-  //                   ? ""
-  //                   : selectedDistrict!.districtID.toString(),
-  //             ),
-  //           );
-  //           return districtGetListState.when(
-  //             data: (district) {
-  //               return SizedBox(
-  //                 width: 200,
-  //                 child: DropdownButton<Subdistrict>(
-  //                   isExpanded: true,
-  //                   hint: const Text('เลือก'),
-  //                   value: selectedSubdistrict,
-  //                   items: district.map((p) {
-  //                     return DropdownMenuItem<Subdistrict>(
-  //                       value: p,
-  //                       child: Text(p.subDistrictName.toString()),
-  //                     );
-  //                   }).toList(),
-  //                   onChanged: (value) {
-  //                     setState(() {
-  //                       selectedSubdistrict = value;
-  //                       txtPostcode.text = value?.postCode ?? "";
-  //                       postCode = value?.postCode ?? "";
-  //                     });
-  //                   },
-  //                 ),
-  //               );
-  //             },
-  //             loading: () => const CircularProgressIndicator(),
-  //             error: (err, _) => Text('Error: $err'),
-  //           );
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildAddressProvince(String hint) {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(left: 16, right: 36),
-  //     child: SizedBox(
-  //       height: 44,
-  //       child: Consumer(
-  //         builder: (context, ref, _) {
-  //           final provincesProviderState = ref.watch(provincesProvider);
-  //           return provincesProviderState.when(
-  //             data: (provinces) {
-  //               return SizedBox(
-  //                 width: 300,
-  //                 child: DropdownButton<Province>(
-  //                   isExpanded: true,
-  //                   hint: const Text('เลือก'),
-  //                   value: selectedProvince,
-  //                   items: provinces.map((p) {
-  //                     return DropdownMenuItem<Province>(
-  //                       value: p,
-  //                       child: Text(p.provinceName.toString()),
-  //                     );
-  //                   }).toList(),
-  //                   onChanged: (value) {
-  //                     setState(() {
-  //                       selectedProvince = value;
-  //                       selectedDistrict = null;
-  //                       selectedSubdistrict = null;
-  //                       txtPostcode.text = "";
-  //                       postCode = "";
-  //                     });
-  //                   },
-  //                 ),
-  //               );
-  //             },
-  //             loading: () => const CircularProgressIndicator(),
-  //             error: (err, _) => Text('Error: $err'),
-  //           );
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
-  // --- Helper Widgets for building UI sections ---
-
-  // Widget สำหรับหัวข้อของแต่ละ Section (เช่น CLIENT INFO)
-  // Widget _buildSectionHeader(String title) {
-  //   return Padding(
-  //     padding: const EdgeInsets.all(16.0),
-  //     child: Center(
-  //       child: Text(title, style: TextStyle(color: Colors.black, fontSize: 20)),
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildTappableRowProvince(
-  //   String label,
-  //   String value, {
-  //   bool showDivider = true,
-  // }) {
-  //   return InkWell(
-  //     onTap: () {
-  //       // TODO: Implement navigation or show picker for this row
-  //     },
-  //     child: Padding(
-  //       padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-  //       child: Column(
-  //         children: [
-  //           SizedBox(
-  //             height: 44, // ความสูงมาตรฐานของ iOS list item
-  //             child: Row(
-  //               children: [
-  //                 Text(label, style: const TextStyle(fontSize: 16)),
-  //                 const Spacer(),
-  //                 Consumer(
-  //                   builder: (context, ref, _) {
-  //                     final provincesProviderState = ref.watch(
-  //                       provincesProvider,
-  //                     );
-  //                     return provincesProviderState.when(
-  //                       data: (provinces) {
-  //                         return SizedBox(
-  //                           width: 300,
-  //                           child: DropdownButton<Province>(
-  //                             isExpanded: true,
-  //                             hint: const Text('เลือก'),
-  //                             value: selectedProvince,
-  //                             items: provinces.map((p) {
-  //                               return DropdownMenuItem<Province>(
-  //                                 value: p,
-  //                                 child: Text(p.provinceName.toString()),
-  //                               );
-  //                             }).toList(),
-  //                             onChanged: (value) {
-  //                               setState(() {
-  //                                 selectedProvince = value;
-  //                                 selectedDistrict = null;
-  //                                 selectedSubdistrict = null;
-  //                                 txtPostcode.text = "";
-  //                               });
-  //                             },
-  //                           ),
-  //                         );
-  //                       },
-  //                       loading: () => const CircularProgressIndicator(),
-  //                       error: (err, _) => Text('Error: $err'),
-  //                     );
-  //                   },
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           if (showDivider)
-  //             const Divider(height: 1, indent: 0, thickness: 0.5),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildTappableRowDistrict(
-  //   String label,
-  //   String value, {
-  //   bool showDivider = true,
-  // }) {
-  //   return InkWell(
-  //     onTap: () {
-  //       // TODO: Implement navigation or show picker for this row
-  //     },
-  //     child: Padding(
-  //       padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-  //       child: Column(
-  //         children: [
-  //           SizedBox(
-  //             height: 44, // ความสูงมาตรฐานของ iOS list item
-  //             child: Row(
-  //               children: [
-  //                 Text(label, style: const TextStyle(fontSize: 16)),
-  //                 const Spacer(),
-  //                 Consumer(
-  //                   builder: (context, ref, _) {
-  //                     final districtGetListState = ref.watch(
-  //                       districtsProvider(
-  //                         selectedProvince == null
-  //                             ? ""
-  //                             : selectedProvince!.provinceID.toString(),
-  //                       ),
-  //                     );
-  //                     return districtGetListState.when(
-  //                       data: (district) {
-  //                         return SizedBox(
-  //                           width: 300,
-  //                           child: DropdownButton<District>(
-  //                             isExpanded: true,
-  //                             hint: const Text('เลือก'),
-  //                             value: selectedDistrict,
-  //                             items: district.map((p) {
-  //                               return DropdownMenuItem<District>(
-  //                                 value: p,
-  //                                 child: Text(p.districtName.toString()),
-  //                               );
-  //                             }).toList(),
-  //                             onChanged: (value) {
-  //                               setState(() {
-  //                                 selectedDistrict = value;
-  //                                 selectedSubdistrict = null;
-  //                                 txtPostcode.text = "";
-  //                               });
-  //                             },
-  //                           ),
-  //                         );
-  //                       },
-  //                       loading: () => const CircularProgressIndicator(),
-  //                       error: (err, _) => Text('Error: $err'),
-  //                     );
-  //                   },
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           if (showDivider)
-  //             const Divider(height: 1, indent: 0, thickness: 0.5),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildTappableRowSubDistrict(
-  //   String label,
-  //   String value, {
-  //   bool showDivider = true,
-  // }) {
-  //   return InkWell(
-  //     onTap: () {
-  //       // TODO: Implement navigation or show picker for this row
-  //     },
-  //     child: Padding(
-  //       padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-  //       child: Column(
-  //         children: [
-  //           SizedBox(
-  //             height: 44, // ความสูงมาตรฐานของ iOS list item
-  //             child: Row(
-  //               children: [
-  //                 Text(label, style: const TextStyle(fontSize: 16)),
-  //                 const Spacer(),
-  //                 Consumer(
-  //                   builder: (context, ref, _) {
-  //                     final districtGetListState = ref.watch(
-  //                       subdistrictsProvider(
-  //                         selectedDistrict == null
-  //                             ? ""
-  //                             : selectedDistrict!.districtID.toString(),
-  //                       ),
-  //                     );
-  //                     return districtGetListState.when(
-  //                       data: (district) {
-  //                         return SizedBox(
-  //                           width: 295,
-  //                           child: DropdownButton<Subdistrict>(
-  //                             isExpanded: true,
-  //                             hint: const Text('เลือก'),
-  //                             value: selectedSubdistrict,
-  //                             items: district.map((p) {
-  //                               return DropdownMenuItem<Subdistrict>(
-  //                                 value: p,
-  //                                 child: Text(p.subDistrictName.toString()),
-  //                               );
-  //                             }).toList(),
-  //                             onChanged: (value) {
-  //                               setState(() {
-  //                                 selectedSubdistrict = value;
-  //                                 txtPostcode.text = value?.postCode ?? "";
-  //                               });
-  //                             },
-  //                           ),
-  //                         );
-  //                       },
-  //                       loading: () => const CircularProgressIndicator(),
-  //                       error: (err, _) => Text('Error: $err'),
-  //                     );
-  //                   },
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           if (showDivider)
-  //             const Divider(height: 1, indent: 0, thickness: 0.5),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Widget สำหรับแถวข้อมูลธรรมดา (Label: Value)
-  Widget _buildInfoRowClient(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        top: 16,
-        bottom: 16,
-        right: 16,
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 16)),
-              SizedBox(width: 40),
-              Padding(
-                padding: const EdgeInsets.only(left: 0),
-                child: SizedBox(
-                  width: 170,
-                  child: Text("John Doe", style: const TextStyle(fontSize: 16)),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRowLastName(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0, right: 16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 16)),
-              SizedBox(width: 35),
-              SizedBox(
-                width: 200,
-                child: TextField(
-                  controller: txtLastName,
-                  decoration: const InputDecoration(
-                    hintStyle: TextStyle(color: Colors.black),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRowPhone(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        bottom: 16,
-        right: 16,
-        top: 16,
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 16)),
-              SizedBox(width: 65),
-              SizedBox(
-                width: 200,
-                child: TextField(
-                  controller: txtPhone,
-                  decoration: InputDecoration(
-                    hintStyle: TextStyle(color: Colors.black),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRowEmail(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        bottom: 16,
-        right: 16,
-        top: 16,
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 16)),
-              SizedBox(width: 75),
-              SizedBox(
-                width: 200,
-                child: TextField(
-                  controller: txtEmail,
-                  decoration: InputDecoration(
-                    hintStyle: TextStyle(color: Colors.black),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget _buildInfoRowAddress(String label, String value) {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(
-  //       left: 16.0,
-  //       top: 16,
-  //       bottom: 16,
-  //       right: 16,
-  //     ),
-  //     child: Column(
-  //       children: [
-  //         Row(
-  //           children: [
-  //             Text(label, style: const TextStyle(fontSize: 16)),
-  //             const Spacer(),
-  //             SizedBox(
-  //               width: 300,
-  //               child: TextField(
-  //                 controller: txtAddress,
-  //                 style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //         const Divider(height: 1, indent: 0, thickness: 0.5),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildInfoRowPostcode(String label, String value) {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
-  //     child: Column(
-  //       children: [
-  //         Row(
-  //           children: [
-  //             Text(label, style: const TextStyle(fontSize: 16)),
-  //             const Spacer(),
-  //             SizedBox(
-  //               width: 300,
-  //               child: TextField(
-  //                 controller: txtPostcode,
-  //                 style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //         const Divider(height: 1, indent: 0, thickness: 0.5),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  Widget _buildTappableRowProduct(
-    String label,
-    String value,
-    AsyncValue<List<Product>> productGetList, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {},
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, bottom: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      _showPopupProduct(productGetList);
-                    },
-                    icon: Icon(Icons.add),
-                    iconSize: 20,
-                    color: Colors.white,
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.green),
-                      shape: MaterialStateProperty.all(CircleBorder()),
-                    ),
-                  ),
-                  Text(label, style: const TextStyle(fontSize: 16)),
-                  const Spacer(),
-                ],
-              ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTappableRowCompany(
-    String label,
-    String value,
-    AsyncValue<List<Company>> companyGetList, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {},
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, bottom: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      _showPopupCompany(companyGetList);
-                    },
-                    icon: Icon(Icons.add),
-                    iconSize: 20,
-                    color: Colors.white,
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.green),
-                      shape: MaterialStateProperty.all(CircleBorder()),
-                    ),
-                  ),
-                  Text(label, style: const TextStyle(fontSize: 16)),
-                  const Spacer(),
-                ],
-              ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget _buildTappableRowLevel(
-  //   String label,
-  //   String value, {
-  //   bool showDivider = true,
-  // }) {
-  //   return InkWell(
-  //     onTap: () {
-  //       // TODO: Implement navigation or show picker for this row
-  //     },
-  //     child: Padding(
-  //       padding: const EdgeInsets.only(left: 16.0, right: 16),
-  //       child: Column(
-  //         children: [
-  //           SizedBox(
-  //             height: 44, // ความสูงมาตรฐานของ iOS list item
-  //             child: Row(
-  //               children: [
-  //                 Text(
-  //                   label,
-  //                   style: const TextStyle(fontSize: 16, color: Colors.blue),
-  //                 ),
-  //                 const VerticalDivider(
-  //                   color: Colors.grey,
-  //                   thickness: 0.5,
-  //                   width: 87,
-  //                 ),
-
-  //                 Consumer(
-  //                   builder: (context, ref, _) {
-  //                     final clientLevelGetListState = ref.watch(
-  //                       clientLevelGetList,
-  //                     );
-  //                     return clientLevelGetListState.when(
-  //                       data: (clientLevel) {
-  //                         return SizedBox(
-  //                           width: 260,
-  //                           child: DropdownButton<String>(
-  //                             isExpanded: true,
-  //                             hint: const Text('เลือก'),
-  //                             value: selectClientLevel,
-  //                             items: clientLevel.map((p) {
-  //                               return DropdownMenuItem<String>(
-  //                                 value: p.clientLevelID,
-  //                                 child: Text(p.clientLevelName.toString()),
-  //                               );
-  //                             }).toList(),
-  //                             onChanged: (value) {
-  //                               setState(() {
-  //                                 selectClientLevel = value;
-  //                               });
-  //                             },
-  //                           ),
-  //                         );
-  //                       },
-  //                       loading: () => const CircularProgressIndicator(),
-  //                       error: (err, _) => Text('Error: $err'),
-  //                     );
-  //                   },
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           if (showDivider)
-  //             const Divider(height: 1, indent: 0, thickness: 0.5),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Future<void> openTerritorySheet(
     BuildContext context,
@@ -1880,19 +1063,19 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   }
 
   Future<void> openStatusSheet(BuildContext context, String statusID) async {
-    final selected = await CupertinoOptionsPicker.show<AppointmentStatus>(
+    final selected = await CupertinoOptionsPicker.show<ClientStatus>(
       context: context,
       title: 'Status',
-      provider: appointmentStatusGetList,
-      label: (p) => p.appointmentStatusName.toString(),
-      initialKey: (p) => p.appointmentStatusID.toString(),
+      provider: ClientStatusGetList,
+      label: (p) => p.clientStatusName.toString(),
+      initialKey: (p) => p.clientStatusID.toString(),
       initialValue: statusID,
     );
 
     if (selected == null) return;
     setState(() {
-      selectClientStatus = selected.appointmentStatusID;
-      selectClientStatusName = selected.appointmentStatusName;
+      selectClientStatus = selected.clientStatusID;
+      selectClientStatusName = selected.clientStatusName;
     });
   }
 
@@ -1980,201 +1163,5 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       txtPostcode.text = "";
       postCode = "";
     });
-  }
-
-  Widget _buildTappableRowLevel(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 16, color: Colors.blue),
-                  ),
-                  const SizedBox(width: 36),
-                  const VerticalDivider(color: Colors.grey, thickness: 0.5),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    width: 210,
-                    child: Consumer(
-                      builder: (context, ref, _) {
-                        final clientLevelGetListState = ref.watch(
-                          clientLevelGetList,
-                        );
-                        return clientLevelGetListState.when(
-                          data: (clientLevel) {
-                            return DropdownButton<String>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectClientLevel,
-                              items: clientLevel.map((p) {
-                                return DropdownMenuItem<String>(
-                                  value: p.clientLevelID,
-                                  child: Text(p.clientLevelName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectClientLevel = value;
-                                });
-                              },
-                            );
-                          },
-                          loading: () => const CircularProgressIndicator(),
-                          error: (err, _) => Text('Error: $err'),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTappableRowSaleTerritory(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 16, color: Colors.blue),
-                  ),
-                  const SizedBox(width: 12),
-                  const VerticalDivider(color: Colors.grey, thickness: 0.5),
-                  const SizedBox(width: 10),
-                  // Consumer(
-                  //   builder: (context, ref, _) {
-                  //     final saleTerritorieGetListState = ref.watch(
-                  //       saleTerritorieGetList,
-                  //     );
-                  //     return saleTerritorieGetListState.when(
-                  //       data: (territory) {
-                  //         return SizedBox(
-                  //           width: 210,
-                  //           child: DropdownButton<String>(
-                  //             isExpanded: true,
-                  //             hint: const Text('เลือก'),
-                  //             value: salesTerritory,
-                  //             items: territory.map((p) {
-                  //               return DropdownMenuItem<String>(
-                  //                 value: p.salesTerritoryID,
-                  //                 child: Text(p.salesTerritoryName.toString()),
-                  //               );
-                  //             }).toList(),
-                  //             onChanged: (value) {
-                  //               setState(() {
-                  //                 salesTerritory = value;
-                  //               });
-                  //             },
-                  //           ),
-                  //         );
-                  //       },
-                  //       loading: () => const CircularProgressIndicator(),
-                  //       error: (err, _) => Text('Error: $err'),
-                  //     );
-                  //   },
-                  // ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget สำหรับแถวที่กดได้ (มีลูกศร >)
-  Widget _buildTappableRowStatus(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 16, color: Colors.blue),
-                  ),
-                  const SizedBox(width: 24),
-                  const VerticalDivider(color: Colors.grey, thickness: 0.5),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    width: 210,
-                    child: Consumer(
-                      builder: (context, ref, _) {
-                        final clientStatusGetListState = ref.watch(
-                          ClientStatusGetList,
-                        );
-                        return clientStatusGetListState.when(
-                          data: (clientStatus) {
-                            return DropdownButton<String>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectClientStatus,
-                              items: clientStatus.map((p) {
-                                return DropdownMenuItem<String>(
-                                  value: p.clientStatusID,
-                                  child: Text(p.clientStatusName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectClientStatus = value;
-                                });
-                              },
-                            );
-                          },
-                          loading: () => const CircularProgressIndicator(),
-                          error: (err, _) => Text('Error: $err'),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

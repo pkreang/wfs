@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:wfs/models/client_model.dart';
 import 'package:wfs/models/companyaddress.dart';
 
 class Company {
@@ -12,6 +14,7 @@ class Company {
   String? createdDate;
   String? modifiedDate;
   List<CompanyAddress>? CompanyAddresses;
+  List<Client>? Clients;
 
   Company({
     this.companyName,
@@ -25,6 +28,7 @@ class Company {
     this.createdDate,
     this.modifiedDate,
     this.CompanyAddresses,
+    this.Clients,
   });
 
   Company.fromJson(Map<String, dynamic> json) {
@@ -50,6 +54,14 @@ class Company {
         CompanyAddresses!.add(new CompanyAddress.fromJson(v));
       });
     }
+    if (json['Clients'] != null) {
+      Clients = <Client>[];
+      json['Clients'].forEach((v) {
+        Clients!.add(new Client.fromJson(v));
+      });
+    } else {
+      Clients = null;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -68,6 +80,11 @@ class Company {
       data['CompanyAddresses'] = this.CompanyAddresses!
           .map((v) => v.toJson())
           .toList();
+    }
+    if (this.Clients != null) {
+      data['Clients'] = this.Clients!.map((v) => v.toJson()).toList();
+    } else {
+      data['Clients'] = null;
     }
     return data;
   }
