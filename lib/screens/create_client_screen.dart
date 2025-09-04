@@ -75,12 +75,13 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   ClientLevel? clientLevel;
   bool isCanEdit = true;
   Client? client;
+  final TextEditingController txtFirstName = TextEditingController();
+  final TextEditingController txtLastName = TextEditingController();
   final TextEditingController txtAddress = TextEditingController();
   final TextEditingController txtClientName = TextEditingController();
   final TextEditingController txtPhone = TextEditingController();
   final TextEditingController txtEmail = TextEditingController();
   final TextEditingController txtPostcode = TextEditingController();
-  final TextEditingController txtLastName = TextEditingController();
   static const colorPrimary = Color(0xFF007AFF);
   static const colorGrey = Color(0xFFC7C7CC);
   static const borderWidth = 0.33;
@@ -128,12 +129,15 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 TextButton(
                   onPressed: () {
                     String? error;
-                    error = Validator.required(txtClientName.text);
+                    error = Validator.required(txtFirstName.text);
                     if (error != null) {
-                      AppDialogs.error(
-                        context,
-                        message: error + " Client Name",
-                      );
+                      AppDialogs.error(context, message: error + " First Name");
+                      return;
+                    }
+
+                    error = Validator.required(txtLastName.text);
+                    if (error != null) {
+                      AppDialogs.error(context, message: error + " Last Name");
                       return;
                     }
 
@@ -199,14 +203,14 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       return;
                     }
 
-                    if (products.length == 0) {
-                      AppDialogs.error(context, message: "กรุณาเลือก product");
-                      return;
-                    }
+                    // if (products.length == 0) {
+                    //   AppDialogs.error(context, message: "กรุณาเลือก product");
+                    //   return;
+                    // }
                     final authState = ref.watch(authProvider);
 
                     Client client = Client(
-                      firstName: txtClientName.text,
+                      firstName: txtFirstName.text,
                       lastName: txtLastName.text,
                       address: txtAddress.text,
                       phone: txtPhone.text,
@@ -311,8 +315,14 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               Column(
                 children: [
                   infoTile(
-                    label: 'Client Name',
-                    value: AppTextFormField(controller: txtClientName),
+                    label: 'First Name',
+                    value: AppTextFormField(controller: txtFirstName),
+                    isShowBorderBottom: true,
+                    isHideIcon: true,
+                  ),
+                  infoTile(
+                    label: 'Last Name',
+                    value: AppTextFormField(controller: txtLastName),
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
@@ -347,14 +357,14 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   datetime(
                     label: 'Starts',
                     datetime: dateTimeFrom!.toIso8601String(),
-                    dateOnTap: isCanEdit
-                        ? () => openDatePicker(
-                            datetime: dateTimeFrom!.toIso8601String(),
-                            onSelected: (value) => setState(() {
-                              dateTimeFrom = value;
-                            }),
-                          )
-                        : null,
+                    // dateOnTap: isCanEdit
+                    //     ? () => openDatePicker(
+                    //         datetime: dateTimeFrom!.toIso8601String(),
+                    //         onSelected: (value) => setState(() {
+                    //           dateTimeFrom = value;
+                    //         }),
+                    //       )
+                    //     : null,
                     timeOnTap: isCanEdit
                         ? () => openTimePicker(
                             datetime: dateTimeFrom!.toIso8601String(),
@@ -373,14 +383,14 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   datetime(
                     label: 'Ends',
                     datetime: dateTimeTo!.toIso8601String(),
-                    dateOnTap: isCanEdit
-                        ? () => openDatePicker(
-                            datetime: dateTimeTo!.toIso8601String(),
-                            onSelected: (value) => setState(() {
-                              dateTimeTo = value;
-                            }),
-                          )
-                        : null,
+                    // dateOnTap: isCanEdit
+                    //     ? () => openDatePicker(
+                    //         datetime: dateTimeTo!.toIso8601String(),
+                    //         onSelected: (value) => setState(() {
+                    //           dateTimeTo = value;
+                    //         }),
+                    //       )
+                    //     : null,
                     timeOnTap: isCanEdit
                         ? () => openTimePicker(
                             datetime: dateTimeTo!.toIso8601String(),
@@ -420,7 +430,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               Container(color: Color(0xFFEEEEEE), height: 30),
               companyTile(companys: companys),
               Container(color: Color(0xFFEEEEEE), height: 30),
-              productTile(products: products),
+              // productTile(products: products),
             ],
           ),
         ],
@@ -606,7 +616,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     timeOnTap,
   }) {
     final dt = DateTime.parse(datetime);
-    final date = DateFormat("MMM d, yyyy").format(dt);
+    // final date = DateFormat("MMM d, yyyy").format(dt);
     final time = DateFormat("h:mm a").format(dt);
 
     Widget datetimeField({required String value, VoidCallback? onTap}) {
@@ -635,7 +645,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
           mainAxisAlignment: MainAxisAlignment.end,
           spacing: 4,
           children: [
-            datetimeField(value: date, onTap: dateOnTap),
+            // datetimeField(value: date, onTap: dateOnTap),
             datetimeField(value: time, onTap: timeOnTap),
           ],
         ),
