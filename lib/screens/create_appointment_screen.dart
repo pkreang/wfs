@@ -230,17 +230,19 @@ class _CreateAppointmentScreenState
                 purposeTypeID: selectedPurpose,
                 noted: txtNote.text, //
                 assignedBy: null, //
-                appointmentAddress: AppointmentAddresss(
-                  address: txtAddress.text,
-                  countryID: 1, //
-                  provinceID: int.parse(selectedProvince!), //1
-                  districtID: int.parse(selectedDistrict!), //13
-                  subDistrictID: int.parse(selectedSubdistrict!), //
-                  latitude: null,
-                  longitude: null,
-                  isPrimary: true,
-                  isActive: true,
-                ),
+                appointmentAddress: [
+                  AppointmentAddresss(
+                    address: txtAddress.text,
+                    countryID: 1, //
+                    provinceID: int.parse(selectedProvince!), //1
+                    districtID: int.parse(selectedDistrict!), //13
+                    subDistrictID: int.parse(selectedSubdistrict!), //
+                    latitude: null,
+                    longitude: null,
+                    isPrimary: true,
+                    isActive: true,
+                  ),
+                ],
                 appointmentProducts: selectedProduct
                     .map((p) => p.productID!)
                     .toList(),

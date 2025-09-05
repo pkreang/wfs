@@ -156,8 +156,8 @@ class AppointmentService {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      final dynamic appointmentListJson = data['appointment'];
-      return Appointments.fromJson(appointmentListJson);
+      final List<dynamic> appointmentListJson = data['appointment'];
+      return Appointments.fromJson(appointmentListJson[0]);
     } else {
       throw Exception(
         'Failed to load appointments. Status code: ${response.statusCode}',

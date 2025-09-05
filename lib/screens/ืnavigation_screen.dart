@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wfs/screens/clientscreen_screen.dart';
 import 'package:wfs/screens/company_screen.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
+import 'package:wfs/screens/edit_appointment_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -36,7 +37,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/test',
-            builder: (context, state) => const TestScreen(),
+            builder: (context, state) => const EditAppointmentScreen(
+              appointmentID: "E5C965AC-41E1-4BE7-9C6D-122AA0F523D5",
+            ),
           ),
         ],
       ),
@@ -106,7 +109,10 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
             icon: Icon(Icons.business_center_outlined),
             label: 'Company',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Test'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Edit Appointment',
+          ),
         ],
       ),
     );

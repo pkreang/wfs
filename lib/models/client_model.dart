@@ -4,6 +4,7 @@ import 'package:wfs/models/clientlevel_model.dart';
 import 'package:wfs/models/clientstatus_model.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/product_model.dart';
+import 'package:wfs/models/sales_territory.dart';
 
 class Client {
   String? clientStatusID;
@@ -30,6 +31,7 @@ class Client {
   List<ClientAddresses>? clientAddresses;
   List<String>? clientProducts;
   List<ClientCompanies>? clientCompanies;
+  SalesTerritory? salesTerritory;
   Client({
     this.clientStatusID,
     this.modifiedBy,
@@ -55,6 +57,7 @@ class Client {
     this.clientAddresses,
     this.clientProducts,
     this.clientCompanies,
+    this.salesTerritory,
   });
 
   Client.fromJson(Map<String, dynamic> json) {
@@ -75,6 +78,8 @@ class Client {
     salesTerritoryID = json['SalesTerritoryID'];
     createdDate = json['CreatedDate'];
     address = json['address'];
+    salesTerritory = json['salesTerritory'];
+
     if (json['products'] != null) {
       products = [];
       json['products'].forEach((v) {
@@ -135,6 +140,8 @@ class Client {
     data['SalesTerritoryID'] = this.salesTerritoryID;
     data['CreatedDate'] = this.createdDate;
     data['address'] = this.address;
+    data['salesTerritory'] = this.salesTerritory;
+
     if (this.products != null) {
       data['products'] = this.products!.map((v) => v.toJson()).toList();
     }

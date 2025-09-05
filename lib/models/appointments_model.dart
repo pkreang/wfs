@@ -1,4 +1,5 @@
 import 'package:wfs/models/appointmentaddresss_model.dart';
+import 'package:wfs/models/client_model.dart';
 
 class Appointments {
   String? appointmentTitle;
@@ -12,12 +13,16 @@ class Appointments {
   String? purposeTypeID;
   String? noted;
   String? assignedBy;
-  AppointmentAddresss? appointmentAddress;
+  List<AppointmentAddresss>? appointmentAddress;
   List<String>? appointmentProducts;
   bool? isActive;
   String? createdBy;
   String? modifiedBy;
-
+  String? appointmentTypeName;
+  String? appointmentStatusName;
+  String? purposeTypeName;
+  Client? client;
+  String? companyName;
   Appointments({
     this.appointmentTitle,
     this.appointmentTypeID,
@@ -35,6 +40,11 @@ class Appointments {
     this.isActive,
     this.createdBy,
     this.modifiedBy,
+    this.appointmentTypeName,
+    this.appointmentStatusName,
+    this.purposeTypeName,
+    this.client,
+    this.companyName,
   });
 
   Appointments.fromJson(Map<String, dynamic> json) {
@@ -49,15 +59,24 @@ class Appointments {
     purposeTypeID = json['PurposeTypeID'];
     noted = json['Noted'];
     assignedBy = json['AssignedBy'];
-    appointmentAddress = json['AppointmentAddress'] != null
-        ? new AppointmentAddresss.fromJson(json['AppointmentAddress'])
-        : null;
+    if (json['addresses'] != null) {
+      appointmentAddress = [];
+      json['addresses'].forEach((v) {
+        appointmentAddress!.add(new AppointmentAddresss.fromJson(v));
+      });
+    }
     appointmentProducts = json['AppointmentProducts'] != null
         ? json['AppointmentProducts'].cast<String>()
         : null;
     isActive = json['IsActive'];
     createdBy = json['CreatedBy'];
     modifiedBy = json['ModifiedBy'];
+    appointmentTypeName = json['AppointmentTypeName'];
+    appointmentStatusName = json['AppointmentStatusName'];
+    purposeTypeName = json['PurposeTypeName'];
+    companyName = json['CompanyName'];
+
+    client = json['Client'] != null ? Client.fromJson(json['Client']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -74,12 +93,22 @@ class Appointments {
     data['Noted'] = this.noted;
     data['AssignedBy'] = this.assignedBy;
     if (this.appointmentAddress != null) {
-      data['AppointmentAddress'] = this.appointmentAddress!.toJson();
+      data['addresses'] = this.appointmentAddress!
+          .map((v) => v.toJson())
+          .toList();
     }
     data['AppointmentProducts'] = this.appointmentProducts;
     data['IsActive'] = this.isActive;
     data['CreatedBy'] = this.createdBy;
     data['ModifiedBy'] = this.modifiedBy;
+    data['AppointmentTypeName'] = this.appointmentTypeName;
+    data['AppointmentStatusName'] = this.appointmentStatusName;
+    data['purposeTypeName'] = this.purposeTypeName;
+    data['CompanyName'] = this.companyName;
+
+    if (this.client != null) {
+      data['Client'] = this.client!.toJson();
+    }
     return data;
   }
 }
