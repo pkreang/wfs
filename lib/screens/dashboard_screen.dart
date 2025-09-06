@@ -1,71 +1,105 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:wfs/screens/clientaddappointment_screen.dart';
+import 'package:wfs/models/appointment_summary_model.dart';
 import '../models/appointment_model.dart';
 import '../providers/appointment_provider.dart';
+import 'package:wfs/screens/clientaddappointment_screen.dart';
+
+final currentDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
+
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appointmentsAsyncValue = ref.watch(appointmentsProvider);
+    final currentDate = ref.watch(currentDateProvider);
 
-    return SafeArea(
-      child: RefreshIndicator(
-        onRefresh: () async {
-          return ref.refresh(appointmentsProvider);
-        },
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildSummarySection(),
-            const SizedBox(height: 24),
+    final appointmentsAsyncValue = ref.watch(appointmentsProvider(currentDate));
+    final summaryAsyncValue = ref.watch(appointmentSummaryProvider(currentDate));  
 
-            _buildSectionHeader(context, "Today's Appointments"),
-
-            const SizedBox(height: 16),
-
-            appointmentsAsyncValue.when(
-              loading: () => const Center(
-                heightFactor: 5,
-                child: CircularProgressIndicator(),
-              ),
-              error: (error, stackTrace) =>
-                  Center(heightFactor: 5, child: Text('Error: $error')),
-              data: (appointments) {
-                if (appointments.isEmpty) {
-                  return const Center(
-                    heightFactor: 5,
-                    child: Text('No appointments found.'),
+    return Scaffold(
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // เมื่อดึงจอลง ให้ refresh provider ทั้งหมด
+                  ref.invalidate(appointmentsProvider(currentDate));
+            return ref.refresh(appointmentSummaryProvider(currentDate).future);
+          },
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            children: [
+              // ส่ง ref และ currentDate ไปให้ Header
+              _buildHeader(context, ref, currentDate),
+              const SizedBox(height: 24),
+              _buildSummarySection(context, summaryAsyncValue),
+              const SizedBox(height: 24),
+              _buildSectionHeader(context, "Today's Appointments"),
+              const SizedBox(height: 16),
+              
+              appointmentsAsyncValue.when(
+                loading: () => const Center(heightFactor: 5, child: CircularProgressIndicator()),
+                error: (error, stackTrace) => Center(heightFactor: 5, child: Text('Error: $error')),
+                data: (appointments) {
+                  if (appointments.isEmpty) {
+                    return const Center(heightFactor: 5, child: Text('No appointments found.'));
+                  }
+                  
+                  return Column(
+                    children: appointments.map((appointment) {
+                      return _buildAppointmentItem(
+                        appointment: appointment, 
+                        showHeader: false
+                      );
+                    }).toList(),
                   );
-                }
-
-                String? lastTimeHeader;
-                return Column(
-                  children: appointments.map((appointment) {
-                    final timeHeader = DateFormat(
-                      'HH:00',
-                    ).format(appointment.dateTime);
-                    final bool showHeader = timeHeader != lastTimeHeader;
-                    lastTimeHeader = timeHeader;
-
-                    return _buildAppointmentItem(
-                      appointment: appointment,
-                      showHeader: showHeader,
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-          ],
+                },
+              ),
+            ],
+          ),
         ),
+      ),
+
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, WidgetRef ref, DateTime currentDate) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // ปุ่มย้อนกลับ (ลดวัน)
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+            onPressed: () {
+              // อ่าน notifier และอัปเดต state (ลด 1 วัน)
+              ref.read(currentDateProvider.notifier).update(
+                (state) => state.subtract(const Duration(days: 1)),
+              );
+            },
+          ),
+          // แสดงวันที่ปัจจุบัน
+          Text(
+            DateFormat('MMMM d').format(currentDate),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          // ปุ่มถัดไป (เพิ่มวัน)
+          IconButton(
+            icon: const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 20),
+            onPressed: () {
+               // อ่าน notifier และอัปเดต state (เพิ่ม 1 วัน)
+              ref.read(currentDateProvider.notifier).update(
+                (state) => state.add(const Duration(days: 1)),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
+
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
@@ -81,7 +115,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Color _getTypeColor(String type) {
-    switch (type.toLowerCase()) {
+     switch (type.toLowerCase()) {
       case 'visit':
         return const Color(0xFFE3F2FD);
       case 'online':
@@ -93,129 +127,130 @@ class DashboardScreen extends ConsumerWidget {
     }
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+Widget _buildSummarySection(BuildContext context, AsyncValue<AppointmentSummary> summaryAsyncValue) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Today's Summary",
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      const SizedBox(height: 16),
+      Row(
         children: [
-          const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-          Text(
-            DateFormat('MMMM d').format(DateTime.now()),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          _buildSummaryChart(summaryAsyncValue),
+          const SizedBox(width: 24),
+          Expanded(
+            child: summaryAsyncValue.when(
+              loading: () => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildLegendItem(Colors.blue, "Total Completed", "-", "-"),
+                  const SizedBox(height: 16),
+                  _buildLegendItem(Colors.red, "Pending", "-", "-"),
+                  const SizedBox(height: 16),
+                  _buildLegendItem(const Color(0xFFBDBDBD), "Canceled", "-", "-"),
+                ],
+              ),
+              error: (err, stack) => Text('Error loading summary', style: TextStyle(color: Colors.red)),
+              data: (summary) => _buildSummaryLegend(summary),
             ),
           ),
-          const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 20),
         ],
       ),
-    );
-  }
+    ],
+  );
+}
 
-  Widget _buildSummarySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Today's Summary",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            _buildSummaryChart(),
-            const SizedBox(width: 24),
-            Expanded(child: _buildSummaryLegend()),
-          ],
-        ),
-      ],
-    );
-  }
+Widget _buildSummaryLegend(AppointmentSummary summary) {
+  int total = summary.total > 0 ? summary.total : 1;
+  double completedRatio = 100 * summary.completed / total;
+  double pendingRatio = 100 * summary.pending / total;
+  double canceledRatio = 100 * summary.canceled / total;
 
-  Widget _buildSummaryChart() {
-    const double completedValue = 71.4 / 100;
-    const double pendingValue = 14.0 / 100;
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildLegendItem(Colors.blue, "Total Completed", "${summary.completed}/${summary.total} tasks", "${completedRatio.toStringAsFixed(0)}%"),
+      const SizedBox(height: 16),
+      _buildLegendItem(Colors.red, "Pending", "${summary.pending}/${summary.total} tasks", "${pendingRatio.toStringAsFixed(0)}%"),
+      const SizedBox(height: 16),
+      _buildLegendItem(const Color(0xFFBDBDBD), "Canceled", "${summary.canceled}/${summary.total} tasks", "${canceledRatio.toStringAsFixed(0)}%"),
+    ],
+  );
+}
 
-    return SizedBox(
+Widget _buildSummaryChart(AsyncValue<AppointmentSummary> summaryAsyncValue) {
+  return summaryAsyncValue.when(
+    loading: () => const SizedBox(
       width: 140,
       height: 140,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          const CircularProgressIndicator(
-            value: 1.0,
-            strokeWidth: 20,
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFE0E0E0)),
-          ),
-          CircularProgressIndicator(
-            value: completedValue + pendingValue,
-            strokeWidth: 20,
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
-          ),
-          CircularProgressIndicator(
-            value: completedValue,
-            strokeWidth: 20,
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
-          ),
-          Center(
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              margin: const EdgeInsets.all(18),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "71.4%",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+      child: Center(child: CircularProgressIndicator())
+    ),
+    error: (err, stack) => SizedBox(
+      width: 140,
+      height: 140,
+      child: Center(child: Icon(Icons.error, color: Colors.red))
+    ),
+    data: (summary) {
+      final total = summary.total > 0 ? summary.total : 1;
+      final completedValue = summary.completed / total;
+      final pendingValue = summary.pending / total;
+      final percent = (completedValue * 100).toStringAsFixed(1);
+
+      return SizedBox(
+        width: 140,
+        height: 140,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const CircularProgressIndicator(
+              value: 1.0,
+              strokeWidth: 20,
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE0E0E0)),
+            ),
+            CircularProgressIndicator(
+              value: completedValue + pendingValue,
+              strokeWidth: 20,
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
+            ),
+            CircularProgressIndicator(
+              value: completedValue,
+              strokeWidth: 20,
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+            ),
+            Center(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                margin: const EdgeInsets.all(18),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "$percent%",
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
                       ),
-                    ),
-                    Text(
-                      "10 of 14",
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                  ],
+                      Text(
+                        "${summary.completed} of ${summary.total}", // แก้ไข template string ที่ผิด
+                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryLegend() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildLegendItem(Colors.blue, "Total Completed", "10/14 tasks", "71%"),
-        const SizedBox(height: 16),
-        _buildLegendItem(Colors.red, "Pending", "2/14 tasks", "14%"),
-        const SizedBox(height: 16),
-        _buildLegendItem(
-          const Color(0xFFBDBDBD),
-          "Canceled",
-          "2/14 tasks",
-          "14%",
+          ],
         ),
-      ],
-    );
-  }
+      );
+    }
+  );
+}
 
-  Widget _buildLegendItem(
-    Color color,
-    String title,
-    String tasks,
-    String percentage,
-  ) {
+  Widget _buildLegendItem(Color color, String title, String tasks, String percentage) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -224,21 +259,12 @@ class DashboardScreen extends ConsumerWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-            Text(
-              tasks,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
+            Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            Text(tasks, style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
         const Spacer(),
-        Text(
-          percentage,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
+        Text(percentage, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -254,15 +280,8 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
         TextButton.icon(
-          onPressed: () {
-            // ตอนนี้ context ที่ใช้ใน Navigator เป็นตัวที่ถูกต้องแล้ว
-            // Navigator.of(context).push(
-            //   MaterialPageRoute(
-            //     builder: (context) => const CreateAppointmentScreen(),
-            //     fullscreenDialog: true,
-            //   ),
-            // );
-            Navigator.of(context).push(
+            onPressed: () {
+          Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => const ClientAddAppointmentScreen(),
                 fullscreenDialog: true,
@@ -288,42 +307,24 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAppointmentItem({
-    required Appointment appointment,
-    required bool showHeader,
-  }) {
-    final tags = [
-      Chip(
-        label: Text(appointment.typeName),
-        backgroundColor: _getTypeColor(appointment.typeName),
-        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        visualDensity: VisualDensity.compact,
-      ),
-      Chip(
-        label: Text(appointment.statusName),
-        backgroundColor: _getStatusColor(appointment.statusName),
-        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        visualDensity: VisualDensity.compact,
-      ),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (showHeader)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
-            child: Text(
-              DateFormat('HH:00').format(appointment.dateTime),
-              style: const TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+Widget _buildAppointmentItem({
+  required Appointment appointment,
+  required bool showHeader,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      if (showHeader)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
+          child: Text(
+            appointment.appointmentTimeFrom+' '+appointment.appointmentTimeto,
+            style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
           ),
-        Row(
+        ),
+      Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
@@ -331,93 +332,114 @@ class DashboardScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Flexible(
                         child: Text(
-                          appointment.title,
+                          appointment.clientName,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _getTypeColor(appointment.appointmentTypeName),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          appointment.appointmentTypeName,
+                          style: const TextStyle(fontSize: 13, color: Colors.black, fontWeight: FontWeight.w500),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Wrap(spacing: 4.0, children: tags),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time_outlined,
-                        color: Colors.grey.shade600,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        DateFormat('HH:mm').format(appointment.dateTime),
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 14,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(appointment.appointmentStatusName),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Icon(
-                        Icons.business_center_outlined,
-                        color: Colors.grey.shade600,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
                         child: Text(
-                          appointment.companyName,
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 14,
-                          ),
+                          appointment.appointmentStatusName,
+                          style: const TextStyle(fontSize: 13, color: Colors.black, fontWeight: FontWeight.w500),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  _buildInfoRow(
-                    Icons.location_on_outlined,
-                    appointment.customerAddress,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.access_time_outlined, color: Colors.grey.shade600, size: 18),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${appointment.appointmentTimeFrom}-${appointment.appointmentTimeto.toString()}',
+                        style: TextStyle(color: Colors.grey.shade700, fontSize: 14, fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(width: 12),
+                      Icon(Icons.business_center_outlined, color: Colors.grey.shade600, size: 18),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          appointment.companyName,
+                          style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
                   ),
-                  _buildInfoRow(Icons.favorite_border, appointment.noted),
-                  const SizedBox(height: 8),
-                  _buildInfoRow(Icons.phone, appointment.noted),
-                  _buildInfoRow(Icons.favorite_border, appointment.noted),
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.location_on_outlined, color: Colors.grey.shade600, size: 18),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          appointment.customerAddress,
+                          style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.favorite_border, color: Colors.grey.shade600, size: 18),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          appointment.product,
+                          style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
           ],
         ),
-        const Divider(height: 32),
-      ],
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String text) {
-    if (text.trim().isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: Colors.grey.shade600, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-            ),
-          ),
-        ],
       ),
-    );
-  }
+      const Divider(height: 32),
+    ],
+  );
+}
 }

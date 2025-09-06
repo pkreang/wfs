@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wfs/screens/clientscreen_screen.dart';
+import 'package:wfs/screens/appointment_screen.dart';
+import 'package:wfs/screens/client_screen.dart';
 import 'package:wfs/screens/company_screen.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
@@ -21,10 +22,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/appointment',
-            builder: (context, state) => const PlaceholderScreen(
-              title: 'Appointments',
-              icon: Icons.calendar_today_outlined,
-            ),
+            builder: (context, state) => const AppointmentScreen(),
+            
           ),
           GoRoute(
             path: '/clients',
@@ -64,7 +63,7 @@ class MainScaffold extends ConsumerStatefulWidget {
 class _MainScaffoldState extends ConsumerState<MainScaffold> {
   int _currentIndex = 0;
 
-  final tabs = ['/dashboard', '/appointment', '/clients', '/company', '/test'];
+  final tabs = ['/dashboard', '/appointment', '/clients', '/company', '/sale'];
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +105,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
             icon: Icon(Icons.business_center_outlined),
             label: 'Company',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Test'),
+          /*BottomNavigationBarItem(
+            icon: Icon(Icons.settings), 
+            label: 'Test'),*/
         ],
       ),
     );

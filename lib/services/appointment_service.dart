@@ -1,23 +1,28 @@
+//lib/services/appointment_service.dart
+
+
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:wfs/config/api_config.dart';
-import 'package:wfs/models/appointment_model.dart';
+import 'package:wfs/models/appointment_summary_model.dart';
 import 'package:wfs/models/appointments_model.dart';
+import '../models/appointment_model.dart'; 
+
+
 
 class AppointmentService {
-  Future<List<Appointment>> fetchAppointments(
-    String accessToken,
-    String userID,
-  ) async {
+  Future<List<Appointment>> fetchAppointments(String accessToken,String userID,String dateAppoinment) async {
+
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
 
-    final uri = Uri.parse(ApiConfig.appointmentUrl).replace(
+
+    final uri = Uri.parse('${ApiConfig.appointmentUrl}/bydate/').replace(
       queryParameters: {
-        'UserID': userID,
-        // หากมีพารามิเตอร์อื่น ๆ สามารถเพิ่มต่อที่นี่ได้
-        // 'param2': 'value2'
+      'AppointmentDate' : dateAppoinment, 
       },
     );
 
@@ -28,30 +33,95 @@ class AppointmentService {
         'Authorization': 'Bearer $accessToken',
       },
     );
+  
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-
-      // จากโครงสร้าง JSON ข้อมูลนัดหมายอยู่ใน list ซ้อน list
-      final List<dynamic> appointmentListJson = data['appointments'];
-      // แปลง List ของ JSON เป็น List ของ Appointment object
-
+     final List<dynamic> appointmentListJson = data['appointments'];
+ 
       return appointmentListJson
           .map((json) => Appointment.fromJson(json))
           .toList();
     } else {
-      // ถ้า request ไม่สำเร็จ ให้โยน Error
       throw Exception(
         'Failed to load appointments. Status code: ${response.statusCode}',
       );
     }
   }
+Future<AppointmentSummary> fetchAppointmentSummary(String accessToken,String userID,String dateAppoinment) async {
 
-  Future<Appointments> Edit(
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+
+    final uri = Uri.parse('${ApiConfig.appointmentUrl}/summary/').replace(
+  queryParameters: {
+    'AppointmentDate' : dateAppoinment
+  },
+);
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+     if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+    
+      return AppointmentSummary.fromJson(data['summary']);
+
+
+    } else {
+ 
+      throw Exception(
+        'Failed to load appointments. Status code: ${response.statusCode}',
+      );
+    }
+   
+  
+
+  }
+
+  Future<Appointment> Edit(
     String accessToken,
     String guid,
-    Appointments appointment,
+    Appointment appointment,
   ) async {
+    // String jsonString = '''
+    // {
+    //      "AppointmentTitle": "นัดพบลูกค้าaaaaaaaaaaaaaa"  ,
+    // "AppointmentTypeID": "7DEEC491-A5AE-4856-B981-7E91870179FF"  ,
+    // "UserID": "9E0DC5F7-1FD6-41F3-9137-14711FC510F6"  ,
+    // "ClientID" : "471638B8-F144-4446-8DC6-29CADA5EEEB0"    ,
+    // "CompanyID"  : "627DC383-E210-46A2-9819-FB355146BB0B"  ,
+    // "AppointmentDateTimeFrom": "2025-08-14T18:00:00",
+    // "AppointmentDateTimeTo": "2025-08-14T18:00:00",
+    // "Noted": null,
+    // "AssignedBy": null,
+    // "AppointmentStatusID" : "4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B"  ,
+    // "PurposeTypeID"  : "A0794CE9-507E-4F6A-86A6-299282D7BF7F"  ,
+    // "AppointmentAddress"  : {
+    //     "Address":"123/4 Sukhumvit Road 5555",
+    //     "CountryID":1,
+    //     "ProvinceID":1,
+    //     "DistrictID":13,
+    //     "SubDistrictID":2583,
+    //     "Latitude": null,
+    //     "Longitude":null,
+    //     "IsPrimary": true  ,
+    //     "IsActive": true
+    // } ,
+    // "AppointmentProducts":[
+
+    // ],
+    // "IsActive" : true  ,
+    // "ModifiedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6"
+    // }
+    // ''';
+
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -69,7 +139,7 @@ class AppointmentService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final dynamic appointmentListJson = data['appointment'];
-        return Appointments.fromJson(appointmentListJson);
+        return Appointment.fromJson(appointmentListJson);
       } else {
         throw Exception(
           'Failed to load appointments. Status code: ${response.statusCode}',
@@ -139,7 +209,7 @@ class AppointmentService {
     }
   }
 
-  Future<Appointments> GetById(String accessToken, String guid) async {
+  Future<Appointment> GetById(String accessToken, String guid) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -157,7 +227,7 @@ class AppointmentService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final dynamic appointmentListJson = data['appointment'];
-      return Appointments.fromJson(appointmentListJson);
+      return Appointment.fromJson(appointmentListJson);
     } else {
       throw Exception(
         'Failed to load appointments. Status code: ${response.statusCode}',
@@ -165,7 +235,7 @@ class AppointmentService {
     }
   }
 
-  Future<List<Appointments>> GetByDate(String accessToken, String date) async {
+  Future<List<Appointment>> GetByDate(String accessToken, String date) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -184,7 +254,7 @@ class AppointmentService {
       final data = json.decode(response.body);
       final List<dynamic> appointmentListJson = data['appointments'];
       return appointmentListJson
-          .map((json) => Appointments.fromJson(json))
+          .map((json) => Appointment.fromJson(json))
           .toList();
     } else {
       throw Exception(
@@ -193,7 +263,7 @@ class AppointmentService {
     }
   }
 
-  Future<List<Appointments>> GetSummary(String accessToken, String date) async {
+  Future<List<Appointment>> GetSummary(String accessToken, String date) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -212,7 +282,7 @@ class AppointmentService {
       final data = json.decode(response.body);
       final List<dynamic> appointmentListJson = data['appointments'];
       return appointmentListJson
-          .map((json) => Appointments.fromJson(json))
+          .map((json) => Appointment.fromJson(json))
           .toList();
     } else {
       throw Exception(

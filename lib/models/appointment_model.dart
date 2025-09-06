@@ -1,34 +1,46 @@
 class Appointment {
   final String id;
-  final String title;
-  final String typeName;
-  final String statusName;
-  final DateTime dateTime;
+  final String appointmentDate;
+  final String clientName;
+  final String clientPhone;
+  final String clientEmail;
+  final String appointmentTypeName;
+  final String appointmentStatusName;
+  final String appointmentTimeFrom;
+  final String appointmentTimeto;
   final String companyName;
   final String customerAddress;
-  final String noted;
+  final String product;
 
   Appointment({
     required this.id,
-    required this.title,
-    required this.typeName,
-    required this.statusName,
-    required this.dateTime,
+    required this.appointmentDate,
+    required this.clientName,
+    required this.clientPhone,
+    required this.clientEmail,
+    required this.appointmentTypeName,
+    required this.appointmentStatusName,
+    required this.appointmentTimeFrom,
+    required this.appointmentTimeto,  
     required this.companyName,
     required this.customerAddress,
-    required this.noted,
+    required this.product
   });
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
       id: json['AppointmentID'] ?? '',
-      title: json['AppointmentTitle'] ?? 'No Title',
-      typeName: json['AppointmentType']?['AppointmentTypeName'] ?? 'N/A',
-      statusName: json['AppointmentStatus']?['AppointmentStatusName'] ?? 'N/A',
-      dateTime: DateTime.tryParse(json['AppointmentDateTime'] ?? '') ?? DateTime.now(),
-      companyName: json['Company']?['CompanyName'] ?? 'No Company',
-      customerAddress: json['Customer']?['Address'] ?? 'No Address',
-      noted: json['Noted'] ?? '',
+      clientName: json['ClientName'] ?? 'No Title',
+      clientPhone: json['ClientPhone'] ?? 'No Phone',
+      clientEmail: json['ClientEmail'] ?? 'No Email',
+      appointmentTypeName: json['AppointmentTypeName']?? 'N/A',
+      appointmentStatusName: json['AppointmentStatusName'] ?? 'N/A',
+      appointmentDate: json['AppointmentDate']?? 'N/A',
+      appointmentTimeFrom: json['AppointmentTimeFrom']?? 'N/A',
+      appointmentTimeto: json['AppointmentTimeTo']?? 'N/A',
+      companyName: json['CompanyName']?? 'No Company',
+      customerAddress: json['Address'] ?? 'No Address',
+      product : json['Products'] ?? 'No Product'
     );
   }
 }

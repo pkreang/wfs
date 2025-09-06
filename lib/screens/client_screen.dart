@@ -84,11 +84,9 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
     );
   }
 
-  // --- ส่วนที่แก้ไข ---
+
   Widget _buildHeader() {
-    // Watch provider ที่เก็บข้อมูลบริษัททั้งหมดจาก API เพื่อนำจำนวนมาแสดง
-    // **หมายเหตุ**: โค้ดนี้สันนิษฐานว่า provider ของคุณชื่อ `companyProvider`
-    // หากใช้ชื่ออื่น กรุณาแก้ไขตามความเหมาะสม
+
     final allClientAsync = ref.watch(clientProvider);
 
     // สร้างข้อความจำนวนจากสถานะของ AsyncValue

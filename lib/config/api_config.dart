@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = 'https://sfe-api.appnormalthink.com';
+    static const String baseUrl = 'https://sfe-api.appnormalthink.com';
   static const String loginUrl = '$baseUrl/login';
   static const String userRoleUrl = '$baseUrl/user/role';
   static const String appointmentUrl = '$baseUrl/appointment';

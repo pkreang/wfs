@@ -1,30 +1,34 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/models/appointment_model.dart';
-import 'package:wfs/models/appointments_model.dart';
+import 'package:intl/intl.dart';
+import '../models/appointment_model.dart';
 import '../services/appointment_service.dart';
-import 'auth_provider.dart';
+import 'auth_provider.dart'; 
+import '../models/appointment_summary_model.dart';
 
 final appointmentServiceProvider = Provider<AppointmentService>((ref) {
   return AppointmentService();
 });
 
-final appointmentsProvider = FutureProvider<List<Appointment>>((ref) async {
+final appointmentsProvider = FutureProvider.autoDispose.family<List<Appointment>, DateTime>((ref, date) async {
+ 
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
+  final formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
   if (accessToken == null || accessToken.isEmpty) {
     throw Exception('User is not authenticated.');
   }
 
-  final appointmentService = ref.watch(appointmentServiceProvider);
+  final appointmentService = ref.read(appointmentServiceProvider); 
 
-  return appointmentService.fetchAppointments(accessToken, authState.userID!);
+
+  return appointmentService.fetchAppointments(accessToken, authState.userID!, formattedDate);
 });
 
-final appointmentGetByIdProvider = FutureProvider.family<Appointments, String>((
-  ref,
-  guid,
-) async {
+
+
+final appointmentGetByIdProvider = FutureProvider.autoDispose.family<Appointment, String>((ref,guid,) async {
+
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 
@@ -36,10 +40,11 @@ final appointmentGetByIdProvider = FutureProvider.family<Appointments, String>((
 
   return appointmentService.GetById(accessToken, guid);
 });
-final appointmentGetByDateProvider =
-    FutureProvider.family<List<Appointments>, String>((ref, date) async {
+
+final appointmentGetByDateProvider = FutureProvider.autoDispose.family<List<Appointment>, DateTime>((ref, date) async {
       final authState = ref.watch(authProvider);
       final accessToken = authState.accessToken;
+      final formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
       if (accessToken == null || accessToken.isEmpty) {
         throw Exception('User is not authenticated.');
@@ -47,26 +52,35 @@ final appointmentGetByDateProvider =
 
       final appointmentService = ref.watch(appointmentServiceProvider);
 
-      return appointmentService.GetByDate(accessToken, date);
+      return appointmentService.GetByDate(accessToken, formattedDate);
     });
-final appointmentGetSummaryProvider =
-    FutureProvider.family<List<Appointments>, String>((ref, date) async {
-      final authState = ref.watch(authProvider);
-      final accessToken = authState.accessToken;
 
-      if (accessToken == null || accessToken.isEmpty) {
-        throw Exception('User is not authenticated.');
-      }
+  final appointmentSummaryProvider = FutureProvider.autoDispose.family<AppointmentSummary, DateTime>((ref, date) async {
+  final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
 
-      final appointmentService = ref.watch(appointmentServiceProvider);
+  // ไม่ต้อง watch currentDateProvider ข้างในนี้อีกแล้ว
+  // final date = ref.watch(currentDateProvider); // <--- ลบบรรทัดนี้
 
-      return appointmentService.GetSummary(accessToken, date);
-    });
+  final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+
+  if (accessToken == null || accessToken.isEmpty) {
+    throw Exception('User is not authenticated.');
+  }
+  
+  final summaryAppointmentService = ref.read(appointmentServiceProvider); // เปลี่ยนเป็น read
+  
+
+  return summaryAppointmentService.fetchAppointmentSummary(accessToken, authState.userID!,formattedDate);
+});
+
+
+// currentDateProvider ยังคงเหมือนเดิม
+final currentDateProvider = StateProvider<DateTime>((ref) => DateTime.now()); 
+
+
 final appointmentEditProvider =
-    FutureProvider.family<
-      Appointments,
-      ({String guid, Appointments appointment})
-    >((ref, params) async {
+    FutureProvider.autoDispose.family<Appointment,({String guid, Appointment appointment})>((ref, params) async {
       final authState = ref.watch(authProvider);
       final accessToken = authState.accessToken;
 
@@ -84,9 +98,7 @@ final appointmentEditProvider =
       //final result = ref.watch(myProvider((guid: 5, appointment: 'active')));วิธีเรียกใช้ที่ ui
     });
 
-final appointmentDeleteProvider = FutureProvider.family<String, String>((
-  ref,
-  guid,
+final appointmentDeleteProvider = FutureProvider.family<String, String>((ref,guid,
 ) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
@@ -99,3 +111,5 @@ final appointmentDeleteProvider = FutureProvider.family<String, String>((
 
   return appointmentService.Delete(accessToken, guid);
 });
+
+

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wfs/screens/%E0%B8%B7navigation_screen.dart';
-import 'package:wfs/screens/clientscreen_screen.dart';
+import 'package:wfs/screens/appointment_screen.dart';
+import 'package:wfs/screens/navigation_screen.dart'; // สมมติว่า MainScaffold อยู่ในไฟล์นี้
+import 'package:wfs/screens/client_screen.dart';
 import 'package:wfs/screens/company_screen.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
+import 'package:wfs/features/appointment/views/appointment_detail_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -22,10 +24,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/Appointments',
-            builder: (context, state) => const PlaceholderScreen(
-              title: 'Appointments',
-              icon: Icons.calendar_today_outlined,
-            ),
+            builder: (context, state) => const AppointmentScreen(),
+          ),
+          GoRoute(
+            path: '/appointmentDetail/:appointmentId', // กำหนด parameter สำหรับ appointmentId
+            builder: (context, state) {
+              final appointmentId = state.pathParameters['appointmentId'].toString();
+              return AppointmentDetailPage(appointmentID: appointmentId);
+            },
           ),
           GoRoute(
             path: '/clients',

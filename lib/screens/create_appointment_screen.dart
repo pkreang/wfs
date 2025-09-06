@@ -357,7 +357,7 @@ class _CreateAppointmentScreenState
               try {
                 appointmentService.Add(accessToken.toString(), appointment);
                 // ignore: unused_result
-                ref.refresh(appointmentsProvider);
+                
                 AppDialogs.success(context);
                 Future.delayed(const Duration(seconds: 3), () {
                   context.push('/dashboard');

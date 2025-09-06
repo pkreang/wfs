@@ -3,7 +3,7 @@ import 'package:wfs/models/appointmentstatus_model.dart';
 import 'package:wfs/services/AppointmentStatus_service.dart';
 import 'auth_provider.dart';
 
-final AppointmentStatusProvider = Provider<AppointmentStatusService>((ref) {
+final appointmentStatusProvider = Provider<AppointmentStatusService>((ref) {
   return AppointmentStatusService();
 });
 
@@ -17,7 +17,7 @@ final appointmentStatusGetList = FutureProvider<List<AppointmentStatus>>((
     throw Exception('User is not authenticated.');
   }
 
-  final appointmentStatusService = ref.watch(AppointmentStatusProvider);
+  final appointmentStatusService = ref.watch(appointmentStatusProvider);
 
   return appointmentStatusService.getList(accessToken);
 });

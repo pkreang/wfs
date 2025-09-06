@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/screens/%E0%B8%B7navigation_screen.dart';
+import 'package:wfs/screens/navigation_screen.dart';
 import '../providers/auth_provider.dart';
 import '../screens/login_screen.dart';
 

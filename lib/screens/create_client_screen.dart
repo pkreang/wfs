@@ -56,6 +56,8 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   final TextEditingController txtPhone = TextEditingController();
   final TextEditingController txtEmail = TextEditingController();
   final TextEditingController txtPostcode = TextEditingController();
+
+  
   final TextEditingController txtLastName = TextEditingController();
 
   List<Product> selectedProduct = [];
@@ -246,7 +248,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 return;
               }
 
-              error = Validator.required(txtAddress.text);
+              error = Validator.required(salesTerritory);
               if (error != null) {
                 AppDialogs.error(context, message: error + " Address");
                 return;
@@ -375,7 +377,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
             color: Colors.white,
             child: Column(
               children: [
-                _buildInfoRowClient("Client Name", selectedItem.toString()),
+                _buildInfoRowFirstName("Client Name", ''),
                 const Divider(height: 1, indent: 0, thickness: 0.5),
                 _buildInfoRowLastName('Last Name', ''),
                 const Divider(height: 1, indent: 0, thickness: 0.5),
@@ -923,26 +925,29 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  // Widget สำหรับแถวข้อมูลธรรมดา (Label: Value)
-  Widget _buildInfoRowClient(String label, String value) {
+
+    Widget _buildInfoRowFirstName(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        top: 16,
-        bottom: 16,
-        right: 16,
-      ),
+      padding: const EdgeInsets.only(left: 16.0, right: 16),
       child: Column(
         children: [
           Row(
             children: [
               Text(label, style: const TextStyle(fontSize: 16)),
-              SizedBox(width: 40),
-              Padding(
-                padding: const EdgeInsets.only(left: 0),
-                child: SizedBox(
-                  width: 170,
-                  child: Text("John Doe", style: const TextStyle(fontSize: 16)),
+              SizedBox(width: 35),
+              SizedBox(
+                width: 200,
+                child: TextField(
+                  controller: txtClientName,
+                  decoration: const InputDecoration(
+                    hintStyle: TextStyle(color: Colors.black),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ],
