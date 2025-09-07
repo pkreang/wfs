@@ -15,7 +15,6 @@ import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/sales_territory.dart';
 import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/models/territory_model.dart';
-import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/providers/clientlevel_provider.dart';
 import 'package:wfs/providers/clientstatus_provider.dart';
@@ -25,7 +24,6 @@ import 'package:wfs/providers/product_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/saleterritorie_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
-import 'package:wfs/services/client_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/date_picker_helper.dart';
 import 'package:wfs/utility/time_picker_helper.dart';
@@ -62,6 +60,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
   DateTime? dateTimeFrom = DateTime.now();
   DateTime? dateTimeFromTemp = DateTime.now();
   TimeOfDay? timeFrom;
+  TimeOfDay? timeTo;
   DateTime? dateTimeTo = DateTime.now();
   DateTime? dateTimeToTemp = DateTime.now();
   String? selectedDistrict;
@@ -91,7 +90,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
   List<Product> selectedProduct = [];
   List<Company> selectedCompany = [];
   List<Product> products = [];
-  List<Company> companys = [];
+  List<ClientCompanies>? listClientCompanies = [];
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +109,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
               backgroundColor: Color(0xFFEEEEEE),
               leadingWidth: 100,
               leading: GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: () => context.pop(context),
                 child: Row(
                   children: [
                     IconButton(
@@ -145,19 +144,19 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                       return;
                     }
 
-                    error = Validator.required(selectClientStatus);
+                    error = Validator.required(selectClientStatusName);
                     if (error != null) {
                       AppDialogs.error(context, message: "กรุณาเลือก Status");
                       return;
                     }
 
-                    error = Validator.required(selectClientLevel);
+                    error = Validator.required(selectClientLevelName);
                     if (error != null) {
                       AppDialogs.error(context, message: "กรุณาเลือก Level");
                       return;
                     }
 
-                    error = Validator.required(selectSalesTerritorys);
+                    error = Validator.required(selectSalesTerritorysName);
                     if (error != null) {
                       AppDialogs.error(
                         context,
@@ -202,7 +201,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                       return;
                     }
 
-                    if (companys.length == 0) {
+                    if (listClientCompanies?.length == 0) {
                       AppDialogs.error(context, message: "กรุณาเลือก company");
                       return;
                     }
@@ -211,81 +210,81 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                     //   AppDialogs.error(context, message: "กรุณาเลือก product");
                     //   return;
                     // }
-                    final authState = ref.watch(authProvider);
+                    // final authState = ref.watch(authProvider);
 
-                    Client client = Client(
-                      firstName: txtFirstName.text,
-                      lastName: txtLastName.text,
-                      address: txtAddress.text,
-                      phone: txtPhone.text,
-                      email: txtEmail.text,
-                      salesTerritoryID: selectSalesTerritorys,
-                      clientStatusID: selectClientStatus,
-                      clientLevelID: selectClientLevel,
-                      noted: "xxxxxxxxxxxxxxx",
-                      availableTimeStart: DateFormat(
-                        'HH:mm',
-                      ).format(dateTimeFrom!), //"09:00",
-                      availableTimeEnd: DateFormat(
-                        'HH:mm',
-                      ).format(dateTimeTo!), //"16:00",
-                      isActive: true,
-                      createdBy: authState.userID,
-                      modifiedBy: authState.userID,
-                      clientAddresses: [
-                        ClientAddresses(
-                          address: txtAddress.text, //"123/4 Sukhumvit Road",
-                          countryID: 1,
-                          provinceID: int.parse(selectedProvince!), // 1,
-                          districtID: int.parse(selectedDistrict!), //13,
-                          subDistrictID: int.parse(
-                            selectedSubdistrict!,
-                          ), // 2583,
-                          latitude: null,
-                          longitude: null,
-                          isPrimary: true,
-                          isActive: true,
-                        ),
-                      ],
-                      clientID: "",
-                      createdDate: DateTime.now().toIso8601String(),
-                      modifiedDate: DateTime.now().toIso8601String(),
-                      clientProducts: products
-                          .map((f) => f.productID!)
-                          .toList(),
-                      clientCompanies: companys
-                          .map(
-                            (c) => ClientCompanies(
-                              companyID: c.companyID,
-                              position: "Staff",
-                              noted: c.noted,
-                              availableTimeStart: null,
-                              availableTimeEnd: null,
-                              createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                              modifiedBy:
-                                  "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                            ),
-                          )
-                          .toList(),
-                    );
-                    ClientService clientService = new ClientService();
-                    final accessToken = authState.accessToken;
-                    try {
-                      clientService.Add(accessToken.toString(), client);
-                      // ignore: unused_result
-                      ref.refresh(clientCompaniesProvider);
-                      // ignore: unused_result
-                      ref.refresh(clientProvider);
-                      // ignore: unused_result
-                      ref.refresh(clientSectionsProvider);
+                    // Client client = Client(
+                    //   firstName: txtFirstName.text,
+                    //   lastName: txtLastName.text,
+                    //   address: txtAddress.text,
+                    //   phone: txtPhone.text,
+                    //   email: txtEmail.text,
+                    //   salesTerritoryID: selectSalesTerritorys,
+                    //   clientStatusID: selectClientStatus,
+                    //   clientLevelID: selectClientLevel,
+                    //   noted: "xxxxxxxxxxxxxxx",
+                    //   availableTimeStart: TimeOfDay.fromDateTime(
+                    //     dateTimeTo!,
+                    //   ), //"16:00",
+                    //   isActive: true,
+                    //   createdBy: authState.userID,
+                    //   modifiedBy: authState.userID,
+                    //   clientAddresses: [
+                    //     ClientAddresses(
+                    //       address: txtAddress.text, //"123/4 Sukhumvit Road",
+                    //       countryID: 1,
+                    //       provinceID: int.parse(selectedProvince!), // 1,
+                    //       districtID: int.parse(selectedDistrict!), //13,
+                    //       subDistrictID: int.parse(
+                    //         selectedSubdistrict!,
+                    //       ), // 2583,
+                    //       latitude: null,
+                    //       longitude: null,
+                    //       isPrimary: true,
+                    //       isActive: true,
+                    //     ),
+                    //   ],
+                    //   clientID: "",
+                    //   createdDate: DateTime.now().toIso8601String(),
+                    //   modifiedDate: DateTime.now().toIso8601String(),
+                    //   clientProducts: products
+                    //       .map((f) => f.productID!)
+                    //       .toList(),
+                    //   clientCompanies: listClientCompanies!
+                    //       .map(
+                    //         (c) => ClientCompanies(
+                    //           companyID: c.companyID,
+                    //           position: "Staff",
+                    //           noted: c.noted,
+                    //           availableTimeStart: null,
+                    //           availableTimeEnd: null,
+                    //           createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                    //           modifiedBy:
+                    //               "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                    //         ),
+                    //       )
+                    //       .toList(),
+                    // );
+                    // ClientService clientService = new ClientService();
+                    // final accessToken = authState.accessToken;
+                    // try {
+                    //   clientService.Add(accessToken.toString(), client);
+                    //   // ignore: unused_result
+                    //   ref.refresh(clientCompaniesProvider);
+                    //   // ignore: unused_result
+                    //   ref.refresh(clientProvider);
+                    //   // ignore: unused_result
+                    //   ref.refresh(clientSectionsProvider);
 
-                      AppDialogs.success(context);
-                      Future.delayed(const Duration(seconds: 3), () {
-                        context.push('/clients');
-                      });
-                    } catch (ex) {
-                      AppDialogs.error(context, message: ex.toString());
-                    }
+                    //   AppDialogs.success(context);
+                    //   Future.delayed(const Duration(seconds: 3), () {
+                    //     context.push('/clients');
+                    //   });
+                    // } catch (ex) {
+                    //   AppDialogs.error(context, message: ex.toString());
+                    // }
+                    ref
+                        .read(clientEditProvider(widget.clientID).notifier)
+                        .editClient();
                   },
                   style: TextButton.styleFrom(foregroundColor: colorPrimary),
                   child: AppText(label: 'Done', textColor: colorPrimary),
@@ -302,7 +301,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                     ),
                     error: (e, _) => Center(
                       child: AppText(
-                        label: "Appointment Not Found",
+                        label: "Client Not Found",
                         textColor: Colors.red,
                       ),
                     ),
@@ -322,15 +321,57 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
     txtLastName.text = editClient.lastName ?? "";
     selectClientStatusName = editClient.clientStatus?.clientStatusName ?? "";
     selectClientLevelName = editClient.clientLevel?.clientLevelName ?? "";
-    selectSalesTerritorysName = "เขต 2"; //
+    selectSalesTerritorysName =
+        editClient.salesTerritory?.salesTerritoryName ?? "";
+    List<String> arrAvailableTimeStart = editClient.availableTimeStart!.split(
+      ":",
+    );
+    dateTimeFrom = DateTime(
+      2000,
+      1,
+      1,
+      int.parse(arrAvailableTimeStart[0]),
+      int.parse(arrAvailableTimeStart[1]),
+    );
+    List<String> arrAvailableTimeEnd = editClient.availableTimeEnd!.split(":");
+    dateTimeTo = DateTime(
+      2000,
+      1,
+      1,
+      int.parse(arrAvailableTimeEnd[0]),
+      int.parse(arrAvailableTimeEnd[1]),
+    );
+
     editClient.salesTerritory?.salesTerritoryName ?? "";
     txtPhone.text = editClient.phone ?? "";
     txtEmail.text = editClient.email ?? "";
+
+    List<ClientAddresses> listClientAddress = [];
+    listClientAddress.add(ClientAddresses());
+    listClientAddress[0] = editClient.clientAddresses![0];
+
     txtAddress.text =
         (editClient.clientAddresses != null &&
             editClient.clientAddresses!.isNotEmpty)
         ? (editClient.clientAddresses![0].address ?? "")
         : "";
+    selectedProvinceName =
+        (editClient.clientAddresses != null &&
+            editClient.clientAddresses!.isNotEmpty)
+        ? (editClient.clientAddresses![0].provinceName?.toString() ?? "")
+        : "";
+    selectedDistrictName =
+        (editClient.clientAddresses != null &&
+            editClient.clientAddresses!.isNotEmpty)
+        ? (editClient.clientAddresses![0].districtName?.toString() ?? "")
+        : "";
+    selectedSubdistrictName =
+        (editClient.clientAddresses != null &&
+            editClient.clientAddresses!.isNotEmpty)
+        ? (editClient.clientAddresses![0].subDistrictName?.toString() ?? "")
+        : "";
+
+    listClientCompanies = editClient.clientCompanies;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -371,24 +412,24 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                   ),
                   infoTile(
                     label: 'status',
-                    value: AppText(label: selectClientStatusName ?? ''),
+                    value: AppText(label: selectClientStatusName ?? ""),
                     onTap: () =>
                         openStatusSheet(context, selectClientStatusName ?? ""),
                     isShowBorderBottom: true,
                   ),
                   infoTile(
                     label: 'level',
-                    value: AppText(label: selectClientLevelName ?? ''),
+                    value: AppText(label: selectClientLevelName ?? ""),
                     onTap: () =>
                         openLevelSheet(context, selectClientLevelName ?? ""),
                     isShowBorderBottom: true,
                   ),
                   infoTile(
                     label: 'territory',
-                    value: AppText(label: selectSalesTerritorysName ?? ''),
+                    value: AppText(label: selectSalesTerritorysName ?? ""),
                     onTap: () => openTerritorySheet(
                       context,
-                      selectSalesTerritorysName ?? '',
+                      selectSalesTerritorysName ?? "",
                     ),
                     isShowBorderBottom: true,
                   ),
@@ -411,15 +452,15 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                     timeOnTap: isCanEdit
                         ? () => openTimePicker(
                             datetime: dateTimeFrom!.toIso8601String(),
-                            onSelected: (value) => setState(() {
-                              dateTimeFrom = DateTime(
-                                dateTimeFrom!.year,
-                                dateTimeFrom!.month,
-                                dateTimeFrom!.day,
-                                value.hour,
-                                value.minute,
-                              );
-                            }),
+                            onSelected: (value) {
+                              ref
+                                  .read(
+                                    clientEditProvider(
+                                      widget.clientID,
+                                    ).notifier,
+                                  )
+                                  .setavailableTimeStart(value);
+                            },
                           )
                         : null,
                   ),
@@ -437,15 +478,15 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                     timeOnTap: isCanEdit
                         ? () => openTimePicker(
                             datetime: dateTimeTo!.toIso8601String(),
-                            onSelected: (value) => setState(() {
-                              dateTimeTo = DateTime(
-                                dateTimeTo!.year,
-                                dateTimeTo!.month,
-                                dateTimeTo!.day,
-                                value.hour,
-                                value.minute,
-                              );
-                            }),
+                            onSelected: (value) {
+                              ref
+                                  .read(
+                                    clientEditProvider(
+                                      widget.clientID,
+                                    ).notifier,
+                                  )
+                                  .setavailableTimeEnd(value);
+                            },
                           )
                         : null,
                   ),
@@ -456,22 +497,36 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                 children: [
                   infoTile(
                     label: 'mobile',
-                    value: AppTextFormField(controller: txtPhone),
+                    value: AppTextFormField(
+                      controller: txtPhone,
+                      onChanged: (value) {
+                        ref
+                            .read(clientEditProvider(widget.clientID).notifier)
+                            .setPhone(value);
+                      },
+                    ),
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
                   infoTile(
                     label: 'email',
-                    value: AppTextFormField(controller: txtEmail),
+                    value: AppTextFormField(
+                      controller: txtEmail,
+                      onChanged: (value) {
+                        ref
+                            .read(clientEditProvider(widget.clientID).notifier)
+                            .setEmail(value);
+                      },
+                    ),
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
                 ],
               ),
               Container(color: Color(0xFFEEEEEE), height: 30),
-              addressWidget(),
+              addressWidget(listClientAddress),
               Container(color: Color(0xFFEEEEEE), height: 30),
-              companyTile(companys: companys),
+              companyTile(listClientCompanies: listClientCompanies),
               Container(color: Color(0xFFEEEEEE), height: 30),
               // productTile(products: products),
             ],
@@ -481,7 +536,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
     );
   }
 
-  Widget addressWidget() {
+  Widget addressWidget(List<ClientAddresses> listClientAddress) {
     Widget addressField({
       required Widget child,
       bool hasRightBorder = false,
@@ -536,7 +591,17 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     addressField(
-                      child: AppTextFormField(controller: txtAddress),
+                      child: AppTextFormField(
+                        controller: txtAddress,
+                        onChanged: (value) {
+                          listClientAddress[0].address = value;
+                          ref
+                              .read(
+                                clientEditProvider(widget.clientID).notifier,
+                              )
+                              .setClientAddress(listClientAddress);
+                        },
+                      ),
                     ),
                     addressField(
                       hasRightBorder: false,
@@ -546,6 +611,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                         onTap: () => openSubDistrictSheet(
                           context,
                           selectedSubdistrictName ?? "",
+                          listClientAddress,
                         ),
                         isShowBorderBottom: true,
                         isHideIcon: true,
@@ -558,6 +624,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                         onTap: () => openDistrictSheet(
                           context,
                           selectedDistrictName ?? "",
+                          listClientAddress,
                         ),
                         isShowBorderBottom: true,
                         isHideIcon: true,
@@ -575,6 +642,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                               onTap: () => openProvinceSheet(
                                 context,
                                 selectedProvinceName ?? "",
+                                listClientAddress,
                               ),
                               isShowBorderBottom: true,
                               isHideIcon: true,
@@ -700,7 +768,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
   }
 
   Widget companyTile({
-    required List<Company> companys,
+    required List<ClientCompanies>? listClientCompanies,
     bool isShowBorderBottom = false,
   }) {
     return Container(
@@ -741,9 +809,9 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                       padding: EdgeInsets.zero,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: companys.length,
+                      itemCount: listClientCompanies!.length,
                       itemBuilder: (_, index) {
-                        final company = companys[index];
+                        final company = listClientCompanies[index].company;
 
                         return Container(
                           decoration: const BoxDecoration(
@@ -758,7 +826,8 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                           child: Row(
                             children: [
                               GestureDetector(
-                                onTap: () => removeCompany(company, companys),
+                                onTap: () =>
+                                    removeCompany(company, listClientCompanies),
                                 child: const Padding(
                                   padding: EdgeInsets.only(left: 16),
                                   child: Icon(
@@ -772,14 +841,15 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                                 child: GestureDetector(
                                   onTap: () => openCompanySheet(
                                     context: context,
-                                    companyID: company.companyID ?? "",
+                                    companyID: company?.companyID ?? "",
                                     isUpdate: true,
-                                    companys: companys,
+                                    listClientCompanies: listClientCompanies,
+                                    company: company,
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.only(left: 16),
                                     child: AppText(
-                                      label: company.companyName ?? "",
+                                      label: company?.companyName ?? "",
                                     ),
                                   ),
                                 ),
@@ -793,7 +863,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                       onTap: () => openCompanySheet(
                         context: context,
                         companyID: "",
-                        companys: companys,
+                        listClientCompanies: listClientCompanies,
                       ),
                       child: const SizedBox(
                         height: 44,
@@ -949,17 +1019,21 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
     });
   }
 
-  void removeCompany(Company company, List<Company> companys) {
+  void removeCompany(Company? company, List<ClientCompanies> companys) {
     setState(() {
-      companys.remove(company);
+      // companys.remove(company);
     });
+    ref
+        .read(clientEditProvider(widget.clientID).notifier)
+        .removeCompany(company!.companyID.toString());
   }
 
   Future<void> openCompanySheet({
     required BuildContext context,
     required String companyID,
     bool isUpdate = false,
-    required List<Company>? companys,
+    required List<ClientCompanies>? listClientCompanies,
+    Company? company,
   }) async {
     final selected = await CupertinoOptionsPicker.show<Company>(
       context: context,
@@ -974,12 +1048,40 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
 
     if (isUpdate) {
       setState(() {
-        companys?.remove(selected);
+        listClientCompanies?.remove(selected);
       });
+      ref
+          .read(clientEditProvider(widget.clientID).notifier)
+          .removeCompany(companyID);
     } else {
-      setState(() {
-        companys?.add(selected);
-      });
+      ref
+          .read(clientEditProvider(widget.clientID).notifier)
+          .addCompany(
+            ClientCompanies(
+              companyID: selected.companyID,
+              position: null,
+              noted: selected.noted,
+              availableTimeStart: null,
+              availableTimeEnd: null,
+              createdBy: selected.createdBy,
+              modifiedBy: selected.modifiedBy,
+              companyName: selected.companyName,
+              company: Company(
+                companyName: selected.companyName,
+                taxID: selected.taxID,
+                noted: selected.noted,
+                createdBy: selected.createdBy,
+                modifiedBy: selected.modifiedBy,
+                salesTerritoryID: selected.salesTerritoryID,
+                isActive: selected.isActive,
+                createdDate: selected.createdDate,
+                modifiedDate: selected.modifiedDate,
+                CompanyAddresses: selected.CompanyAddresses,
+                Clients: selected.Clients,
+                companyID: selected.companyID,
+              ),
+            ),
+          );
     }
   }
 
@@ -1130,7 +1232,6 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
     );
 
     if (selected == null) return;
-
     ref
         .read(clientEditProvider(widget.clientID).notifier)
         .setStatus(
@@ -1165,6 +1266,7 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
   Future<void> openSubDistrictSheet(
     BuildContext context,
     String subdistrictID,
+    List<ClientAddresses> listClientAddress,
   ) async {
     final selected = await CupertinoOptionsPicker.show<Subdistrict>(
       context: context,
@@ -1182,11 +1284,19 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
       txtPostcode.text = selected.postCode ?? "";
       postCode = selected.postCode ?? "";
     });
+    listClientAddress[0].subDistrictID = selected.subDistrictID;
+    listClientAddress[0].subDistrictName = selected.subDistrictName;
+    ref
+        .read(clientEditProvider(widget.clientID).notifier)
+        .setClientAddress(listClientAddress);
+
+    postCode = selected.postCode;
   }
 
   Future<void> openDistrictSheet(
     BuildContext context,
     String subdistrictID,
+    List<ClientAddresses> listClientAddress,
   ) async {
     final selected = await CupertinoOptionsPicker.show<District>(
       context: context,
@@ -1205,11 +1315,17 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
       txtPostcode.text = "";
       postCode = "";
     });
+    listClientAddress[0].districtID = selected.districtID;
+    listClientAddress[0].districtName = selected.districtName;
+    ref
+        .read(clientEditProvider(widget.clientID).notifier)
+        .setClientAddress(listClientAddress);
   }
 
   Future<void> openProvinceSheet(
     BuildContext context,
     String subdistrictID,
+    List<ClientAddresses> listClientAddress,
   ) async {
     final selected = await CupertinoOptionsPicker.show<Province>(
       context: context,
@@ -1229,5 +1345,10 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
       txtPostcode.text = "";
       postCode = "";
     });
+    listClientAddress[0].provinceID = selected.provinceID;
+    listClientAddress[0].provinceName = selected.provinceName;
+    ref
+        .read(clientEditProvider(widget.clientID).notifier)
+        .setClientAddress(listClientAddress);
   }
 }

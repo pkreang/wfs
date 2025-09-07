@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/models/clientaddresses_model.dart';
+import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/clientlevel_model.dart';
 import 'package:wfs/models/clientstatus_model.dart';
 import 'package:wfs/models/sales_territory.dart';
-import 'package:wfs/models/territory_model.dart';
 import '../models/client_model.dart';
 import '../services/client_service.dart';
 import 'auth_provider.dart';
@@ -51,7 +52,6 @@ final clientSectionsProvider = Provider<Map<String, List<Client>>>((ref) {
         sections[firstLetter]!.add(client);
       }
 
-      // Sort sections alphabetically
       final sortedSections = Map.fromEntries(
         sections.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
       );
@@ -192,11 +192,86 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
     );
   }
 
+  void setEmail(String email) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(email: email)),
+      isDirty: true,
+    );
+  }
+
+  void setPhone(String phone) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(phone: phone)),
+      isDirty: true,
+    );
+  }
+
   void setTerritory(SalesTerritory territory) {
     state = state.copyWith(
       data: state.data.whenData((v) => v.copyWith(salesTerritory: territory)),
       isDirty: true,
     );
+  }
+
+  void setClientAddress(List<ClientAddresses>? listClientAddresses) {
+    state = state.copyWith(
+      data: state.data.whenData(
+        (v) => v.copyWith(clientAddresses: listClientAddresses),
+      ),
+      isDirty: true,
+    );
+  }
+
+  void setavailableTimeStart(TimeOfDay? availableTimeStart) {
+    state = state.copyWith(
+      data: state.data.whenData(
+        (v) => v.copyWith(
+          availableTimeStart:
+              availableTimeStart!.hour.toString() +
+              ":" +
+              availableTimeStart.minute.toString(),
+        ),
+      ),
+      isDirty: true,
+    );
+  }
+
+  void setavailableTimeEnd(TimeOfDay? availableTimeEnd) {
+    state = state.copyWith(
+      data: state.data.whenData(
+        (v) => v.copyWith(
+          availableTimeEnd:
+              availableTimeEnd!.hour.toString() +
+              ":" +
+              availableTimeEnd.minute.toString(),
+        ),
+      ),
+      isDirty: true,
+    );
+  }
+
+  Future<bool> editClient() async {
+    final client = state.data.valueOrNull;
+    if (!state.isDirty || client == null) return false;
+
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final authState = ref.watch(authProvider);
+      ClientService clientService = ClientService();
+      await clientService.Edit(
+        authState.accessToken.toString(),
+        client.clientID.toString(),
+        client,
+      );
+      return true;
+    } catch (e, st) {
+      state = state.copyWith(data: AsyncError(e, st));
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+
+    return false;
   }
 
   // void setClientStatus(ClientStatus status) {
@@ -241,15 +316,16 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
   //   );
   // }
 
-  // void addClient(Client Client) {
-  //   state = state.copyWith(
-  //     data: state.data.whenData(
-  //       (v) =>
-  //           v.copyWith(Clients: [...v.Clients, Client]),
-  //     ),
-  //     isDirty: true,
-  //   );
-  // }
+  void addCompany(ClientCompanies clientCompanies) {
+    state = state.copyWith(
+      data: state.data.whenData(
+        (v) => v.copyWith(
+          clientCompanies: [...v.clientCompanies!, clientCompanies],
+        ),
+      ),
+      isDirty: true,
+    );
+  }
 
   // void updateClient(Client Client) {
   //   state = state.copyWith(
@@ -266,18 +342,20 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
   //   );
   // }
 
-  // void removeClient(String ClientId) {
-  //   state = state.copyWith(
-  //     data: state.data.whenData(
-  //       (v) => v.copyWith(
-  //         Clients: v.Clients.where(
-  //           (p) => p.ClientId != ClientId,
-  //         ).toList(),
-  //       ),
-  //     ),
-  //     isDirty: true,
-  //   );
-  // }
+  void removeCompany(String companyID) {
+    state = state.copyWith(
+      data: state.data.whenData((v) {
+        List<ClientCompanies> listClientCompanies = List.from(
+          v.clientCompanies ?? [],
+        );
+        listClientCompanies.removeWhere(
+          (p) => p.company?.companyID == companyID,
+        );
+        return v.copyWith(clientCompanies: listClientCompanies);
+      }),
+      isDirty: true,
+    );
+  }
 
   // Future<bool> updateClient({String? noted}) async {
   //   final detail = state.data.valueOrNull;

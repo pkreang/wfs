@@ -4,8 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:wfs/models/address_model.dart';
-import 'package:wfs/models/appointmentaddress_model.dart';
 import 'package:wfs/models/appointmentaddresss_model.dart';
 import 'package:wfs/models/appointments_model.dart';
 import 'package:wfs/models/appointmentstatus_model.dart';
@@ -23,7 +21,6 @@ import 'package:wfs/utility/date_picker_helper.dart';
 import 'package:wfs/utility/time_picker_helper.dart';
 import 'package:wfs/widgets/app_cupertino_option.dart';
 import 'package:wfs/widgets/app_text.dart';
-import 'package:wfs/widgets/app_text_form_field.dart';
 
 class EditAppointmentScreen extends ConsumerStatefulWidget {
   final String appointmentID;
@@ -406,7 +403,6 @@ class _EditAppointmentScreenState extends ConsumerState<EditAppointmentScreen> {
     final address = appointment.appointmentAddress;
     final client = appointment.client;
     final salesTerritory = client?.salesTerritory;
-    final products = appointment.appointmentProducts;
 
     //bool isShowCancelNote = appointments.appointmentStatusName == 'Canceled';
 
@@ -843,8 +839,6 @@ class _EditAppointmentScreenState extends ConsumerState<EditAppointmentScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: products.length,
                       itemBuilder: (_, index) {
-                        final product = products[index];
-
                         return Container(
                           decoration: BoxDecoration(
                             border: Border(

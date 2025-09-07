@@ -53,4 +53,5 @@ class ApiConfig {
       '$baseUrl/client/level/?IsActive=true';
   static const String getListClientStatusUrl =
       '$baseUrl/client/status/?IsActive=true';
+  static const String editClientUrl = '$baseUrl/client/';
 }

@@ -8,6 +8,10 @@ class ClientAddresses {
   int? longitude;
   bool? isPrimary;
   bool? isActive;
+  String? countryName;
+  String? provinceName;
+  String? districtName;
+  String? subDistrictName;
   ClientAddresses({
     this.address,
     this.countryID,
@@ -18,6 +22,10 @@ class ClientAddresses {
     this.longitude,
     this.isPrimary,
     this.isActive,
+    this.countryName,
+    this.provinceName,
+    this.districtName,
+    this.subDistrictName,
   });
 
   ClientAddresses.fromJson(Map<String, dynamic> json) {
@@ -30,6 +38,11 @@ class ClientAddresses {
     longitude = json['Longitude'];
     isPrimary = json['IsPrimary'];
     isActive = json['IsActive'];
+
+    countryName = json['countryName'];
+    provinceName = json['provinceName'];
+    districtName = json['districtName'];
+    subDistrictName = json['subDistrictName'];
   }
 
   Map<String, dynamic> toJson() {
@@ -43,6 +56,11 @@ class ClientAddresses {
     data['Longitude'] = this.longitude;
     data['IsPrimary'] = this.isPrimary;
     data['IsActive'] = this.isActive;
+
+    data['countryName'] = this.countryName;
+    data['provinceName'] = this.provinceName;
+    data['districtName'] = this.districtName;
+    data['subDistrictName'] = this.subDistrictName;
     return data;
   }
 }

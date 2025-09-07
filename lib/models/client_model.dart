@@ -1,6 +1,7 @@
 import 'package:wfs/models/clientaddresses_model.dart';
 import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/clientlevel_model.dart';
+import 'package:wfs/models/clientproduct_model.dart';
 import 'package:wfs/models/clientstatus_model.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/product_model.dart';
@@ -32,6 +33,8 @@ class Client {
   List<String>? clientProducts;
   List<ClientCompanies>? clientCompanies;
   SalesTerritory? salesTerritory;
+  List<ClientProducts>? listClientProducts;
+
   Client({
     this.clientStatusID,
     this.modifiedBy,
@@ -58,6 +61,7 @@ class Client {
     this.clientProducts,
     this.clientCompanies,
     this.salesTerritory,
+    this.listClientProducts,
   });
 
   Client.fromJson(Map<String, dynamic> json) {
@@ -69,8 +73,8 @@ class Client {
     noted = json['Noted'];
     clientID = json['ClientID'];
     availableTimeStart = json['AvailableTimeStart'];
-    lastName = json['LastName'];
     availableTimeEnd = json['AvailableTimeEnd'];
+    lastName = json['LastName'];
     phone = json['Phone'];
     isActive = json['IsActive'];
     email = json['Email'];
@@ -95,18 +99,25 @@ class Client {
     if (json['company'] != null) {
       company = [];
       json['company'].forEach((v) {
-        company!.add(new Company.fromJson(v));
+        company!.add(Company.fromJson(v));
+      });
+    }
+    if (json['companies'] != null) {
+      clientCompanies = [];
+      json['companies'].forEach((v) {
+        clientCompanies!.add(ClientCompanies.fromJson(v));
+      });
+    }
+
+    if (json['ClientAddresses'] != null) {
+      clientAddresses = <ClientAddresses>[];
+      json['ClientAddresses'].forEach((v) {
+        clientAddresses!.add(new ClientAddresses.fromJson(v));
       });
     }
     if (json['addresses'] != null) {
       clientAddresses = <ClientAddresses>[];
       json['addresses'].forEach((v) {
-        clientAddresses!.add(new ClientAddresses.fromJson(v));
-      });
-    }
-    if (json['ClientAddresses'] != null) {
-      clientAddresses = <ClientAddresses>[];
-      json['ClientAddresses'].forEach((v) {
         clientAddresses!.add(new ClientAddresses.fromJson(v));
       });
     }

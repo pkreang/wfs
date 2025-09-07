@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:wfs/models/clientcompanies_model.dart';
 import '../config/api_config.dart';
 import '../models/company_model.dart';
 
@@ -106,6 +107,31 @@ class CompanyService {
       final data = json.decode(response.body);
       final List<dynamic> companyTypeListJson = data['companies'];
       return companyTypeListJson.map((json) => Company.fromJson(json)).toList();
+    } else {
+      throw Exception(
+        'Failed to load Clients. Status code: ${response.statusCode}',
+      );
+    }
+  }
+
+  Future<List<ClientCompanies>> GetListClientCompany(String accessToken) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+    final uri = Uri.parse(ApiConfig.companyUrl);
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List<dynamic> companyTypeListJson = data['companies'];
+      return companyTypeListJson
+          .map((json) => ClientCompanies.fromJson(json))
+          .toList();
     } else {
       throw Exception(
         'Failed to load Clients. Status code: ${response.statusCode}',

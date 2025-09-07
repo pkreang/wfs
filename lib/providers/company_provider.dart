@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/models/clientcompanies_model.dart';
 import '../models/company_model.dart';
 import '../services/company_service.dart';
 import 'auth_provider.dart';
@@ -113,3 +114,16 @@ final companyGetListProvider = FutureProvider<List<Company>>((ref) async {
 
   return companyService.GetList(accessToken);
 });
+final companyGetListClientCompanyProvider =
+    FutureProvider<List<ClientCompanies>>((ref) async {
+      final authState = ref.watch(authProvider);
+      final accessToken = authState.accessToken;
+
+      if (accessToken == null || accessToken.isEmpty) {
+        throw Exception('User is not authenticated.');
+      }
+
+      final companyService = ref.watch(companyServiceProvider);
+
+      return companyService.GetListClientCompany(accessToken);
+    });
