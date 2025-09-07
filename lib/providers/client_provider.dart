@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/models/clientlevel_model.dart';
+import 'package:wfs/models/clientstatus_model.dart';
+import 'package:wfs/models/sales_territory.dart';
+import 'package:wfs/models/territory_model.dart';
 import '../models/client_model.dart';
 import '../services/client_service.dart';
 import 'auth_provider.dart';
@@ -160,17 +164,40 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
     state = state.copyWith(data: res, isDirty: false);
   }
 
-  // void setClientType(ClientType status) {
-  //   state = state.copyWith(
-  //     data: state.data.whenData(
-  //       (v) => v.copyWith(
-  //         ClientTypeId: status.ClientTypeID,
-  //         ClientTypeName: status.ClientTypeName,
-  //       ),
-  //     ),
-  //     isDirty: true,
-  //   );
-  // }
+  void setFirstName(String firstName) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(firstName: firstName)),
+      isDirty: true,
+    );
+  }
+
+  void setLastName(String lastName) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(lastName: lastName)),
+      isDirty: true,
+    );
+  }
+
+  void setStatus(ClientStatus clientStatus) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(clientStatus: clientStatus)),
+      isDirty: true,
+    );
+  }
+
+  void setLevel(ClientLevel clientLevel) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(clientLevel: clientLevel)),
+      isDirty: true,
+    );
+  }
+
+  void setTerritory(SalesTerritory territory) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(salesTerritory: territory)),
+      isDirty: true,
+    );
+  }
 
   // void setClientStatus(ClientStatus status) {
   //   state = state.copyWith(

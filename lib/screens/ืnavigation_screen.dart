@@ -5,6 +5,7 @@ import 'package:wfs/screens/clientscreen_screen.dart';
 import 'package:wfs/screens/company_screen.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/screens/edit_appointment_screen.dart';
+import 'package:wfs/screens/edit_client_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -37,8 +38,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/test',
-            builder: (context, state) => const EditAppointmentScreen(
-              appointmentID: "E5C965AC-41E1-4BE7-9C6D-122AA0F523D5",
+            builder: (context, state) => const EditClientScreen(
+              clientID: "8AB1E21C-3936-40F5-9746-0A22E3DED430",
             ),
           ),
         ],
