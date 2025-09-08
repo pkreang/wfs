@@ -180,14 +180,24 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
 
   void setStatus(ClientStatus clientStatus) {
     state = state.copyWith(
-      data: state.data.whenData((v) => v.copyWith(clientStatus: clientStatus)),
+      data: state.data.whenData(
+        (v) => v.copyWith(
+          clientStatus: clientStatus,
+          clientStatusID: clientStatus.clientStatusID,
+        ),
+      ),
       isDirty: true,
     );
   }
 
   void setLevel(ClientLevel clientLevel) {
     state = state.copyWith(
-      data: state.data.whenData((v) => v.copyWith(clientLevel: clientLevel)),
+      data: state.data.whenData(
+        (v) => v.copyWith(
+          clientLevel: clientLevel,
+          clientLevelID: clientLevel.clientLevelID,
+        ),
+      ),
       isDirty: true,
     );
   }
@@ -208,7 +218,12 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
 
   void setTerritory(SalesTerritory territory) {
     state = state.copyWith(
-      data: state.data.whenData((v) => v.copyWith(salesTerritory: territory)),
+      data: state.data.whenData(
+        (v) => v.copyWith(
+          salesTerritory: territory,
+          salesTerritoryID: territory.salesTerritoryID,
+        ),
+      ),
       isDirty: true,
     );
   }

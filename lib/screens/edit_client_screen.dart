@@ -32,13 +32,6 @@ import 'package:wfs/widgets/app_cupertino_option.dart';
 import 'package:wfs/widgets/app_text.dart';
 import 'package:wfs/widgets/app_text_form_field.dart';
 
-class Item {
-  final String id;
-  final String name;
-
-  Item({required this.id, required this.name});
-}
-
 class EditClientScreen extends ConsumerStatefulWidget {
   final String clientID;
   const EditClientScreen({required this.clientID, super.key});
@@ -205,86 +198,13 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                       AppDialogs.error(context, message: "กรุณาเลือก company");
                       return;
                     }
-
-                    // if (products.length == 0) {
-                    //   AppDialogs.error(context, message: "กรุณาเลือก product");
-                    //   return;
-                    // }
-                    // final authState = ref.watch(authProvider);
-
-                    // Client client = Client(
-                    //   firstName: txtFirstName.text,
-                    //   lastName: txtLastName.text,
-                    //   address: txtAddress.text,
-                    //   phone: txtPhone.text,
-                    //   email: txtEmail.text,
-                    //   salesTerritoryID: selectSalesTerritorys,
-                    //   clientStatusID: selectClientStatus,
-                    //   clientLevelID: selectClientLevel,
-                    //   noted: "xxxxxxxxxxxxxxx",
-                    //   availableTimeStart: TimeOfDay.fromDateTime(
-                    //     dateTimeTo!,
-                    //   ), //"16:00",
-                    //   isActive: true,
-                    //   createdBy: authState.userID,
-                    //   modifiedBy: authState.userID,
-                    //   clientAddresses: [
-                    //     ClientAddresses(
-                    //       address: txtAddress.text, //"123/4 Sukhumvit Road",
-                    //       countryID: 1,
-                    //       provinceID: int.parse(selectedProvince!), // 1,
-                    //       districtID: int.parse(selectedDistrict!), //13,
-                    //       subDistrictID: int.parse(
-                    //         selectedSubdistrict!,
-                    //       ), // 2583,
-                    //       latitude: null,
-                    //       longitude: null,
-                    //       isPrimary: true,
-                    //       isActive: true,
-                    //     ),
-                    //   ],
-                    //   clientID: "",
-                    //   createdDate: DateTime.now().toIso8601String(),
-                    //   modifiedDate: DateTime.now().toIso8601String(),
-                    //   clientProducts: products
-                    //       .map((f) => f.productID!)
-                    //       .toList(),
-                    //   clientCompanies: listClientCompanies!
-                    //       .map(
-                    //         (c) => ClientCompanies(
-                    //           companyID: c.companyID,
-                    //           position: "Staff",
-                    //           noted: c.noted,
-                    //           availableTimeStart: null,
-                    //           availableTimeEnd: null,
-                    //           createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                    //           modifiedBy:
-                    //               "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                    //         ),
-                    //       )
-                    //       .toList(),
-                    // );
-                    // ClientService clientService = new ClientService();
-                    // final accessToken = authState.accessToken;
-                    // try {
-                    //   clientService.Add(accessToken.toString(), client);
-                    //   // ignore: unused_result
-                    //   ref.refresh(clientCompaniesProvider);
-                    //   // ignore: unused_result
-                    //   ref.refresh(clientProvider);
-                    //   // ignore: unused_result
-                    //   ref.refresh(clientSectionsProvider);
-
-                    //   AppDialogs.success(context);
-                    //   Future.delayed(const Duration(seconds: 3), () {
-                    //     context.push('/clients');
-                    //   });
-                    // } catch (ex) {
-                    //   AppDialogs.error(context, message: ex.toString());
-                    // }
-                    ref
-                        .read(clientEditProvider(widget.clientID).notifier)
-                        .editClient();
+                    try {
+                      ref
+                          .read(clientEditProvider(widget.clientID).notifier)
+                          .editClient();
+                    } catch (ex) {
+                      AppDialogs.error(context, message: ex.toString());
+                    }
                   },
                   style: TextButton.styleFrom(foregroundColor: colorPrimary),
                   child: AppText(label: 'Done', textColor: colorPrimary),
@@ -319,36 +239,47 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
   Widget buildContent(Client editClient) {
     txtFirstName.text = editClient.firstName ?? "";
     txtLastName.text = editClient.lastName ?? "";
+    selectSalesTerritorys = editClient.salesTerritoryID ?? "";
+    selectClientStatus = editClient.clientStatusID ?? "";
+    selectClientLevel = editClient.clientLevelID ?? "";
     selectClientStatusName = editClient.clientStatus?.clientStatusName ?? "";
     selectClientLevelName = editClient.clientLevel?.clientLevelName ?? "";
     selectSalesTerritorysName =
         editClient.salesTerritory?.salesTerritoryName ?? "";
-    List<String> arrAvailableTimeStart = editClient.availableTimeStart!.split(
-      ":",
-    );
+    List<String> arrAvailableTimeStart =
+        editClient.availableTimeStart?.split(":") ?? List.empty();
     dateTimeFrom = DateTime(
       2000,
       1,
       1,
-      int.parse(arrAvailableTimeStart[0]),
-      int.parse(arrAvailableTimeStart[1]),
+      arrAvailableTimeStart.length == 0
+          ? 0
+          : int.parse(arrAvailableTimeStart[0]),
+      arrAvailableTimeStart.length == 0
+          ? 0
+          : int.parse(arrAvailableTimeStart[1]),
     );
-    List<String> arrAvailableTimeEnd = editClient.availableTimeEnd!.split(":");
+    List<String> arrAvailableTimeEnd =
+        editClient.availableTimeEnd?.split(":") ?? List.empty();
     dateTimeTo = DateTime(
       2000,
       1,
       1,
-      int.parse(arrAvailableTimeEnd[0]),
-      int.parse(arrAvailableTimeEnd[1]),
+      arrAvailableTimeEnd.length == 0 ? 0 : int.parse(arrAvailableTimeEnd[0]),
+      arrAvailableTimeEnd.length == 0 ? 0 : int.parse(arrAvailableTimeEnd[1]),
     );
 
     editClient.salesTerritory?.salesTerritoryName ?? "";
     txtPhone.text = editClient.phone ?? "";
     txtEmail.text = editClient.email ?? "";
 
-    List<ClientAddresses> listClientAddress = [];
+    List<ClientAddresses>? listClientAddress = [];
     listClientAddress.add(ClientAddresses());
-    listClientAddress[0] = editClient.clientAddresses![0];
+    listClientAddress[0] =
+        (editClient.clientAddresses != null &&
+            editClient.clientAddresses!.isNotEmpty)
+        ? editClient.clientAddresses![0]
+        : ClientAddresses();
 
     txtAddress.text =
         (editClient.clientAddresses != null &&

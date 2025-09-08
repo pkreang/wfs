@@ -28,4 +28,27 @@ class SubDistrictService {
       );
     }
   }
+
+  Future<Subdistrict> GetById(String accessToken, String id) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+    final uri = Uri.parse(ApiConfig.getByIdSubdistrictUrl + id);
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final dynamic SubDistrictListJson = data['subdistricts'];
+      return Subdistrict.fromJson(SubDistrictListJson[0]);
+    } else {
+      throw Exception(
+        'Failed to load Clients. Status code: ${response.statusCode}',
+      );
+    }
+  }
 }

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wfs/screens/clientscreen_screen.dart';
 import 'package:wfs/screens/company_screen.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
-import 'package:wfs/screens/edit_client_screen.dart';
+import 'package:wfs/screens/edit_company_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -36,8 +36,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/test',
-            builder: (context, state) => const EditClientScreen(
-              clientID: "15209ECD-CD5F-4650-B4D6-566867232750",
+            builder: (context, state) => const EditCompanyScreen(
+              companyID: "EDE1CCEF-4028-4D88-8DB5-023A75E19C6E",
             ),
           ),
         ],

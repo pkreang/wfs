@@ -58,3 +58,19 @@ final subdistrictsProvider = FutureProvider.family<List<Subdistrict>, String>((
     );
   }
 });
+
+final subDistrictGetByIdProvider = FutureProvider.family<Subdistrict, String>((
+  ref,
+  guid,
+) async {
+  final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
+
+  if (accessToken == null || accessToken.isEmpty) {
+    throw Exception('User is not authenticated.');
+  }
+
+  final subDistrictService = ref.watch(SubDistrictProvider);
+
+  return subDistrictService.GetById(accessToken, guid);
+});

@@ -54,4 +54,8 @@ class ApiConfig {
   static const String getListClientStatusUrl =
       '$baseUrl/client/status/?IsActive=true';
   static const String editClientUrl = '$baseUrl/client/';
+  static const String getByIdCompanyUrl = '$baseUrl/company/?CompanyID=';
+  static const String getByIdSubdistrictUrl =
+      '$baseUrl/address/subdistrict/?SearchName=&IsActive=true&SubDistrictID=';
+  static const String editCompanyUrl = '$baseUrl/company/';
 }
