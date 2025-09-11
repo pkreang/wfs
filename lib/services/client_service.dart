@@ -88,6 +88,7 @@ class ClientService {
         },
         body: json.encode(client),
       );
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final dynamic ClientJson = data['client'];

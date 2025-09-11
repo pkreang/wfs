@@ -1,4 +1,4 @@
-import 'package:wfs/models/appointmentaddresss_model.dart';
+import 'package:wfs/models/appointmentaddress_model.dart';
 import 'package:wfs/models/client_model.dart';
 
 class Appointments {
@@ -13,7 +13,7 @@ class Appointments {
   String? purposeTypeID;
   String? noted;
   String? assignedBy;
-  List<AppointmentAddresss>? appointmentAddress;
+  List<AppointmentAddress>? appointmentAddress;
   List<String>? appointmentProducts;
   bool? isActive;
   String? createdBy;
@@ -23,6 +23,10 @@ class Appointments {
   String? purposeTypeName;
   Client? client;
   String? companyName;
+
+  String? Phone;
+  String? Email;
+  String? PurposeOther;
   Appointments({
     this.appointmentTitle,
     this.appointmentTypeID,
@@ -45,6 +49,10 @@ class Appointments {
     this.purposeTypeName,
     this.client,
     this.companyName,
+
+    this.Phone,
+    this.Email,
+    this.PurposeOther,
   });
 
   Appointments.fromJson(Map<String, dynamic> json) {
@@ -62,7 +70,7 @@ class Appointments {
     if (json['addresses'] != null) {
       appointmentAddress = [];
       json['addresses'].forEach((v) {
-        appointmentAddress!.add(new AppointmentAddresss.fromJson(v));
+        appointmentAddress!.add(new AppointmentAddress.fromJson(v));
       });
     }
     appointmentProducts = json['AppointmentProducts'] != null
@@ -76,6 +84,10 @@ class Appointments {
     purposeTypeName = json['PurposeTypeName'];
     companyName = json['CompanyName'];
 
+    Phone = json['Phone'];
+    Email = json['Email'];
+    PurposeOther = json['PurposeOther'];
+
     client = json['Client'] != null ? Client.fromJson(json['Client']) : null;
   }
 
@@ -86,8 +98,10 @@ class Appointments {
     data['UserID'] = this.userID;
     data['ClientID'] = this.clientID;
     data['CompanyID'] = this.companyID;
-    data['AppointmentDateTimeFrom'] = this.appointmentDateTimeFrom;
-    data['AppointmentDateTimeTo'] = this.appointmentDateTimeTo;
+    data['AppointmentDateTimeFrom'] = this.appointmentDateTimeFrom
+        ?.toIso8601String();
+    data['AppointmentDateTimeTo'] = this.appointmentDateTimeTo
+        ?.toIso8601String();
     data['AppointmentStatusID'] = this.appointmentStatusID;
     data['PurposeTypeID'] = this.purposeTypeID;
     data['Noted'] = this.noted;
@@ -97,6 +111,11 @@ class Appointments {
           .map((v) => v.toJson())
           .toList();
     }
+    if (this.appointmentAddress != null) {
+      data['AppointmentAddress'] = this.appointmentAddress!
+          .map((v) => v.toJson())
+          .toList()[0];
+    }
     data['AppointmentProducts'] = this.appointmentProducts;
     data['IsActive'] = this.isActive;
     data['CreatedBy'] = this.createdBy;
@@ -105,6 +124,10 @@ class Appointments {
     data['AppointmentStatusName'] = this.appointmentStatusName;
     data['purposeTypeName'] = this.purposeTypeName;
     data['CompanyName'] = this.companyName;
+
+    data['Phone'] = this.Phone;
+    data['Email'] = this.Email;
+    data['PurposeOther'] = this.PurposeOther;
 
     if (this.client != null) {
       data['Client'] = this.client!.toJson();

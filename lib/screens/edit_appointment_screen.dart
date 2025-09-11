@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:wfs/models/appointmentaddresss_model.dart';
+import 'package:wfs/models/appointmentaddress_model.dart';
 import 'package:wfs/models/appointments_model.dart';
 import 'package:wfs/models/appointmentstatus_model.dart';
 import 'package:wfs/models/appointmenttype_model.dart';
@@ -705,7 +705,7 @@ class _EditAppointmentScreenState extends ConsumerState<EditAppointmentScreen> {
     );
   }
 
-  Widget addressWidget(AppointmentAddresss? address) {
+  Widget addressWidget(AppointmentAddress? address) {
     Widget addressField({
       required Widget child,
       bool hasRightBorder = false,

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
 import 'package:wfs/models/appointment_model.dart';
 import 'package:wfs/models/appointments_model.dart';
+import 'package:wfs/utility/json_helper.dart';
 
 class AppointmentService {
   Future<List<Appointment>> fetchAppointments(
@@ -113,6 +114,11 @@ class AppointmentService {
     //     "ModifiedBy"   : "9E0DC5F7-1FD6-41F3-9137-14711FC510F6"
     // }
     // ''';
+    try {
+      printLongString(jsonEncode(appointment));
+    } catch (ex) {
+      throw ex;
+    }
 
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');

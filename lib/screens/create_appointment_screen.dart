@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:wfs/main.dart';
-import 'package:wfs/models/appointmentaddresss_model.dart';
+import 'package:wfs/models/appointmentaddress_model.dart';
 import 'package:wfs/models/appointments_model.dart';
 import 'package:wfs/models/appointmentstatus_model.dart';
 import 'package:wfs/models/company_model.dart';
@@ -226,12 +226,12 @@ class _CreateAppointmentScreenState
                 companyID: company,
                 appointmentDateTimeFrom: dateTimeFrom,
                 appointmentDateTimeTo: dateTimeTo,
-                appointmentStatusID: appointmentStatus, //
-                purposeTypeID: selectedPurpose,
+                appointmentStatusID: selectStatusID, //
+                purposeTypeID: selectPurposeID,
                 noted: txtNote.text, //
                 assignedBy: null, //
                 appointmentAddress: [
-                  AppointmentAddresss(
+                  AppointmentAddress(
                     address: txtAddress.text,
                     countryID: 1, //
                     provinceID: int.parse(selectedProvince!), //1
@@ -252,6 +252,9 @@ class _CreateAppointmentScreenState
                 isActive: true,
                 createdBy: authState.userID, //
                 modifiedBy: authState.userID,
+                Phone: phone,
+                Email: email,
+                PurposeOther: "Buy",
               );
               AppointmentService appointmentService = new AppointmentService();
 
