@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/main.dart';
 import 'package:wfs/screens/createcompany_screen.dart';
+import 'package:wfs/screens/edit_company_screen.dart';
 import '../models/company_model.dart';
 import '../providers/company_provider.dart';
 
@@ -272,77 +274,89 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
   }
 
   Widget _buildCompanyItem(Company company) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          company.companyName.toString(),
-                          style: const TextStyle(fontSize: 17),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildStatusTag(company.isActive!),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2.0),
-                          child: Icon(
-                            Icons.location_on,
-                            color: Colors.grey.shade600,
-                            size: 20,
+    return GestureDetector(
+      onTap: () {
+        ref.read(selectedItemProvider.notifier).state = company.companyID;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                EditCompanyScreen(companyID: company.companyID.toString()),
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            company.companyName.toString(),
+                            style: const TextStyle(fontSize: 17),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            company.CompanyAddresses?.isNotEmpty == true
-                                ? company.CompanyAddresses!.first.address ??
-                                      "ไม่มีที่อยู่"
-                                : "ไม่มีที่อยู่",
-                            style: TextStyle(
-                              fontSize: 14,
+                          const SizedBox(width: 8),
+                          _buildStatusTag(company.isActive!),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: Icon(
+                              Icons.location_on,
                               color: Colors.grey.shade600,
-                              height: 1.4,
+                              size: 20,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              company.CompanyAddresses?.isNotEmpty == true
+                                  ? company.CompanyAddresses!.first.address ??
+                                        "ไม่มีที่อยู่"
+                                  : "ไม่มีที่อยู่",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey.shade300,
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.grey.shade300,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const Divider(
-          height: 1,
-          thickness: 1,
-          indent: 16,
-          color: Color(0xFFEFEFEF),
-        ),
-      ],
+          const Divider(
+            height: 1,
+            thickness: 1,
+            indent: 16,
+            color: Color(0xFFEFEFEF),
+          ),
+        ],
+      ),
     );
   }
 

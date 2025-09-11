@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:wfs/models/clientstatus_model.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/companyaddress.dart';
@@ -154,6 +155,16 @@ class _EditCompanyScreenState extends ConsumerState<EditCompanyScreen> {
                 ref
                     .read(companyEditProvider(widget.companyID).notifier)
                     .editCompany();
+                // ignore: unused_result
+                ref.refresh(filteredCompaniesProvider);
+                // ignore: unused_result
+                ref.refresh(companiesProvider);
+                // ignore: unused_result
+                ref.refresh(companySectionsProvider);
+                AppDialogs.success(context);
+                Future.delayed(const Duration(seconds: 3), () {
+                  context.push('/company');
+                });
               } catch (ex) {
                 AppDialogs.error(context, message: ex.toString());
               }

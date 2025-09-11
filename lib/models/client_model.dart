@@ -174,9 +174,7 @@ class Client {
           .toList();
     }
 
-    if (this.clientProducts != null) {
-      data['ClientProducts'] = this.clientProducts;
-    }
+    data['ClientProducts'] = this.clientProducts;
     if (this.clientCompanies != null) {
       data['ClientCompanies'] = this.clientCompanies!
           .map((v) => v.toJson())

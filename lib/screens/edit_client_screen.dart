@@ -202,6 +202,16 @@ class _EditClientScreenState extends ConsumerState<EditClientScreen> {
                       ref
                           .read(clientEditProvider(widget.clientID).notifier)
                           .editClient();
+                      // ignore: unused_result
+                      ref.refresh(clientCompaniesProvider);
+                      // ignore: unused_result
+                      ref.refresh(clientProvider);
+                      // ignore: unused_result
+                      ref.refresh(clientSectionsProvider);
+                      AppDialogs.success(context);
+                      Future.delayed(const Duration(seconds: 3), () {
+                        context.push('/clients');
+                      });
                     } catch (ex) {
                       AppDialogs.error(context, message: ex.toString());
                     }
