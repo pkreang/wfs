@@ -45,5 +45,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>GMSApiKey</key>
+	<string>api_key</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>แอปต้องการเข้าถึงตำแหน่งของคุณเพื่อแสดงตำแหน่งบนแผนที่</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>ใช้ตำแหน่งของคุณเพื่อช่วยให้การใช้งานแผนที่สะดวกขึ้น</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow camera access to take check-in photos for appointment verification only.</string>
 </dict>
 </plist>
