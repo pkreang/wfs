@@ -13,18 +13,11 @@ import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/appointment/models/visit_activities.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
-
-
 class AppointmentService {
   final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
   final token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzeXN0ZW1hZG1pbkBtYWlsLmNvbSIsImV4cCI6MTc1NzAyOTY1NX0.9_GjEOLlXxOgBSqqZKcSPVPpm_fI8C3_T6DN4w_8JnU";
-  
 
-  
   Future<List<Appointment>> fetchAppointments() async {
-
-
-
     final appointments = await apiClient.get(
       path: "/appointment/?IsActive=true", //&AppointmentDate=2025-08-04&UserID=9E0DC5F7-1FD6-41F3-9137-14711FC510F6
       decode: (json) {
@@ -38,11 +31,9 @@ class AppointmentService {
     return appointments;
   }
 
-  Future<AppointmentDetail> fetchAppointmentById(Ref ref,String appointmentID) async {
-
-  final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
-
+  Future<AppointmentDetail> fetchAppointmentById(Ref ref, String appointmentID) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
 
     final appointment = await apiClient.get(
       path: "/appointment/id/$appointmentID",
@@ -54,8 +45,8 @@ class AppointmentService {
   }
 
   Future<List<Product>> fetchProducts(Ref ref) async {
-     final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
 
     final products = await apiClient.get(
       path: "/product/?SearchName=Test&IsActive=true",
@@ -72,9 +63,8 @@ class AppointmentService {
   }
 
   Future<List<AppointmentType>> fetchAppointmentTypd(Ref ref) async {
-
-         final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
     final appointmentType = await apiClient.get(
       path: "/appointment/type/?IsActive=true",
       decode: (json) {
@@ -90,9 +80,8 @@ class AppointmentService {
   }
 
   Future<List<AppointmentStatus>> fetchAppointmentStatus(Ref ref) async {
-
-         final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
     final appointmentStatus = await apiClient.get(
       path: "/appointment/status/?IsActive=true",
       decode: (json) {
@@ -108,10 +97,9 @@ class AppointmentService {
   }
 
   Future<List<Purpose>> fetchPurposes(Ref ref) async {
-
-
-     final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;    final purposes = await apiClient.get(
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+    final purposes = await apiClient.get(
       path: "/purpose_type/?IsActive=true",
       decode: (json) {
         final map = json as Map<String, dynamic>;
@@ -126,8 +114,8 @@ class AppointmentService {
   }
 
   Future<List<Territory>> fetchTerritories(Ref ref) async {
-         final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
     final territories = await apiClient.get(
       path: "/sale/territory/?IsActive=true",
       decode: (json) {
@@ -153,8 +141,8 @@ class AppointmentService {
   }
 
   Future<List<Company>> fetchCompanies(Ref ref) async {
-         final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
     final companies = await apiClient.get(
       path: "/company/?IsActive=true",
       decode: (json) {
@@ -169,10 +157,9 @@ class AppointmentService {
     return companies;
   }
 
-  Future<bool> updateAppointment(AppointmentDetail appointmentDetail,Ref ref) async {
-
-         final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+  Future<bool> updateAppointment(AppointmentDetail appointmentDetail, Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
     try {
       return await apiClient.put(path: "/appointment/${appointmentDetail.appointmentId.toString()}", body: appointmentDetail.toJsonUpdate(), headers: {"Authorization": "Bearer $accessToken"});
     } catch (e) {
@@ -181,9 +168,9 @@ class AppointmentService {
     }
   }
 
-  Future<bool> deleteAppointment(String appointmentID,Ref ref) async {
-     final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+  Future<bool> deleteAppointment(String appointmentID, Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
     try {
       return await apiClient.delete(path: "/appointment/$appointmentID", headers: {"Authorization": "Bearer $accessToken"});
     } catch (e) {
@@ -192,10 +179,9 @@ class AppointmentService {
     }
   }
 
-  Future<List<VisitActivity>> fetchVisitActivities(String appointmentID,Ref ref) async {
-
-         final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+  Future<List<VisitActivity>> fetchVisitActivities(String appointmentID, Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
     final visitActivities = await apiClient.get(
       path: "/appointment/visit?IsActive=true&AppointmentID=$appointmentID",
       decode: (json) {
@@ -209,10 +195,9 @@ class AppointmentService {
     return visitActivities;
   }
 
-  Future<({bool ok, String activityId, String modifiedBy})> checkIn(VisitActivity visitActivity,Ref ref) async {
-    
-             final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+  Future<({bool ok, String activityId, String modifiedBy})> checkIn(VisitActivity visitActivity, Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
     try {
       return await apiClient.post(
         path: "/appointment/visit/In",
@@ -235,9 +220,11 @@ class AppointmentService {
     }
   }
 
-  Future<bool> uploadImage({required String activityId, required String modifiedBy, required String imgBase64}) async {
-
+  Future<bool> uploadImage({required Ref ref, required String activityId, required String modifiedBy, required String imgBase64}) async {
     try {
+      final authState = ref.watch(authProvider);
+      final accessToken = authState.accessToken;
+
       return await apiClient.post(
         path: "/appointment/upload-image",
         body: {'ActivityID': activityId, 'ModifiedBy': modifiedBy, 'ImageData': imgBase64},
@@ -246,7 +233,7 @@ class AppointmentService {
           print('uploadImage map: $map');
           return (map['status'] as String?)?.toLowerCase() != "success";
         },
-        headers: {"Authorization": "Bearer $token"},
+        headers: {"Authorization": "Bearer $accessToken"},
       );
     } catch (e) {
       print('uploadImage catch: $e');
@@ -254,9 +241,9 @@ class AppointmentService {
     }
   }
 
-  Future<bool> checkOut(VisitActivity visitActivity,Ref ref) async {
-             final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+  Future<bool> checkOut(VisitActivity visitActivity, Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
     try {
       return await apiClient.post(
         path: "/appointment/visit/out",

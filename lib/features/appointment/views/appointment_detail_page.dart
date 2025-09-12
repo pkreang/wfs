@@ -61,7 +61,7 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
         actions: [TextButton(onPressed: () => callEditPage(), child: AppText(label: 'Edit', textColor: colorPrimary))],
       ),
       body: Consumer(
-        builder: (_, ref, _) {
+        builder: (_, ref, __) {
           final state = ref.watch(appointmentDetailProvider(widget.appointmentID));
 
           return state.when(
