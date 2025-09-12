@@ -243,9 +243,7 @@ class _CreateAppointmentScreenState
                     isActive: true,
                   ),
                 ],
-                appointmentProducts: selectedProduct
-                    .map((p) => p.productID!)
-                    .toList(),
+                appointmentProducts: products.map((p) => p.productID!).toList(),
                 // [
                 //   "0DB167F6-8AC9-4D31-A4BD-F3784F2489AD",
                 // ], //
