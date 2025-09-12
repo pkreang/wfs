@@ -230,7 +230,8 @@ extension TimeFormat on String {
     final date = DateTime.tryParse(this);
     if (date == null) return this;
 
-    final midnight = DateTime(date.year, date.month, date.day);
+    final midnight = DateTime(date.year, date.month, date.day, date.hour, date.minute);
+
     return DateFormat.Hm().format(midnight);
   }
 }
