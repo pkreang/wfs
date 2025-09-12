@@ -1,5 +1,5 @@
 class ApiConfig {
-    static const String baseUrl = 'https://sfe-api.appnormalthink.com';
+  static const String baseUrl = 'https://sfe-api.appnormalthink.com';
   static const String loginUrl = '$baseUrl/login';
   static const String userRoleUrl = '$baseUrl/user/role';
   static const String appointmentUrl = '$baseUrl/appointment';
@@ -53,4 +53,9 @@ class ApiConfig {
       '$baseUrl/client/level/?IsActive=true';
   static const String getListClientStatusUrl =
       '$baseUrl/client/status/?IsActive=true';
+  static const String editClientUrl = '$baseUrl/client/';
+  static const String getByIdCompanyUrl = '$baseUrl/company/?CompanyID=';
+  static const String getByIdSubdistrictUrl =
+      '$baseUrl/address/subdistrict/?SearchName=&IsActive=true&SubDistrictID=';
+  static const String editCompanyUrl = '$baseUrl/company/';
 }

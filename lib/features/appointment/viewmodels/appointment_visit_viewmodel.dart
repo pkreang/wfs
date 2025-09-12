@@ -9,6 +9,7 @@ import 'package:wfs/features/appointment/services/appointment_service.dart';
 import 'package:wfs/features/appointment/views/appointment_visit_page.dart';
 import 'package:wfs/services/location_service.dart';
 
+
 @immutable
 class AppointmentVisitState {
   final AsyncValue<AppointmentDetail> data;
@@ -95,7 +96,7 @@ class AppointmentVisitViewModel extends StateNotifier<AppointmentVisitState> {
     state = state.copyWith(visitActivity: state.visitActivity!.copyWith(checkInTime: checkInTime, checkInLatitude: latitude, checkInLongitude: longitude));
 
     try {
-      final result = await _appointmentService.checkIn(state.visitActivity!);
+      final result = await _appointmentService.checkIn(state.visitActivity!,ref);
       if (result.ok) {
         return await _appointmentService.uploadImage(activityId: result.activityId, modifiedBy: result.modifiedBy, imgBase64: imgBase64);
       }
@@ -118,7 +119,7 @@ class AppointmentVisitViewModel extends StateNotifier<AppointmentVisitState> {
     state = state.copyWith(visitActivity: state.visitActivity!.copyWith(checkOutTime: checkOutTime, checkOutLatitude: latitude, checkOutLongitude: longitude), isLoading: true);
 
     try {
-      final result = await _appointmentService.checkOut(state.visitActivity!);
+      final result = await _appointmentService.checkOut(state.visitActivity!,ref);
       print('result: $result');
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));

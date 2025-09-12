@@ -3,7 +3,7 @@ import 'package:wfs/models/productcategory_model.dart';
 import 'package:wfs/services/productcategory_service.dart';
 import 'auth_provider.dart';
 
-final ProductCategoryProvider = Provider<ProductCategoryService>((ref) {
+final productCategoryProvider = Provider<ProductCategoryService>((ref) {
   return ProductCategoryService();
 });
 
@@ -17,7 +17,7 @@ final productCategoryGetList = FutureProvider<List<ProductCategory>>((
     throw Exception('User is not authenticated.');
   }
 
-  final ProductCategoryGetList = ref.watch(ProductCategoryProvider);
+  final ProductCategoryGetList = ref.watch(productCategoryProvider);
 
   return ProductCategoryGetList.getList(accessToken);
 });

@@ -7,7 +7,7 @@ import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/services/subdistrict_service.dart';
 import 'auth_provider.dart';
 
-final SubDistrictProvider = Provider<SubDistrictService>((ref) {
+final subDistrictProvider = Provider<SubDistrictService>((ref) {
   return SubDistrictService();
 });
 
@@ -21,9 +21,9 @@ final subDistrictGetList = FutureProvider<List<Subdistrict>>((ref) async {
     throw Exception('User is not authenticated.');
   }
 
-  final SubDistrictGetList = ref.watch(SubDistrictProvider);
+  final SubDistrictGetList = ref.watch(subDistrictProvider);
 
-  return SubDistrictGetList.GetList(accessToken);
+  return SubDistrictGetList.getList(accessToken);
 });
 
 final subdistrictsProvider = FutureProvider.family<List<Subdistrict>, String>((
@@ -57,4 +57,20 @@ final subdistrictsProvider = FutureProvider.family<List<Subdistrict>, String>((
       'Failed to load Clients. Status code: ${response.statusCode}',
     );
   }
+});
+
+final subDistrictGetByIdProvider = FutureProvider.family<Subdistrict, String>((
+  ref,
+  guid,
+) async {
+  final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
+
+  if (accessToken == null || accessToken.isEmpty) {
+    throw Exception('User is not authenticated.');
+  }
+
+  final subDistrictService = ref.watch(subDistrictProvider);
+
+  return subDistrictService.GetById(accessToken, guid);
 });

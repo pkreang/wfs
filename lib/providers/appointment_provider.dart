@@ -111,5 +111,3 @@ final appointmentDeleteProvider = FutureProvider.family<String, String>((ref,gui
 
   return appointmentService.Delete(accessToken, guid);
 });
-
-

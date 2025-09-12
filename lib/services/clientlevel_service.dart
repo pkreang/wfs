@@ -4,7 +4,7 @@ import 'package:wfs/models/clientlevel_model.dart';
 import '../config/api_config.dart';
 
 class ClientLevelService {
-  Future<List<ClientLevel>> GetList(String accessToken) async {
+  Future<List<ClientLevel>> getList(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }

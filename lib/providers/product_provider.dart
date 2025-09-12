@@ -3,11 +3,11 @@ import 'package:wfs/models/product_model.dart';
 import 'package:wfs/services/product_service.dart';
 import 'auth_provider.dart';
 
-final ProductProvider = Provider<ProductService>((ref) {
+final productProvider = Provider<ProductService>((ref) {
   return ProductService();
 });
 
-final ProductGetList = FutureProvider<List<Product>>((ref) async {
+final productGetList = FutureProvider<List<Product>>((ref) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 
@@ -15,7 +15,7 @@ final ProductGetList = FutureProvider<List<Product>>((ref) async {
     throw Exception('User is not authenticated.');
   }
 
-  final productGetList = ref.watch(ProductProvider);
+  final productGetList = ref.watch(productProvider);
 
   return productGetList.getList(accessToken);
 });

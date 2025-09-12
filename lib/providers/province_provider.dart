@@ -7,7 +7,7 @@ import 'package:wfs/models/province_model.dart';
 import 'package:wfs/services/province_service.dart';
 import 'auth_provider.dart';
 
-final ProvinceProvider = Provider<ProvinceService>((ref) {
+final provinceProvider = Provider<ProvinceService>((ref) {
   return ProvinceService();
 });
 
@@ -21,7 +21,7 @@ final provinceGetList = FutureProvider<List<Province>>((ref) async {
     throw Exception('User is not authenticated.');
   }
 
-  final ProvinceGetList = ref.watch(ProvinceProvider);
+  final ProvinceGetList = ref.watch(provinceProvider);
 
   return ProvinceGetList.getList(accessToken);
 });

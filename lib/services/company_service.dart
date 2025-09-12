@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:wfs/models/clientcompanies_model.dart';
+import 'package:wfs/utility/json_helper.dart';
 import '../config/api_config.dart';
 import '../models/company_model.dart';
 
@@ -90,7 +92,7 @@ class CompanyService {
     }
   }
 
-  Future<List<Company>> GetList(String accessToken) async {
+  Future<List<Company>> getList(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
@@ -110,6 +112,85 @@ class CompanyService {
       throw Exception(
         'Failed to load Clients. Status code: ${response.statusCode}',
       );
+    }
+  }
+
+  Future<List<ClientCompanies>> GetListClientCompany(String accessToken) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+    final uri = Uri.parse(ApiConfig.companyUrl);
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List<dynamic> companyTypeListJson = data['companies'];
+      return companyTypeListJson
+          .map((json) => ClientCompanies.fromJson(json))
+          .toList();
+    } else {
+      throw Exception(
+        'Failed to load Clients. Status code: ${response.statusCode}',
+      );
+    }
+  }
+
+  Future<Company> GetById(String accessToken, String guid) async {
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+    final uri = Uri.parse(ApiConfig.getByIdCompanyUrl + guid);
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final dynamic companyJson = data['companies'];
+      return Company.fromJson(companyJson[0]);
+    } else {
+      throw Exception(
+        'Failed to load Clients. Status code: ${response.statusCode}',
+      );
+    }
+  }
+
+  Future<Company> Edit(String accessToken, String guid, Company company) async {
+    printLongString(jsonEncode(company));
+
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+    try {
+      final response = await http.put(
+        Uri.parse(ApiConfig.editCompanyUrl + guid),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(company),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final dynamic listCompanyJson = data['companies'];
+        return Company.fromJson(listCompanyJson[0]);
+      } else {
+        throw Exception(
+          'Failed to load appointments. Status code: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to load appointments. Status code:');
     }
   }
 }

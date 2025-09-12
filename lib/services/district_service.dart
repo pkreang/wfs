@@ -4,7 +4,7 @@ import '../config/api_config.dart';
 import '../models/district_model.dart';
 
 class DistrictService {
-  Future<List<District>> GetList(String accessToken) async {
+  Future<List<District>> getList(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }

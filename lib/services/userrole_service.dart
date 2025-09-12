@@ -4,7 +4,7 @@ import 'package:wfs/config/api_config.dart';
 import 'package:wfs/models/userrole_model.dart';
 
 class UserRoleService {
-  Future<List<UserRole>> GetList(String accessToken) async {
+  Future<List<UserRole>> getList(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }

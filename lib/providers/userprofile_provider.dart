@@ -7,7 +7,7 @@ final userProfileProvider = Provider<UserProfileService>((ref) {
   return UserProfileService();
 });
 
-final GetUserProfile = FutureProvider<UserProfile>((ref) async {
+final getUserProfile = FutureProvider<UserProfile>((ref) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 

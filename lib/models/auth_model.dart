@@ -1,7 +1,7 @@
 class AuthState {
   final bool isLoading;
   final bool isAuthenticated;
-  final String? accessToken;
+  final String accessToken;
   final String? tokenType;
   final String? userRoleName;
   final String? userName;
@@ -11,7 +11,7 @@ class AuthState {
   AuthState({
     this.isLoading = false,
     this.isAuthenticated = false,
-    this.accessToken,
+    this.accessToken = "",
     this.tokenType,
     this.userRoleName,
     this.userName,

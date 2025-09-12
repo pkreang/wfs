@@ -4,7 +4,7 @@ import 'package:wfs/config/api_config.dart';
 import 'package:wfs/models/purposetype_model.dart';
 
 class PurposetypeService {
-  Future<List<PurposeType>> GetList(String accessToken) async {
+  Future<List<PurposeType>> getList(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }

@@ -4,7 +4,7 @@ import '../config/api_config.dart';
 import '../models/Country_model.dart';
 
 class CountryService {
-  Future<List<Country>> GetList(String accessToken) async {
+  Future<List<Country>> getList(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }

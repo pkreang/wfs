@@ -27,23 +27,23 @@ final appointmentVisitProvider = StateNotifierProvider.autoDispose.family<Appoin
 });
 
 final productsProvider = FutureProvider.autoDispose<List<Product>>((ref) async {
-  return await ref.read(appointmentServiceProvider).fetchProducts();
+  return await ref.read(appointmentServiceProvider).fetchProducts(ref);
 });
 
 final appointmentTypeProvider = FutureProvider.autoDispose<List<AppointmentType>>((ref) async {
-  return await ref.read(appointmentServiceProvider).fetchAppointmentType();
+  return await ref.read(appointmentServiceProvider).fetchAppointmentTypd(ref);
 });
 
 final appointmentStatusProvider = FutureProvider.autoDispose<List<AppointmentStatus>>((ref) async {
-  return await ref.read(appointmentServiceProvider).fetchAppointmentStatus();
+  return await ref.read(appointmentServiceProvider).fetchAppointmentStatus(ref);
 });
 
 final purposesProvider = FutureProvider.autoDispose<List<Purpose>>((ref) async {
-  return await ref.read(appointmentServiceProvider).fetchPurposes();
+  return await ref.read(appointmentServiceProvider).fetchPurposes(ref);
 });
 
 final territoryProvider = FutureProvider.autoDispose<List<Territory>>((ref) async {
-  return await ref.read(appointmentServiceProvider).fetchTerritories();
+  return await ref.read(appointmentServiceProvider).fetchTerritories(ref);
 });
 
 final outcomeProvider = FutureProvider.autoDispose<List<Outcome>>((ref) async {

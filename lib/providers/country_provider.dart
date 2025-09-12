@@ -3,7 +3,7 @@ import 'package:wfs/models/Country_model.dart';
 import 'package:wfs/services/country_service.dart';
 import 'auth_provider.dart';
 
-final CountryProvider = Provider<CountryService>((ref) {
+final countryProvider = Provider<CountryService>((ref) {
   return CountryService();
 });
 
@@ -15,7 +15,7 @@ final countryGetList = FutureProvider<List<Country>>((ref) async {
     throw Exception('User is not authenticated.');
   }
 
-  final CountryGetList = ref.watch(CountryProvider);
+  final CountryGetList = ref.watch(countryProvider);
 
-  return CountryGetList.GetList(accessToken);
+  return CountryGetList.getList(accessToken);
 });

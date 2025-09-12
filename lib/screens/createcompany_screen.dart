@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wfs/models/clientstatus_model.dart';
 import 'package:wfs/models/company_model.dart';
 import 'package:wfs/models/companyaddress.dart';
 import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/product_model.dart';
 import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
+import 'package:wfs/models/territory_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/providers/clientstatus_provider.dart';
 import 'package:wfs/providers/company_provider.dart';
@@ -17,6 +19,9 @@ import 'package:wfs/providers/subdistrict_provider.dart';
 import 'package:wfs/services/company_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
+import 'package:wfs/widgets/app_cupertino_option.dart';
+import 'package:wfs/widgets/app_text.dart';
+import 'package:wfs/widgets/app_text_form_field.dart';
 
 class Item {
   final String id;
@@ -34,9 +39,10 @@ class CreateCompanyScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
-  Province? selectedProvince;
-  District? selectedDistrict;
-  Subdistrict? selectedSubdistrict;
+  static const colorPrimary = Color(0xFF007AFF);
+  static const colorGrey = Color(0xFFC7C7CC);
+  static const borderWidth = 0.33;
+  static const borderSide = BorderSide(color: colorGrey, width: borderWidth);
   String? selectStatus;
   String? product;
   String? commany;
@@ -50,42 +56,54 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
   final TextEditingController txtCompanyName = TextEditingController();
   final TextEditingController txtTaxID = TextEditingController();
   final TextEditingController txtPostCode = TextEditingController();
-
+  String? postCode;
   List<Product> selectedProduct = [];
   List<Company> selectedCompany = [];
-
+  String? selectedProvince;
+  String? selectedProvinceName;
+  String? selectedDistrict;
+  String? selectedDistrictName;
+  String? selectedSubdistrict;
+  String? selectedSubdistrictName;
+  String? selectClientStatusName;
+  String? selectClientStatus;
+  String? selectSalesTerritorysName;
+  String? selectSalesTerritorys;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
+      backgroundColor: const Color(0xFFEEEEEE),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF2F2F7),
-        elevation: 0,
-
-        leading: TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: Colors.blue, fontSize: 16),
+        centerTitle: true,
+        backgroundColor: const Color(0xFFEEEEEE),
+        leadingWidth: 100,
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: null,
+                style: ButtonStyle(
+                  iconColor: WidgetStateProperty.all(colorPrimary),
+                ),
+              ),
+              const AppText(label: 'Back', textColor: colorPrimary),
+            ],
           ),
         ),
-        leadingWidth: 80,
-
-        title: const Text(
-          'New Company',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        title: const AppText(
+          label: 'Create Company',
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
         ),
-        centerTitle: true,
-
         actions: [
           TextButton(
             onPressed: () {
               String? error;
               error = Validator.required(txtCompanyName.text);
               if (error != null) {
-                AppDialogs.error(context, message: error + " Company Name");
+                AppDialogs.error(context, message: error + " Name");
                 return;
               }
 
@@ -95,13 +113,13 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 return;
               }
 
-              error = Validator.required(selectStatus);
+              error = Validator.required(selectClientStatus);
               if (error != null) {
                 AppDialogs.error(context, message: "กรุณาเลือก Status");
                 return;
               }
 
-              error = Validator.required(salesTerritory);
+              error = Validator.required(selectSalesTerritorys);
               if (error != null) {
                 AppDialogs.error(context, message: "กรุณาเลือก Territory");
                 return;
@@ -109,7 +127,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
 
               error = Validator.required(txtAddress.text);
               if (error != null) {
-                AppDialogs.error(context, message: error + "Address");
+                AppDialogs.error(context, message: error + " Address");
                 return;
               }
 
@@ -128,7 +146,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 return;
               }
 
-              error = Validator.required(txtPostCode.text);
+              error = Validator.required(postCode);
               if (error != null) {
                 AppDialogs.error(context, message: error + "PostCode");
                 return;
@@ -137,7 +155,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
               Company company = Company(
                 companyName: txtCompanyName.text,
                 taxID: txtTaxID.text,
-                salesTerritoryID: "09A69122-4BE0-4201-8B53-3AEF1C24EBDC",
+                salesTerritoryID: selectSalesTerritorys,
                 noted: "xxxxxxxxxxxxxxx",
                 isActive: true,
                 createdDate: DateTime.now().toIso8601String(),
@@ -147,19 +165,19 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 CompanyAddresses: [
                   CompanyAddress(
                     address: txtAddress.text, //"123 ABC Rd.",
-                    provinceID: selectedProvince?.provinceID ?? null, //1,
-                    districtID: selectedDistrict?.districtID ?? null, // 13,
+                    provinceID: int.parse(selectedProvince!), //1,
+                    districtID: int.parse(selectedDistrict!), // 13,
                     latitude: null,
                     isPrimary: true,
-                    createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                    modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                    createdBy: authState.userID,
+                    modifiedBy: authState.userID,
                     countryID: 1,
-                    subDistrictID:
-                        selectedSubdistrict?.subDistrictID ?? null, // 2583,
+                    subDistrictID: int.parse(selectedSubdistrict!), // 2583
                     longitude: null,
                     isActive: true,
                   ),
                 ],
+                Clients: null,
               );
               CompanyService companyService = new CompanyService();
               final accessToken = authState.accessToken;
@@ -180,567 +198,373 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                 AppDialogs.error(context, message: ex.toString());
               }
             },
-            child: const Text(
-              'Add',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            style: TextButton.styleFrom(foregroundColor: colorPrimary),
+            child: const AppText(label: 'Done', textColor: colorPrimary),
           ),
         ],
       ),
-      body: ListView(
-        children: [
-          _buildSectionHeader('CLIENT INFO'),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                _buildInfoRowClientCompany('Company Name', ''),
-                _buildInfoRowClientTaxID('Tax ID', ''),
-              ],
-            ),
-          ),
-          const SizedBox(height: 30),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                SizedBox(height: 20),
-                _buildTappableRowStatus('Status', ''),
-              ],
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                _buildTappableRowSaleTerritory('Territory', ''),
-                _buildInfoRowAddress('Address', ''),
-                _buildTappableRowProvince('Province', ''),
-                _buildTappableRowDistrict('Distric', ''),
-                _buildTappableRowSubDistrict('SubDistric', ''),
-                _buildInfoRowPostCode('PostCode', ''),
-              ],
-            ),
-          ),
-          const SizedBox(height: 30),
-          // Padding(
-          //   padding: const EdgeInsets.only(left: 16.0),
-          //   child: Text("LINKED CLIENTS"),
-          // ),
-          // Container(
-          //   color: Colors.white,
-          //   child: Column(
-          //     children: [
-          //       SizedBox(height: 20),
-          //       _buildTappableRowProduct(
-          //         'add clients',
-          //         '',
-          //         ProductGetListState,
-          //       ),
-          //       SizedBox(height: 20),
-          //       Center(
-          //         child: selectedCompany.length > 0
-          //             ? Text(
-          //                 "clients ที่เลือก:",
-          //                 style: TextStyle(fontWeight: FontWeight.bold),
-          //               )
-          //             : Text(""),
-          //       ),
-          //       SizedBox(height: 10),
-          //       Wrap(
-          //         spacing: 8,
-          //         runSpacing: 8,
-          //         children: selectedProduct
-          //             .map(
-          //               (e) => Chip(
-          //                 label: Text(e.productName.toString()),
-          //                 deleteIcon: Icon(Icons.close),
-          //                 onDeleted: () {
-          //                   setState(() {
-          //                     selectedProduct.remove(e);
-          //                   });
-          //                 },
-          //               ),
-          //             )
-          //             .toList(),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // const SizedBox(height: 30),
-        ],
-      ),
+      body: ListView(children: [buildContent()]),
     );
   }
 
-  // --- Helper Widgets for building UI sections ---
-
-  // Widget สำหรับหัวข้อของแต่ละ Section (เช่น CLIENT INFO)
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-      ),
-    );
-  }
-
-  // Widget สำหรับแถวข้อมูลธรรมดา (Label: Value)
-  Widget _buildInfoRowClientCompany(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        top: 16,
-        bottom: 16,
-        right: 16,
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 16)),
-              const Spacer(),
-              SizedBox(
-                width: 250,
-                child: TextField(
-                  controller: txtCompanyName,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRowClientTaxID(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 16)),
-              const Spacer(),
-              SizedBox(
-                width: 250,
-                child: TextField(
-                  controller: txtTaxID,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRowAddress(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        top: 16,
-        bottom: 16,
-        right: 16,
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(
-                label,
-                style: const TextStyle(fontSize: 16, color: Colors.blue),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: 300,
-                child: TextField(
-                  controller: txtAddress,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRowPostCode(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(
-                label,
-                style: const TextStyle(fontSize: 16, color: Colors.blue),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: 300,
-                child: TextField(
-                  controller: txtPostCode,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 1, indent: 0, thickness: 0.5),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTappableRowSaleTerritory(
-    String label,
-    String value, {
-    bool showDivider = true,
+  Widget infoTile({
+    required String label,
+    required Widget value,
+    VoidCallback? onTap,
+    double height = 44,
+    bool isShowBorderMiddle = true,
+    bool isShowBorderBottom = false,
+    bool isHideIcon = false,
   }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-        child: Column(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          border: Border(
+            top: borderSide,
+            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
+          ),
+        ),
+        child: Row(
           children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 16, color: Colors.blue),
-                  ),
-                  const Spacer(),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final saleTerritorieGetListState = ref.watch(
-                        saleTerritorieGetList,
-                      );
-                      return saleTerritorieGetListState.when(
-                        data: (territory) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<String>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: salesTerritory,
-                              items: territory.map((p) {
-                                return DropdownMenuItem<String>(
-                                  value: p.salesTerritoryID,
-                                  child: Text(p.salesTerritoryName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  salesTerritory = value;
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
-                ],
+            const SizedBox(width: 16),
+            Container(
+              width: 100,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: BorderDirectional(
+                  end: isShowBorderMiddle
+                      ? const BorderSide(color: colorGrey, width: borderWidth)
+                      : BorderSide.none,
+                ),
               ),
+              child: AppText(label: label, textColor: const Color(0xFF007AFF)),
             ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Align(alignment: Alignment.centerLeft, child: value),
+            ),
+            if (!isHideIcon) ...[
+              const Icon(Icons.chevron_right, size: 24, color: colorGrey),
+              const SizedBox(width: 8),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTappableRowProvince(
-    String label,
-    String value, {
-    bool showDivider = true,
+  Widget infoTileDropdown({
+    required String label,
+    required Widget value,
+    VoidCallback? onTap,
+    double height = 44,
+    bool isShowBorderMiddle = true,
+    bool isShowBorderBottom = false,
+    bool isHideIcon = false,
   }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-        child: Column(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          border: Border(
+            top: borderSide,
+            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
+          ),
+        ),
+        child: Row(
           children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 16, color: Colors.blue),
-                  ),
-                  const Spacer(),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final provincesProviderState = ref.watch(
-                        provincesProvider,
-                      );
-                      return provincesProviderState.when(
-                        data: (provinces) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<Province>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectedProvince,
-                              items: provinces.map((p) {
-                                return DropdownMenuItem<Province>(
-                                  value: p,
-                                  child: Text(p.provinceName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedProvince = value;
-                                  selectedDistrict = null;
-                                  selectedSubdistrict = null;
-                                  txtPostCode.text = "";
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
-                ],
-              ),
+            Expanded(
+              child: Align(alignment: Alignment.centerLeft, child: value),
             ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
+            if (!isHideIcon) ...[
+              const Icon(Icons.chevron_right, size: 24, color: colorGrey),
+              const SizedBox(width: 8),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTappableRowDistrict(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
+  Widget buildContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 24,
+        children: [
+          Column(
+            spacing: 16,
+            children: [
+              Column(
                 children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 16, color: Colors.blue),
+                  infoTile(
+                    label: 'Name',
+                    value: AppTextFormField(controller: txtCompanyName),
+                    isShowBorderBottom: true,
+                    isHideIcon: true,
                   ),
-                  const Spacer(),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final districtGetListState = ref.watch(
-                        districtsProvider(
-                          selectedProvince == null
-                              ? ""
-                              : selectedProvince!.provinceID.toString(),
+                  infoTile(
+                    label: 'Tax ID',
+                    value: AppTextFormField(controller: txtTaxID),
+                    isShowBorderBottom: true,
+                    isHideIcon: true,
+                  ),
+                  Container(color: Color(0xFFEEEEEE), height: 30),
+                  infoTile(
+                    label: 'status',
+                    value: AppText(label: selectClientStatusName ?? ''),
+                    onTap: () =>
+                        openStatusSheet(context, selectClientStatusName ?? ""),
+                    isShowBorderBottom: true,
+                  ),
+                  infoTile(
+                    label: 'territory',
+                    value: AppText(label: selectSalesTerritorysName ?? ''),
+                    onTap: () => openTerritorySheet(
+                      context,
+                      selectSalesTerritorysName ?? '',
+                    ),
+                    isShowBorderBottom: true,
+                  ),
+                ],
+              ),
+              Container(color: Color(0xFFEEEEEE), height: 5),
+              addressWidget(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> openTerritorySheet(
+    BuildContext context,
+    String territoryID,
+  ) async {
+    final selected = await CupertinoOptionsPicker.show<Territory>(
+      context: context,
+      title: 'Territory',
+      provider: territoryGetListProvider,
+      label: (p) => p.salesTerritoryName,
+      initialKey: (p) => p.salesTerritoryID,
+      initialValue: territoryID,
+    );
+
+    if (selected == null) return;
+    setState(() {
+      selectSalesTerritorysName = selected.salesTerritoryName;
+      selectSalesTerritorys = selected.salesTerritoryID;
+    });
+  }
+
+  Future<void> openStatusSheet(BuildContext context, String statusID) async {
+    final selected = await CupertinoOptionsPicker.show<ClientStatus>(
+      context: context,
+      title: 'Status',
+      provider: ClientStatusGetList,
+      label: (p) => p.clientStatusName.toString(),
+      initialKey: (p) => p.clientStatusID.toString(),
+      initialValue: statusID,
+    );
+
+    if (selected == null) return;
+    setState(() {
+      selectClientStatus = selected.clientStatusID;
+      selectClientStatusName = selected.clientStatusName;
+    });
+  }
+
+  Widget addressWidget() {
+    Widget addressField({
+      required Widget child,
+      bool hasRightBorder = false,
+      bool hasBottomBorder = true,
+    }) {
+      return Container(
+        height: 44,
+        decoration: BoxDecoration(
+          border: Border(
+            right: hasRightBorder ? borderSide : BorderSide.none,
+            bottom: hasBottomBorder ? borderSide : BorderSide.none,
+          ),
+        ),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 16),
+        child: child,
+      );
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: borderSide, bottom: borderSide),
+      ),
+      child: Stack(
+        children: [
+          const Positioned(
+            left: 16 + 100,
+            top: 0,
+            bottom: 0,
+            child: SizedBox(
+              width: borderWidth,
+              child: ColoredBox(color: colorGrey),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(width: 16),
+              const SizedBox(
+                width: 100,
+                child: Center(
+                  child: AppText(
+                    label: 'address',
+                    textColor: Color(0xFF007AFF),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    addressField(
+                      child: AppTextFormField(controller: txtAddress),
+                    ),
+                    addressField(
+                      hasRightBorder: false,
+                      child: infoTileDropdown(
+                        label: selectedSubdistrictName ?? '',
+                        value: AppText(label: selectedSubdistrictName ?? ''),
+                        onTap: () => openSubDistrictSheet(
+                          context,
+                          selectedSubdistrictName ?? "",
                         ),
-                      );
-                      return districtGetListState.when(
-                        data: (district) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<District>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectedDistrict,
-                              items: district.map((p) {
-                                return DropdownMenuItem<District>(
-                                  value: p,
-                                  child: Text(p.districtName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedDistrict = value;
-                                  selectedSubdistrict = null;
-                                  txtPostCode.text = "";
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTappableRowSubDistrict(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 16, color: Colors.blue),
-                  ),
-                  const Spacer(),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final districtGetListState = ref.watch(
-                        subdistrictsProvider(
-                          selectedDistrict == null
-                              ? ""
-                              : selectedDistrict!.districtID.toString(),
+                        isShowBorderBottom: true,
+                        isHideIcon: true,
+                      ),
+                    ),
+                    addressField(
+                      child: infoTileDropdown(
+                        label: selectedDistrictName ?? '',
+                        value: AppText(label: selectedDistrictName ?? ''),
+                        onTap: () => openDistrictSheet(
+                          context,
+                          selectedDistrictName ?? "",
                         ),
-                      );
-                      return districtGetListState.when(
-                        data: (district) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<Subdistrict>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectedSubdistrict,
-                              items: district.map((p) {
-                                return DropdownMenuItem<Subdistrict>(
-                                  value: p,
-                                  child: Text(p.subDistrictName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedSubdistrict = value;
-                                  txtPostCode.text = value?.postCode ?? "";
-                                });
-                              },
+                        isShowBorderBottom: true,
+                        isHideIcon: true,
+                      ),
+                    ),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: addressField(
+                            hasRightBorder: true,
+                            child: infoTileDropdown(
+                              label: selectedProvinceName ?? '',
+                              value: AppText(label: selectedProvinceName ?? ''),
+                              onTap: () => openProvinceSheet(
+                                context,
+                                selectedProvinceName ?? "",
+                              ),
+                              isShowBorderBottom: true,
+                              isHideIcon: true,
                             ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
-                ],
+                          ),
+                        ),
+                        Expanded(
+                          child: addressField(child: AppText(label: "ไทย")),
+                        ),
+                      ],
+                    ),
+                    addressField(
+                      child: AppText(label: postCode ?? ""),
+                      hasBottomBorder: false,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  // Widget สำหรับแถวที่กดได้ (มีลูกศร >)
-  Widget _buildTappableRowStatus(
-    String label,
-    String value, {
-    bool showDivider = true,
-  }) {
-    return InkWell(
-      onTap: () {
-        // TODO: Implement navigation or show picker for this row
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44, // ความสูงมาตรฐานของ iOS list item
-              child: Row(
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 16, color: Colors.blue),
-                  ),
-                  const Spacer(),
-
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final ClientStatusGetListState = ref.watch(
-                        ClientStatusGetList,
-                      );
-                      return ClientStatusGetListState.when(
-                        data: (clientStatus) {
-                          return SizedBox(
-                            width: 300,
-                            child: DropdownButton<String>(
-                              isExpanded: true,
-                              hint: const Text('เลือก'),
-                              value: selectStatus,
-                              items: clientStatus.map((p) {
-                                return DropdownMenuItem<String>(
-                                  value: p.clientStatusID,
-                                  child: Text(p.clientStatusName.toString()),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectStatus = value;
-                                });
-                              },
-                            ),
-                          );
-                        },
-                        loading: () => const CircularProgressIndicator(),
-                        error: (err, _) => Text('Error: $err'),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (showDivider)
-              const Divider(height: 1, indent: 0, thickness: 0.5),
-          ],
-        ),
-      ),
+  Future<void> openProvinceSheet(
+    BuildContext context,
+    String subdistrictID,
+  ) async {
+    final selected = await CupertinoOptionsPicker.show<Province>(
+      context: context,
+      title: 'Province',
+      provider: provincesProvider,
+      label: (p) => p.provinceName.toString(),
+      initialKey: (p) => p.provinceID.toString(),
+      initialValue: subdistrictID,
     );
+
+    if (selected == null) return;
+    setState(() {
+      selectedProvince = selected.provinceID.toString();
+      selectedProvinceName = selected.provinceName;
+      selectedDistrict = null;
+      selectedSubdistrict = null;
+      txtPostCode.text = "";
+      postCode = "";
+    });
+  }
+
+  Future<void> openDistrictSheet(
+    BuildContext context,
+    String subdistrictID,
+  ) async {
+    final selected = await CupertinoOptionsPicker.show<District>(
+      context: context,
+      title: 'District',
+      provider: districtsProvider(selectedProvince ?? ""),
+      label: (p) => p.districtName.toString(),
+      initialKey: (p) => p.districtID.toString(),
+      initialValue: subdistrictID,
+    );
+
+    if (selected == null) return;
+    setState(() {
+      selectedDistrict = selected.districtID.toString();
+      selectedDistrictName = selected.districtName;
+      selectedSubdistrict = null;
+      txtPostCode.text = "";
+      postCode = "";
+    });
+  }
+
+  Future<void> openSubDistrictSheet(
+    BuildContext context,
+    String subdistrictID,
+  ) async {
+    final selected = await CupertinoOptionsPicker.show<Subdistrict>(
+      context: context,
+      title: 'SubDistrict',
+      provider: subdistrictsProvider(selectedDistrict ?? ""),
+      label: (p) => p.subDistrictName.toString(),
+      initialKey: (p) => p.subDistrictID.toString(),
+      initialValue: subdistrictID,
+    );
+
+    if (selected == null) return;
+    setState(() {
+      selectedSubdistrict = selected.subDistrictID.toString();
+      selectedSubdistrictName = selected.subDistrictName;
+      txtPostCode.text = selected.postCode ?? "";
+      postCode = selected.postCode ?? "";
+    });
   }
 }

@@ -7,7 +7,7 @@ final userProvider = Provider<UserService>((ref) {
   return UserService();
 });
 
-final GetListUser = FutureProvider<List<User>>((ref) async {
+final getListUser = FutureProvider<List<User>>((ref) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 
@@ -17,5 +17,5 @@ final GetListUser = FutureProvider<List<User>>((ref) async {
 
   final userService = ref.watch(userProvider);
 
-  return userService.GetList(accessToken);
+  return userService.getList(accessToken);
 });

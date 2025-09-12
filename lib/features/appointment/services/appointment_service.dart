@@ -11,13 +11,20 @@ import 'package:wfs/features/appointment/models/product.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/appointment/models/visit_activities.dart';
+import 'package:wfs/providers/auth_provider.dart';
+
 
 
 class AppointmentService {
   final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
   final token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzeXN0ZW1hZG1pbkBtYWlsLmNvbSIsImV4cCI6MTc1NzAyOTY1NX0.9_GjEOLlXxOgBSqqZKcSPVPpm_fI8C3_T6DN4w_8JnU";
+  
 
+  
   Future<List<Appointment>> fetchAppointments() async {
+
+
+
     final appointments = await apiClient.get(
       path: "/appointment/?IsActive=true", //&AppointmentDate=2025-08-04&UserID=9E0DC5F7-1FD6-41F3-9137-14711FC510F6
       decode: (json) {
@@ -32,16 +39,24 @@ class AppointmentService {
   }
 
   Future<AppointmentDetail> fetchAppointmentById(Ref ref,String appointmentID) async {
+
+  final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
+
+
     final appointment = await apiClient.get(
       path: "/appointment/id/$appointmentID",
       decode: (json) => AppointmentDetail.fromJson((json as Map<String, dynamic>)["appointment"][0]),
-      headers: {"Authorization": "Bearer $token"},
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     return appointment;
   }
 
-  Future<List<Product>> fetchProducts() async {
+  Future<List<Product>> fetchProducts(Ref ref) async {
+     final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
+
     final products = await apiClient.get(
       path: "/product/?SearchName=Test&IsActive=true",
       decode: (json) {
@@ -50,13 +65,16 @@ class AppointmentService {
 
         return Product.listFromJson(list);
       },
-      headers: {"Authorization": "Bearer $token"},
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     return products;
   }
 
-  Future<List<AppointmentType>> fetchAppointmentType() async {
+  Future<List<AppointmentType>> fetchAppointmentTypd(Ref ref) async {
+
+         final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
     final appointmentType = await apiClient.get(
       path: "/appointment/type/?IsActive=true",
       decode: (json) {
@@ -65,13 +83,16 @@ class AppointmentService {
 
         return AppointmentType.listFromJson(list);
       },
-      headers: {"Authorization": "Bearer $token"},
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     return appointmentType;
   }
 
-  Future<List<AppointmentStatus>> fetchAppointmentStatus() async {
+  Future<List<AppointmentStatus>> fetchAppointmentStatus(Ref ref) async {
+
+         final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
     final appointmentStatus = await apiClient.get(
       path: "/appointment/status/?IsActive=true",
       decode: (json) {
@@ -80,14 +101,17 @@ class AppointmentService {
 
         return AppointmentStatus.listFromJson(list);
       },
-      headers: {"Authorization": "Bearer $token"},
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     return appointmentStatus;
   }
 
-  Future<List<Purpose>> fetchPurposes() async {
-    final purposes = await apiClient.get(
+  Future<List<Purpose>> fetchPurposes(Ref ref) async {
+
+
+     final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;    final purposes = await apiClient.get(
       path: "/purpose_type/?IsActive=true",
       decode: (json) {
         final map = json as Map<String, dynamic>;
@@ -95,13 +119,15 @@ class AppointmentService {
 
         return Purpose.listFromJson(list);
       },
-      headers: {"Authorization": "Bearer $token"},
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     return purposes;
   }
 
-  Future<List<Territory>> fetchTerritories() async {
+  Future<List<Territory>> fetchTerritories(Ref ref) async {
+         final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
     final territories = await apiClient.get(
       path: "/sale/territory/?IsActive=true",
       decode: (json) {
@@ -110,7 +136,7 @@ class AppointmentService {
 
         return Territory.listFromJson(list);
       },
-      headers: {"Authorization": "Bearer $token"},
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     return territories;
@@ -126,7 +152,9 @@ class AppointmentService {
     return outcomes;
   }
 
-  Future<List<Company>> fetchCompanies() async {
+  Future<List<Company>> fetchCompanies(Ref ref) async {
+         final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
     final companies = await apiClient.get(
       path: "/company/?IsActive=true",
       decode: (json) {
@@ -135,31 +163,39 @@ class AppointmentService {
 
         return Company.listFromJson(list);
       },
-      headers: {"Authorization": "Bearer $token"},
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     return companies;
   }
 
-  Future<bool> updateAppointment(AppointmentDetail appointmentDetail) async {
+  Future<bool> updateAppointment(AppointmentDetail appointmentDetail,Ref ref) async {
+
+         final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
     try {
-      return await apiClient.put(path: "/appointment/${appointmentDetail.appointmentId.toString()}", body: appointmentDetail.toJsonUpdate(), headers: {"Authorization": "Bearer $token"});
+      return await apiClient.put(path: "/appointment/${appointmentDetail.appointmentId.toString()}", body: appointmentDetail.toJsonUpdate(), headers: {"Authorization": "Bearer $accessToken"});
     } catch (e) {
       print(e);
       return false;
     }
   }
 
-  Future<bool> deleteAppointment(String appointmentID) async {
+  Future<bool> deleteAppointment(String appointmentID,Ref ref) async {
+     final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
     try {
-      return await apiClient.delete(path: "/appointment/$appointmentID", headers: {"Authorization": "Bearer $token"});
+      return await apiClient.delete(path: "/appointment/$appointmentID", headers: {"Authorization": "Bearer $accessToken"});
     } catch (e) {
       print('deleteAppointment catch: $e');
       return false;
     }
   }
 
-  Future<List<VisitActivity>> fetchVisitActivities(String appointmentID) async {
+  Future<List<VisitActivity>> fetchVisitActivities(String appointmentID,Ref ref) async {
+
+         final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
     final visitActivities = await apiClient.get(
       path: "/appointment/visit?IsActive=true&AppointmentID=$appointmentID",
       decode: (json) {
@@ -167,13 +203,16 @@ class AppointmentService {
         final list = map['visit_activities'] as List? ?? const [];
         return VisitActivity.listFromJson(list);
       },
-      headers: {"Authorization": "Bearer $token"},
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     return visitActivities;
   }
 
-  Future<({bool ok, String activityId, String modifiedBy})> checkIn(VisitActivity visitActivity) async {
+  Future<({bool ok, String activityId, String modifiedBy})> checkIn(VisitActivity visitActivity,Ref ref) async {
+    
+             final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
     try {
       return await apiClient.post(
         path: "/appointment/visit/In",
@@ -188,7 +227,7 @@ class AppointmentService {
 
           return (ok: activityID.isNotEmpty, activityId: activityID, modifiedBy: modifiedBy);
         },
-        headers: {"Authorization": "Bearer $token"},
+        headers: {"Authorization": "Bearer $accessToken"},
       );
     } catch (e) {
       print('checkIn catch: $e');
@@ -197,6 +236,7 @@ class AppointmentService {
   }
 
   Future<bool> uploadImage({required String activityId, required String modifiedBy, required String imgBase64}) async {
+
     try {
       return await apiClient.post(
         path: "/appointment/upload-image",
@@ -214,7 +254,9 @@ class AppointmentService {
     }
   }
 
-  Future<bool> checkOut(VisitActivity visitActivity) async {
+  Future<bool> checkOut(VisitActivity visitActivity,Ref ref) async {
+             final authState = ref.watch(authProvider);
+  final accessToken = authState.accessToken;
     try {
       return await apiClient.post(
         path: "/appointment/visit/out",
@@ -223,7 +265,7 @@ class AppointmentService {
           final map = json as Map<String, dynamic>;
           return (map['status'] as String?)?.toLowerCase() != "success";
         },
-        headers: {"Authorization": "Bearer $token"},
+        headers: {"Authorization": "Bearer $accessToken"},
       );
     } catch (e) {
       print('checkOut catch: $e');

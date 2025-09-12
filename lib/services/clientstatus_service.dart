@@ -4,7 +4,7 @@ import 'package:wfs/models/clientstatus_model.dart';
 import '../config/api_config.dart';
 
 class ClientStatusService {
-  Future<List<ClientStatus>> GetList(String accessToken) async {
+  Future<List<ClientStatus>> getList(String accessToken) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }

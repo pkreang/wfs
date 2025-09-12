@@ -118,7 +118,7 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      return await _appointmentService.updateAppointment(detail);
+      return await _appointmentService.updateAppointment(detail,ref);
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));
     } finally {
@@ -132,7 +132,7 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      return await _appointmentService.deleteAppointment(id);
+      return await _appointmentService.deleteAppointment(id,ref);
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));
     } finally {

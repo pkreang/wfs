@@ -17,5 +17,5 @@ final perposeTypeGetList = FutureProvider<List<PurposeType>>((ref) async {
 
   final purposetypeService = ref.watch(purposetypeProvider);
 
-  return purposetypeService.GetList(accessToken);
+  return purposetypeService.getList(accessToken);
 });

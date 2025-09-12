@@ -3,7 +3,7 @@ import 'package:wfs/models/clientstatus_model.dart';
 import 'package:wfs/services/clientstatus_service.dart';
 import 'auth_provider.dart';
 
-final ClientStatusProvider = Provider<ClientStatusService>((ref) {
+final clientStatusProvider = Provider<ClientStatusService>((ref) {
   return ClientStatusService();
 });
 
@@ -15,7 +15,7 @@ final ClientStatusGetList = FutureProvider<List<ClientStatus>>((ref) async {
     throw Exception('User is not authenticated.');
   }
 
-  final ClientStatusService = ref.watch(ClientStatusProvider);
+  final ClientStatusService = ref.watch(clientStatusProvider);
 
-  return ClientStatusService.GetList(accessToken);
+  return ClientStatusService.getList(accessToken);
 });

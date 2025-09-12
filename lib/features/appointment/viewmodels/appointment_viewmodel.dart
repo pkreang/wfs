@@ -1,5 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
+import 'package:wfs/providers/auth_provider.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AppointmentViewModel {
   final AppointmentService _appointmentService = AppointmentService();

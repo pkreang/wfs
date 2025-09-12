@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/features/appointment/views/appointment_detail_page.dart';
 import 'package:wfs/widgets/auth_checker.dart';
 
 final selectedItemProvider = StateProvider<String?>((ref) => null);

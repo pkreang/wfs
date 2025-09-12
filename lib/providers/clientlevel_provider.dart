@@ -3,7 +3,7 @@ import 'package:wfs/models/clientlevel_model.dart';
 import 'package:wfs/services/clientlevel_service.dart';
 import 'auth_provider.dart';
 
-final ClientLevelProvider = Provider<ClientLevelService>((ref) {
+final clientLevelProvider = Provider<ClientLevelService>((ref) {
   return ClientLevelService();
 });
 
@@ -15,7 +15,7 @@ final clientLevelGetList = FutureProvider<List<ClientLevel>>((ref) async {
     throw Exception('User is not authenticated.');
   }
 
-  final clientLevelService = ref.watch(ClientLevelProvider);
+  final clientLevelService = ref.watch(clientLevelProvider);
 
-  return clientLevelService.GetList(accessToken);
+  return clientLevelService.getList(accessToken);
 });

@@ -1,3 +1,6 @@
+
+import 'package:wfs/models/company_model.dart';
+
 class ClientCompanies {
   String? companyID;
   String? position;
@@ -6,7 +9,8 @@ class ClientCompanies {
   DateTime? availableTimeEnd;
   String? createdBy;
   String? modifiedBy;
-
+  Company? company;
+  String? companyName;
   ClientCompanies({
     this.companyID,
     this.position,
@@ -15,6 +19,8 @@ class ClientCompanies {
     this.availableTimeEnd,
     this.createdBy,
     this.modifiedBy,
+    this.companyName,
+    this.company,
   });
 
   ClientCompanies.fromJson(Map<String, dynamic> json) {
@@ -25,6 +31,10 @@ class ClientCompanies {
     availableTimeEnd = json['AvailableTimeEnd'];
     createdBy = json['CreatedBy'];
     modifiedBy = json['ModifiedBy'];
+    company = json['Company'] != null
+        ? new Company.fromJson(json['Company'])
+        : null;
+    companyName = json['CompanyName'];
   }
 
   Map<String, dynamic> toJson() {
@@ -36,6 +46,8 @@ class ClientCompanies {
     data['AvailableTimeEnd'] = this.availableTimeEnd;
     data['CreatedBy'] = this.createdBy;
     data['ModifiedBy'] = this.modifiedBy;
+    data['Company'] = this.company;
+    data['CompanyName'] = this.companyName;
     return data;
   }
 }

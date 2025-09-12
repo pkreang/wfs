@@ -7,7 +7,7 @@ import 'package:wfs/models/district_model.dart';
 import 'package:wfs/services/district_service.dart';
 import 'auth_provider.dart';
 
-final DistrictProvider = Provider<DistrictService>((ref) {
+final districtProvider = Provider<DistrictService>((ref) {
   return DistrictService();
 });
 
@@ -21,9 +21,9 @@ final districtGetList = FutureProvider<List<District>>((ref) async {
     throw Exception('User is not authenticated.');
   }
 
-  final DistrictGetList = ref.watch(DistrictProvider);
+  final DistrictGetList = ref.watch(districtProvider);
 
-  return DistrictGetList.GetList(accessToken);
+  return DistrictGetList.getList(accessToken);
 });
 
 final districtsProvider = FutureProvider.family<List<District>, String>((

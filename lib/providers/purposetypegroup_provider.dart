@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/models/PurposeTypeGroup_model.dart';
-import 'package:wfs/services/PurposeTypeGroup_service.dart';
+import 'package:wfs/services/purposetypegroup_service.dart';
 import 'auth_provider.dart';
 
-final PurposeTypeGroupProvider = Provider<PurposeTypeGroupService>((ref) {
+final purposeTypeGroupProvider = Provider<PurposeTypeGroupService>((ref) {
   return PurposeTypeGroupService();
 });
 
@@ -17,7 +17,7 @@ final perposeTypeGroupGetList = FutureProvider<List<PurposeTypeGroup>>((
     throw Exception('User is not authenticated.');
   }
 
-  final PurposeTypeGroupService = ref.watch(PurposeTypeGroupProvider);
+  final PurposeTypeGroupService = ref.watch(purposeTypeGroupProvider);
 
-  return PurposeTypeGroupService.GetList(accessToken);
+  return PurposeTypeGroupService.getList(accessToken);
 });

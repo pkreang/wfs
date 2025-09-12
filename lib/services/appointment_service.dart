@@ -1,4 +1,4 @@
-//lib/services/appointment_service.dart
+
 
 
 import 'dart:convert';
@@ -22,7 +22,7 @@ class AppointmentService {
 
     final uri = Uri.parse('${ApiConfig.appointmentUrl}/bydate/').replace(
       queryParameters: {
-      'AppointmentDate' : dateAppoinment, 
+      'AppointmentDateFrom' : dateAppoinment, 
       },
     );
 
