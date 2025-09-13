@@ -37,12 +37,10 @@ class CreateAppointmentScreen extends ConsumerStatefulWidget {
   const CreateAppointmentScreen({super.key});
 
   @override
-  ConsumerState<CreateAppointmentScreen> createState() =>
-      _CreateAppointmentScreenState();
+  ConsumerState<CreateAppointmentScreen> createState() => _CreateAppointmentScreenState();
 }
 
-class _CreateAppointmentScreenState
-    extends ConsumerState<CreateAppointmentScreen> {
+class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScreen> {
   String? selectedPurpose;
   String? salesTerritory;
   String? appointmentStatus;
@@ -78,25 +76,22 @@ class _CreateAppointmentScreenState
   @override
   Widget build(BuildContext context) {
     final selectedItem = ref.watch(selectedItemProvider);
-    final clientGetByIdProviderState = ref.watch(
-      clientGetByIdProvider(selectedItem.toString()),
-    );
-    String? clientName = clientGetByIdProviderState.when(
-      data: (client) => client.firstName!,
-      loading: () => "Loading",
-      error: (err, stack) => err.toString(),
-    );
-    String? phone = clientGetByIdProviderState.when(
-      data: (client) => client.phone!,
+    final clientGetByIdProviderState = ref.watch(clientGetByIdProvider(selectedItem.toString()));
+    String? clientName = clientGetByIdProviderState.when(data: (client) => client.firstName!, loading: () => "Loading", error: (err, stack) => err.toString());
+
+    clientGetByIdProviderState.when(
+      data: (client) {
+        selectTerritoryID = client.salesTerritoryID;
+        selectTerritoryName = client.salesTerritoryName;
+      },
       loading: () => "Loading",
       error: (err, stack) => err.toString(),
     );
 
-    String? email = clientGetByIdProviderState.when(
-      data: (client) => client.email!,
-      loading: () => "Loading",
-      error: (err, stack) => err.toString(),
-    );
+    String? phone = clientGetByIdProviderState.when(data: (client) => client.phone!, loading: () => "Loading", error: (err, stack) => err.toString());
+
+    String? email = clientGetByIdProviderState.when(data: (client) => client.email!, loading: () => "Loading", error: (err, stack) => err.toString());
+
     return Scaffold(
       backgroundColor: const Color(0xFFEEEEEE),
       appBar: AppBar(
@@ -110,19 +105,13 @@ class _CreateAppointmentScreenState
               IconButton(
                 icon: const Icon(Icons.chevron_left),
                 onPressed: null,
-                style: ButtonStyle(
-                  iconColor: WidgetStateProperty.all(colorPrimary),
-                ),
+                style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary)),
               ),
               const AppText(label: 'Back', textColor: colorPrimary),
             ],
           ),
         ),
-        title: const AppText(
-          label: 'Create Appointment',
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-        ),
+        title: const AppText(label: 'Create Appointment', fontSize: 17, fontWeight: FontWeight.w600),
 
         actions: [
           TextButton(
@@ -230,7 +219,7 @@ class _CreateAppointmentScreenState
                 purposeTypeID: selectPurposeID,
                 noted: txtNote.text, //
                 assignedBy: null, //
-                 appointmentAddress: [
+                appointmentAddress: [
                   AppointmentAddress(
                     address: txtAddress.text,
                     countryID: 1, //
@@ -259,7 +248,7 @@ class _CreateAppointmentScreenState
               try {
                 appointmentService.Add(accessToken.toString(), appointment);
                 // ignore: unused_result
-               // ref.refresh(appointmentsProvider);
+                // ref.refresh(appointmentsProvider);
                 AppDialogs.success(context);
                 Future.delayed(const Duration(seconds: 3), () {
                   context.push('/dashboard');
@@ -298,22 +287,20 @@ class _CreateAppointmentScreenState
                   infoTile(
                     label: 'purpose',
                     value: AppText(label: selectPurposeName ?? ''),
-                    onTap: () =>
-                        openPurposeSheet(context, selectPurposeName ?? ''),
+                    onTap: () => openPurposeSheet(context, selectPurposeName ?? ''),
                     isShowBorderBottom: true,
                   ),
                   infoTile(
                     label: 'territory',
                     value: AppText(label: selectTerritoryName ?? ''),
-                    onTap: () =>
-                        openTerritorySheet(context, selectTerritoryName ?? ''),
+                    // onTap: () => openTerritorySheet(context, selectTerritoryName ?? ''),
                     isShowBorderBottom: true,
+                    isHideIcon: true,
                   ),
                   infoTile(
                     label: 'status',
                     value: AppText(label: selectStatusName ?? ''),
-                    onTap: () =>
-                        openStatusSheet(context, selectStatusName ?? ''),
+                    onTap: () => openStatusSheet(context, selectStatusName ?? ''),
                     isShowBorderBottom: true,
                   ),
                 ],
@@ -335,13 +322,7 @@ class _CreateAppointmentScreenState
                         ? () => openTimePicker(
                             datetime: dateTimeFrom!.toIso8601String(),
                             onSelected: (value) => setState(() {
-                              dateTimeFrom = DateTime(
-                                dateTimeFrom!.year,
-                                dateTimeFrom!.month,
-                                dateTimeFrom!.day,
-                                value.hour,
-                                value.minute,
-                              );
+                              dateTimeFrom = DateTime(dateTimeFrom!.year, dateTimeFrom!.month, dateTimeFrom!.day, value.hour, value.minute);
                             }),
                           )
                         : null,
@@ -361,13 +342,7 @@ class _CreateAppointmentScreenState
                         ? () => openTimePicker(
                             datetime: dateTimeTo!.toIso8601String(),
                             onSelected: (value) => setState(() {
-                              dateTimeTo = DateTime(
-                                dateTimeTo!.year,
-                                dateTimeTo!.month,
-                                dateTimeTo!.day,
-                                value.hour,
-                                value.minute,
-                              );
+                              dateTimeTo = DateTime(dateTimeTo!.year, dateTimeTo!.month, dateTimeTo!.day, value.hour, value.minute);
                             }),
                           )
                         : null,
@@ -392,11 +367,7 @@ class _CreateAppointmentScreenState
               ),
               infoTile(
                 label: 'note',
-                value: AppTextFormField(
-                  controller: txtNote,
-                  onChanged: (value) {},
-                  maxLines: 5,
-                ),
+                value: AppTextFormField(controller: txtNote, onChanged: (value) {}, maxLines: 5),
                 height: 126,
                 isShowBorderBottom: true,
                 isHideIcon: true,
@@ -411,10 +382,7 @@ class _CreateAppointmentScreenState
     );
   }
 
-  Widget productTile({
-    required List<Product> products,
-    bool isShowBorderBottom = false,
-  }) {
+  Widget productTile({required List<Product> products, bool isShowBorderBottom = false}) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -438,10 +406,7 @@ class _CreateAppointmentScreenState
               const SizedBox(
                 width: 100,
                 child: Center(
-                  child: AppText(
-                    label: 'products',
-                    textColor: Color(0xFF007AFF),
-                  ),
+                  child: AppText(label: 'products', textColor: Color(0xFF007AFF)),
                 ),
               ),
               Expanded(
@@ -460,10 +425,7 @@ class _CreateAppointmentScreenState
                         return Container(
                           decoration: const BoxDecoration(
                             border: Border(
-                              bottom: BorderSide(
-                                color: colorGrey,
-                                width: borderWidth,
-                              ),
+                              bottom: BorderSide(color: colorGrey, width: borderWidth),
                             ),
                           ),
                           height: 44,
@@ -473,26 +435,15 @@ class _CreateAppointmentScreenState
                                 onTap: () => removeProduct(product, products),
                                 child: const Padding(
                                   padding: EdgeInsets.only(left: 16),
-                                  child: Icon(
-                                    Icons.remove_circle,
-                                    color: Color(0xFFFF382B),
-                                    size: 24,
-                                  ),
+                                  child: Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 24),
                                 ),
                               ),
                               Expanded(
                                 child: GestureDetector(
-                                  onTap: () => openProdctSheet(
-                                    context: context,
-                                    productID: product.productID ?? "",
-                                    isUpdate: true,
-                                    products: products,
-                                  ),
+                                  onTap: () => openProdctSheet(context: context, productID: product.productID ?? "", isUpdate: true, products: products),
                                   child: Padding(
                                     padding: const EdgeInsets.only(left: 16),
-                                    child: AppText(
-                                      label: product.productName ?? "",
-                                    ),
+                                    child: AppText(label: product.productName ?? ""),
                                   ),
                                 ),
                               ),
@@ -502,21 +453,13 @@ class _CreateAppointmentScreenState
                       },
                     ),
                     GestureDetector(
-                      onTap: () => openProdctSheet(
-                        context: context,
-                        productID: "",
-                        products: products,
-                      ),
+                      onTap: () => openProdctSheet(context: context, productID: "", products: products),
                       child: const SizedBox(
                         height: 44,
                         child: Row(
                           children: [
                             SizedBox(width: 16),
-                            Icon(
-                              Icons.add_circle,
-                              color: Color(0xFF31C859),
-                              size: 24,
-                            ),
+                            Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
                             SizedBox(width: 16),
                             AppText(label: 'add product'),
                           ],
@@ -533,12 +476,7 @@ class _CreateAppointmentScreenState
     );
   }
 
-  Future<void> openProdctSheet({
-    required BuildContext context,
-    required String productID,
-    bool isUpdate = false,
-    required List<Product>? products,
-  }) async {
+  Future<void> openProdctSheet({required BuildContext context, required String productID, bool isUpdate = false, required List<Product>? products}) async {
     final selected = await CupertinoOptionsPicker.show<Product>(
       context: context,
       title: 'Product',
@@ -561,10 +499,7 @@ class _CreateAppointmentScreenState
     }
   }
 
-  Widget companyTile({
-    required List<Company> companys,
-    bool isShowBorderBottom = false,
-  }) {
+  Widget companyTile({required List<Company> companys, bool isShowBorderBottom = false}) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -588,10 +523,7 @@ class _CreateAppointmentScreenState
               const SizedBox(
                 width: 100,
                 child: Center(
-                  child: AppText(
-                    label: 'companys',
-                    textColor: Color(0xFF007AFF),
-                  ),
+                  child: AppText(label: 'companys', textColor: Color(0xFF007AFF)),
                 ),
               ),
               Expanded(
@@ -610,10 +542,7 @@ class _CreateAppointmentScreenState
                         return Container(
                           decoration: const BoxDecoration(
                             border: Border(
-                              bottom: BorderSide(
-                                color: colorGrey,
-                                width: borderWidth,
-                              ),
+                              bottom: BorderSide(color: colorGrey, width: borderWidth),
                             ),
                           ),
                           height: 44,
@@ -623,26 +552,15 @@ class _CreateAppointmentScreenState
                                 onTap: () => removeCompany(company, companys),
                                 child: const Padding(
                                   padding: EdgeInsets.only(left: 16),
-                                  child: Icon(
-                                    Icons.remove_circle,
-                                    color: Color(0xFFFF382B),
-                                    size: 24,
-                                  ),
+                                  child: Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 24),
                                 ),
                               ),
                               Expanded(
                                 child: GestureDetector(
-                                  onTap: () => openCompanySheet(
-                                    context: context,
-                                    companyID: company.companyID ?? "",
-                                    isUpdate: true,
-                                    companys: companys,
-                                  ),
+                                  onTap: () => openCompanySheet(context: context, companyID: company.companyID ?? "", isUpdate: true, companys: companys),
                                   child: Padding(
                                     padding: const EdgeInsets.only(left: 16),
-                                    child: AppText(
-                                      label: company.companyName ?? "",
-                                    ),
+                                    child: AppText(label: company.companyName ?? ""),
                                   ),
                                 ),
                               ),
@@ -651,28 +569,21 @@ class _CreateAppointmentScreenState
                         );
                       },
                     ),
-                    GestureDetector(
-                      onTap: () => openCompanySheet(
-                        context: context,
-                        companyID: "",
-                        companys: companys,
-                      ),
-                      child: const SizedBox(
-                        height: 44,
-                        child: Row(
-                          children: [
-                            SizedBox(width: 16),
-                            Icon(
-                              Icons.add_circle,
-                              color: Color(0xFF31C859),
-                              size: 24,
-                            ),
-                            SizedBox(width: 16),
-                            AppText(label: 'add company'),
-                          ],
+                    if (companys.isEmpty)
+                      GestureDetector(
+                        onTap: () => openCompanySheet(context: context, companyID: "", companys: companys),
+                        child: const SizedBox(
+                          height: 44,
+                          child: Row(
+                            children: [
+                              SizedBox(width: 16),
+                              Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
+                              SizedBox(width: 16),
+                              AppText(label: 'add company'),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -683,12 +594,7 @@ class _CreateAppointmentScreenState
     );
   }
 
-  Future<void> openCompanySheet({
-    required BuildContext context,
-    required String companyID,
-    bool isUpdate = false,
-    required List<Company>? companys,
-  }) async {
+  Future<void> openCompanySheet({required BuildContext context, required String companyID, bool isUpdate = false, required List<Company>? companys}) async {
     final selected = await CupertinoOptionsPicker.show<Company>(
       context: context,
       title: 'Company',
@@ -724,18 +630,11 @@ class _CreateAppointmentScreenState
   }
 
   Widget addressWidget() {
-    Widget addressField({
-      required Widget child,
-      bool hasRightBorder = false,
-      bool hasBottomBorder = true,
-    }) {
+    Widget addressField({required Widget child, bool hasRightBorder = false, bool hasBottomBorder = true}) {
       return Container(
         height: 44,
         decoration: BoxDecoration(
-          border: Border(
-            right: hasRightBorder ? borderSide : BorderSide.none,
-            bottom: hasBottomBorder ? borderSide : BorderSide.none,
-          ),
+          border: Border(right: hasRightBorder ? borderSide : BorderSide.none, bottom: hasBottomBorder ? borderSide : BorderSide.none),
         ),
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 16),
@@ -766,10 +665,7 @@ class _CreateAppointmentScreenState
               const SizedBox(
                 width: 100,
                 child: Center(
-                  child: AppText(
-                    label: 'address',
-                    textColor: Color(0xFF007AFF),
-                  ),
+                  child: AppText(label: 'address', textColor: Color(0xFF007AFF)),
                 ),
               ),
               Expanded(
@@ -777,18 +673,13 @@ class _CreateAppointmentScreenState
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    addressField(
-                      child: AppTextFormField(controller: txtAddress),
-                    ),
+                    addressField(child: AppTextFormField(controller: txtAddress)),
                     addressField(
                       hasRightBorder: false,
                       child: infoTileDropdown(
                         label: selectedSubdistrictName ?? '',
                         value: AppText(label: selectedSubdistrictName ?? ''),
-                        onTap: () => openSubDistrictSheet(
-                          context,
-                          selectedSubdistrictName ?? "",
-                        ),
+                        onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
                         isShowBorderBottom: true,
                         isHideIcon: true,
                       ),
@@ -797,10 +688,7 @@ class _CreateAppointmentScreenState
                       child: infoTileDropdown(
                         label: selectedDistrictName ?? '',
                         value: AppText(label: selectedDistrictName ?? ''),
-                        onTap: () => openDistrictSheet(
-                          context,
-                          selectedDistrictName ?? "",
-                        ),
+                        onTap: () => openDistrictSheet(context, selectedDistrictName ?? ""),
                         isShowBorderBottom: true,
                         isHideIcon: true,
                       ),
@@ -814,26 +702,18 @@ class _CreateAppointmentScreenState
                             child: infoTileDropdown(
                               label: selectedProvinceName ?? '',
                               value: AppText(label: selectedProvinceName ?? ''),
-                              onTap: () => openProvinceSheet(
-                                context,
-                                selectedProvinceName ?? "",
-                              ),
+                              onTap: () => openProvinceSheet(context, selectedProvinceName ?? ""),
                               isShowBorderBottom: true,
                               isHideIcon: true,
                             ),
                           ),
                         ),
                         Expanded(
-                          child: addressField(
-                            child: const AppText(label: "ไทย"),
-                          ),
+                          child: addressField(child: const AppText(label: "ไทย")),
                         ),
                       ],
                     ),
-                    addressField(
-                      child: AppText(label: postCode ?? ""),
-                      hasBottomBorder: false,
-                    ),
+                    addressField(child: AppText(label: postCode ?? ""), hasBottomBorder: false),
                   ],
                 ),
               ),
@@ -844,10 +724,7 @@ class _CreateAppointmentScreenState
     );
   }
 
-  Future<void> openProvinceSheet(
-    BuildContext context,
-    String subdistrictID,
-  ) async {
+  Future<void> openProvinceSheet(BuildContext context, String subdistrictID) async {
     final selected = await CupertinoOptionsPicker.show<Province>(
       context: context,
       title: 'Province',
@@ -867,10 +744,7 @@ class _CreateAppointmentScreenState
     });
   }
 
-  Future<void> openDistrictSheet(
-    BuildContext context,
-    String subdistrictID,
-  ) async {
+  Future<void> openDistrictSheet(BuildContext context, String subdistrictID) async {
     final selected = await CupertinoOptionsPicker.show<District>(
       context: context,
       title: 'District',
@@ -889,10 +763,7 @@ class _CreateAppointmentScreenState
     });
   }
 
-  Future<void> openSubDistrictSheet(
-    BuildContext context,
-    String subdistrictID,
-  ) async {
+  Future<void> openSubDistrictSheet(BuildContext context, String subdistrictID) async {
     final selected = await CupertinoOptionsPicker.show<Subdistrict>(
       context: context,
       title: 'SubDistrict',
@@ -910,11 +781,7 @@ class _CreateAppointmentScreenState
     });
   }
 
-  void openTimePicker({
-    required String datetime,
-    required Function(TimeOfDay) onSelected,
-    String? limitFirstDate,
-  }) async {
+  void openTimePicker({required String datetime, required Function(TimeOfDay) onSelected, String? limitFirstDate}) async {
     final picked = await showCupertinoTimeDialog(initial: datetime, context);
 
     if (picked != null) {
@@ -927,11 +794,7 @@ class _CreateAppointmentScreenState
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: AppText(
-                label: 'Please select a time after the appointment start time.',
-                textColor: Colors.white,
-                maxLines: 2,
-              ),
+              content: AppText(label: 'Please select a time after the appointment start time.', textColor: Colors.white, maxLines: 2),
             ),
           );
           return;
@@ -942,18 +805,8 @@ class _CreateAppointmentScreenState
     }
   }
 
-  void openDatePicker({
-    required String datetime,
-    required Function(DateTime) onSelected,
-    String? limitFirstDate,
-  }) async {
-    final picked = await DatePickerHelper.pickDate(
-      context,
-      initialDate: DateTime.parse(datetime),
-      limitFirstDate: limitFirstDate == null
-          ? null
-          : DateTime.parse(limitFirstDate),
-    );
+  void openDatePicker({required String datetime, required Function(DateTime) onSelected, String? limitFirstDate}) async {
+    final picked = await DatePickerHelper.pickDate(context, initialDate: DateTime.parse(datetime), limitFirstDate: limitFirstDate == null ? null : DateTime.parse(limitFirstDate));
     if (picked != null) onSelected(picked);
   }
 
@@ -961,13 +814,7 @@ class _CreateAppointmentScreenState
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  Widget datetime({
-    required String label,
-    required String datetime,
-    bool isShowBorderBottom = false,
-    VoidCallback? dateOnTap,
-    timeOnTap,
-  }) {
+  Widget datetime({required String label, required String datetime, bool isShowBorderBottom = false, VoidCallback? dateOnTap, timeOnTap}) {
     final dt = DateTime.parse(datetime);
     final date = DateFormat("MMM d, yyyy").format(dt);
     final time = DateFormat("h:mm a").format(dt);
@@ -980,10 +827,7 @@ class _CreateAppointmentScreenState
             height: 35,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: Color.fromRGBO(118, 118, 128, 0.12),
-              borderRadius: BorderRadius.all(Radius.circular(7)),
-            ),
+            decoration: const BoxDecoration(color: Color.fromRGBO(118, 118, 128, 0.12), borderRadius: BorderRadius.all(Radius.circular(7))),
             child: AppText(label: value, fontSize: 17),
           ),
         ),
@@ -1026,10 +870,7 @@ class _CreateAppointmentScreenState
     });
   }
 
-  Future<void> openTerritorySheet(
-    BuildContext context,
-    String territoryID,
-  ) async {
+  Future<void> openTerritorySheet(BuildContext context, String territoryID) async {
     final selected = await CupertinoOptionsPicker.show<Territory>(
       context: context,
       title: 'Territory',
@@ -1063,25 +904,14 @@ class _CreateAppointmentScreenState
     });
   }
 
-  Widget infoTile({
-    required String label,
-    required Widget value,
-    VoidCallback? onTap,
-    double height = 44,
-    bool isShowBorderMiddle = true,
-    bool isShowBorderBottom = false,
-    bool isHideIcon = false,
-  }) {
+  Widget infoTile({required String label, required Widget value, VoidCallback? onTap, double height = 44, bool isShowBorderMiddle = true, bool isShowBorderBottom = false, bool isHideIcon = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: height,
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
-          border: Border(
-            top: borderSide,
-            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
-          ),
+          border: Border(top: borderSide, bottom: isShowBorderBottom ? borderSide : BorderSide.none),
         ),
         child: Row(
           children: [
@@ -1091,9 +921,7 @@ class _CreateAppointmentScreenState
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 border: BorderDirectional(
-                  end: isShowBorderMiddle
-                      ? const BorderSide(color: colorGrey, width: borderWidth)
-                      : BorderSide.none,
+                  end: isShowBorderMiddle ? const BorderSide(color: colorGrey, width: borderWidth) : BorderSide.none,
                 ),
               ),
               child: AppText(label: label, textColor: const Color(0xFF007AFF)),
@@ -1102,10 +930,7 @@ class _CreateAppointmentScreenState
             Expanded(
               child: Align(alignment: Alignment.centerLeft, child: value),
             ),
-            if (!isHideIcon) ...[
-              const Icon(Icons.chevron_right, size: 24, color: colorGrey),
-              const SizedBox(width: 8),
-            ],
+            if (!isHideIcon) ...[const Icon(Icons.chevron_right, size: 24, color: colorGrey), const SizedBox(width: 8)],
           ],
         ),
       ),
@@ -1127,20 +952,14 @@ class _CreateAppointmentScreenState
         height: height,
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
-          border: Border(
-            top: borderSide,
-            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
-          ),
+          border: Border(top: borderSide, bottom: isShowBorderBottom ? borderSide : BorderSide.none),
         ),
         child: Row(
           children: [
             Expanded(
               child: Align(alignment: Alignment.centerLeft, child: value),
             ),
-            if (!isHideIcon) ...[
-              const Icon(Icons.chevron_right, size: 24, color: colorGrey),
-              const SizedBox(width: 8),
-            ],
+            if (!isHideIcon) ...[const Icon(Icons.chevron_right, size: 24, color: colorGrey), const SizedBox(width: 8)],
           ],
         ),
       ),

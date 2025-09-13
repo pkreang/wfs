@@ -472,28 +472,6 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                         ),
                       ],
                     ),
-
-                    addressField(
-                      child: infoTileDropdown(
-                        label: selectedDistrictName ?? '',
-
-                        value: AppText(label: selectedDistrictName ?? ''),
-                        onTap: () => openDistrictSheet(context, selectedDistrictName ?? ""),
-                        isShowBorderBottom: true,
-                        isHideIcon: true,
-                      ),
-                    ),
-                    addressField(
-                      hasRightBorder: false,
-                      child: infoTileDropdown(
-                        label: selectedSubdistrictName ?? '',
-                        value: AppText(label: selectedSubdistrictName ?? ''),
-                        onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
-                        isShowBorderBottom: true,
-                        isHideIcon: true,
-                      ),
-                    ),
-
                     addressField(
                       child: postCode == null ? textHint(label: 'รหัสไปรษณีย์') : AppText(label: postCode ?? ""),
                       hasBottomBorder: false,
@@ -647,20 +625,21 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                         );
                       },
                     ),
-                    GestureDetector(
-                      onTap: () => openCompanySheet(context: context, companyID: "", companys: companys),
-                      child: const SizedBox(
-                        height: 44,
-                        child: Row(
-                          children: [
-                            SizedBox(width: 16),
-                            Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
-                            SizedBox(width: 16),
-                            AppText(label: 'add company'),
-                          ],
+                    if (companys.isEmpty)
+                      GestureDetector(
+                        onTap: () => openCompanySheet(context: context, companyID: "", companys: companys),
+                        child: const SizedBox(
+                          height: 44,
+                          child: Row(
+                            children: [
+                              SizedBox(width: 16),
+                              Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
+                              SizedBox(width: 16),
+                              AppText(label: 'add company'),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

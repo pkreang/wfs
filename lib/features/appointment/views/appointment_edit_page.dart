@@ -117,7 +117,11 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
 
         if (isSameDay(limit, current) && picked.isBefore(limitTime)) {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: AppText(label: 'Please select a time after the appointment start time.', textColor: Colors.white, maxLines: 2)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: AppText(label: 'Please select a time after the appointment start time.', textColor: Colors.white, maxLines: 2),
+            ),
+          );
           return;
         }
       }
@@ -185,7 +189,10 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                     showDeleteConfirmDialog(context);
                   },
                 ),
-                actionContainer(appText: AppText(label: 'Cancel', textColor: Color(0xFF007BFE)), onTap: () => Navigator.pop(bottomSheetContext)),
+                actionContainer(
+                  appText: AppText(label: 'Cancel', textColor: Color(0xFF007BFE)),
+                  onTap: () => Navigator.pop(bottomSheetContext),
+                ),
               ],
             ),
           ),
@@ -197,31 +204,36 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
   Future<void> showDeleteConfirmDialog(BuildContext context) async {
     return showCupertinoDialog<void>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return CupertinoAlertDialog(
-          title: const Text("Delete Appointment"),
-          content: const Text("Are you sure you want to delete this appointment?"),
+          title: const Text("Delete Appointment", textScaler: TextScaler.noScaling),
+          content: const Text("Are you sure you want to delete this appointment?", textScaler: TextScaler.noScaling),
           actions: [
             CupertinoDialogAction(
               isDefaultAction: true,
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
               },
               child: AppText(label: 'Cancel', textColor: Color(0xFF007BFE)),
             ),
-            CupertinoDialogAction(isDestructiveAction: true, onPressed: () => confirmDeleteAppointment(), child: AppText(label: 'Delete', textColor: Color(0xFFFF382B))),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () => confirmDeleteAppointment(dialogContext),
+              child: AppText(label: 'Delete', textColor: Color(0xFFFF382B)),
+            ),
           ],
         );
       },
     );
   }
 
-  void confirmDeleteAppointment() async {
-    Navigator.pop(context);
+  void confirmDeleteAppointment(BuildContext dialogContext) async {
+    Navigator.pop(dialogContext);
+
     final result = await ref.read(appointmentEditProvider(widget.appointmentID).notifier).deleteAppointment();
     if (!result) return;
 
-    Navigator.of(context).popUntil((route) => route.settings.name == '/appointmentList');
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   void handleSave() async {
@@ -264,7 +276,11 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                 onTap: () => Navigator.pop(context),
                 child: Row(
                   children: [
-                    IconButton(icon: const Icon(Icons.chevron_left), onPressed: null, style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary))),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: null,
+                      style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary)),
+                    ),
                     AppText(label: 'Back', textColor: colorPrimary),
                   ],
                 ),
@@ -280,7 +296,9 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
             ),
             body: state.data.when(
               loading: () => const Center(child: CircularProgressIndicator(color: colorPrimary)),
-              error: (e, _) => Center(child: AppText(label: "Appointment Not Found", textColor: Colors.red)),
+              error: (e, _) => Center(
+                child: AppText(label: "Appointment Not Found", textColor: Colors.red),
+              ),
               data: (detail) => buildContent(detail),
             ),
           ),
@@ -341,54 +359,66 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                   ),
                 ],
               ),
-              if (isShowCancelNote) Column(children: [infoTile(label: 'canceled note', value: AppTextFormField(maxLines: 5), height: 126, isShowBorderBottom: true, isHideIcon: true)]),
+              if (isShowCancelNote)
+                Column(
+                  children: [infoTile(label: 'canceled note', value: AppTextFormField(maxLines: 5), height: 126, isShowBorderBottom: true, isHideIcon: true)],
+                ),
               Column(
                 children: [
                   datetime(
                     label: 'Starts',
                     datetime: appointmentDetail.appointmentDateTimeFrom,
-                    dateOnTap:
-                        isCanEdit
-                            ? () => openDatePicker(
-                              datetime: appointmentDetail.appointmentDateTimeFrom,
-                              onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromDate(value),
-                            )
-                            : null,
-                    timeOnTap:
-                        isCanEdit
-                            ? () => openTimePicker(
-                              datetime: appointmentDetail.appointmentDateTimeFrom,
-                              onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromTime(value),
-                            )
-                            : null,
+                    dateOnTap: isCanEdit
+                        ? () => openDatePicker(
+                            datetime: appointmentDetail.appointmentDateTimeFrom,
+                            onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromDate(value),
+                          )
+                        : null,
+                    timeOnTap: isCanEdit
+                        ? () => openTimePicker(
+                            datetime: appointmentDetail.appointmentDateTimeFrom,
+                            onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromTime(value),
+                          )
+                        : null,
                   ),
                   datetime(
                     label: 'Ends',
                     datetime: appointmentDetail.appointmentDateTimeTo,
-                    dateOnTap:
-                        isCanEdit
-                            ? () => openDatePicker(
-                              datetime: appointmentDetail.appointmentDateTimeTo,
-                              onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToDate(value),
-                              limitFirstDate: appointmentDetail.appointmentDateTimeFrom,
-                            )
-                            : null,
-                    timeOnTap:
-                        isCanEdit
-                            ? () => openTimePicker(
-                              datetime: appointmentDetail.appointmentDateTimeTo,
-                              onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToTime(value),
-                              limitFirstDate: appointmentDetail.appointmentDateTimeFrom,
-                            )
-                            : null,
+                    dateOnTap: isCanEdit
+                        ? () => openDatePicker(
+                            datetime: appointmentDetail.appointmentDateTimeTo,
+                            onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToDate(value),
+                            limitFirstDate: appointmentDetail.appointmentDateTimeFrom,
+                          )
+                        : null,
+                    timeOnTap: isCanEdit
+                        ? () => openTimePicker(
+                            datetime: appointmentDetail.appointmentDateTimeTo,
+                            onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToTime(value),
+                            limitFirstDate: appointmentDetail.appointmentDateTimeFrom,
+                          )
+                        : null,
                   ),
                 ],
               ),
               Column(
                 children: [
-                  infoTile(label: 'mobile', value: AppText(label: appointmentDetail.phone), isHideIcon: true),
-                  infoTile(label: 'email', value: AppText(label: appointmentDetail.email), isHideIcon: true),
-                  infoTile(label: 'company', value: AppText(label: appointmentDetail.companyName), isHideIcon: true, isShowBorderBottom: true),
+                  infoTile(
+                    label: 'mobile',
+                    value: AppText(label: appointmentDetail.phone),
+                    isHideIcon: true,
+                  ),
+                  infoTile(
+                    label: 'email',
+                    value: AppText(label: appointmentDetail.email),
+                    isHideIcon: true,
+                  ),
+                  infoTile(
+                    label: 'company',
+                    value: AppText(label: appointmentDetail.companyName),
+                    isHideIcon: true,
+                    isShowBorderBottom: true,
+                  ),
                 ],
               ),
               addressWidget(address),
@@ -402,7 +432,14 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
               ),
               GestureDetector(
                 onTap: () => deleteAppointment(appointmentDetail.appointmentId),
-                child: Container(width: double.infinity, height: 44, color: Colors.white, child: Center(child: AppText(label: 'Delete Appointment', fontSize: 17, textColor: Color(0xFFFF382B)))),
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  color: Colors.white,
+                  child: Center(
+                    child: AppText(label: 'Delete Appointment', fontSize: 17, textColor: Color(0xFFFF382B)),
+                  ),
+                ),
               ),
             ],
           ),
@@ -416,18 +453,27 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
       onTap: onTap,
       child: Container(
         height: height,
-        decoration: BoxDecoration(color: Color(0xFFFFFFFF), border: Border(top: borderSide, bottom: isShowBorderBottom ? borderSide : BorderSide.none)),
+        decoration: BoxDecoration(
+          color: Color(0xFFFFFFFF),
+          border: Border(top: borderSide, bottom: isShowBorderBottom ? borderSide : BorderSide.none),
+        ),
         child: Row(
           children: [
             const SizedBox(width: 16),
             Container(
               width: 100,
               alignment: Alignment.center,
-              decoration: BoxDecoration(border: BorderDirectional(end: isShowBorderMiddle ? BorderSide(color: colorGrey, width: borderWidth) : BorderSide.none)),
+              decoration: BoxDecoration(
+                border: BorderDirectional(
+                  end: isShowBorderMiddle ? BorderSide(color: colorGrey, width: borderWidth) : BorderSide.none,
+                ),
+              ),
               child: AppText(label: label, textColor: const Color(0xFF007AFF)),
             ),
             const SizedBox(width: 16),
-            Expanded(child: Align(alignment: Alignment.centerLeft, child: value)),
+            Expanded(
+              child: Align(alignment: Alignment.centerLeft, child: value),
+            ),
             if (!isHideIcon) ...[Icon(Icons.chevron_right, size: 24, color: colorGrey), const SizedBox(width: 8)],
           ],
         ),
@@ -459,7 +505,14 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
       label: label,
       value: Container(
         margin: EdgeInsets.only(right: 20),
-        child: Row(mainAxisAlignment: MainAxisAlignment.end, spacing: 4, children: [datetimeField(value: date, onTap: dateOnTap), datetimeField(value: time, onTap: timeOnTap)]),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          spacing: 4,
+          children: [
+            datetimeField(value: date, onTap: dateOnTap),
+            datetimeField(value: time, onTap: timeOnTap),
+          ],
+        ),
       ),
       isShowBorderMiddle: false,
       isShowBorderBottom: isShowBorderBottom,
@@ -471,7 +524,9 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
     Widget addressField({required Widget child, bool hasRightBorder = false, bool hasBottomBorder = true}) {
       return Container(
         height: 44,
-        decoration: BoxDecoration(border: Border(right: hasRightBorder ? borderSide : BorderSide.none, bottom: hasBottomBorder ? borderSide : BorderSide.none)),
+        decoration: BoxDecoration(
+          border: Border(right: hasRightBorder ? borderSide : BorderSide.none, bottom: hasBottomBorder ? borderSide : BorderSide.none),
+        ),
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 16),
         child: child,
@@ -479,15 +534,31 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
     }
 
     return Container(
-      decoration: BoxDecoration(color: Colors.white, border: const Border(top: borderSide, bottom: borderSide)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: const Border(top: borderSide, bottom: borderSide),
+      ),
       child: Stack(
         children: [
-          const Positioned(left: 16 + 100, top: 0, bottom: 0, child: SizedBox(width: borderWidth, child: ColoredBox(color: colorGrey))),
+          const Positioned(
+            left: 16 + 100,
+            top: 0,
+            bottom: 0,
+            child: SizedBox(
+              width: borderWidth,
+              child: ColoredBox(color: colorGrey),
+            ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(width: 16),
-              SizedBox(width: 100, child: Center(child: AppText(label: 'address', textColor: Color(0xFF007AFF)))),
+              SizedBox(
+                width: 100,
+                child: Center(
+                  child: AppText(label: 'address', textColor: Color(0xFF007AFF)),
+                ),
+              ),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -498,8 +569,12 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                     addressField(child: AppText(label: address.districtName)),
                     Row(
                       children: [
-                        Expanded(child: addressField(child: AppText(label: address.provinceName), hasRightBorder: true)),
-                        Expanded(child: addressField(child: AppText(label: address.countryName))),
+                        Expanded(
+                          child: addressField(child: AppText(label: address.provinceName), hasRightBorder: true),
+                        ),
+                        Expanded(
+                          child: addressField(child: AppText(label: address.countryName)),
+                        ),
                       ],
                     ),
                     addressField(child: AppText(label: address.postCode), hasBottomBorder: false),
@@ -515,15 +590,31 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
 
   Widget productTile({required List<Product> products, bool isShowBorderBottom = false}) {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, border: const Border(top: borderSide, bottom: borderSide)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: const Border(top: borderSide, bottom: borderSide),
+      ),
       child: Stack(
         children: [
-          const Positioned(left: 16 + 100, top: 0, bottom: 0, child: SizedBox(width: borderWidth, child: ColoredBox(color: colorGrey))),
+          const Positioned(
+            left: 16 + 100,
+            top: 0,
+            bottom: 0,
+            child: SizedBox(
+              width: borderWidth,
+              child: ColoredBox(color: colorGrey),
+            ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(width: 16),
-              SizedBox(width: 100, child: Center(child: AppText(label: 'products', textColor: Color(0xFF007AFF)))),
+              SizedBox(
+                width: 100,
+                child: Center(
+                  child: AppText(label: 'products', textColor: Color(0xFF007AFF)),
+                ),
+              ),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -538,18 +629,28 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                         final product = products[index];
 
                         return Container(
-                          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: colorGrey, width: borderWidth))),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: colorGrey, width: borderWidth),
+                            ),
+                          ),
                           height: 44,
                           child: Row(
                             children: [
                               GestureDetector(
                                 onTap: () => removeProduct(product.productId),
-                                child: Padding(padding: const EdgeInsets.only(left: 16), child: Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 24)),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 16),
+                                  child: Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 24),
+                                ),
                               ),
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () => openProdctSheet(context: context, productID: product.productId, isUpdate: true),
-                                  child: Padding(padding: const EdgeInsets.only(left: 16), child: AppText(label: product.productName)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 16),
+                                    child: AppText(label: product.productName),
+                                  ),
                                 ),
                               ),
                             ],
@@ -561,7 +662,14 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                       onTap: () => openProdctSheet(context: context, productID: ""),
                       child: SizedBox(
                         height: 44,
-                        child: Row(children: const [SizedBox(width: 16), Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24), SizedBox(width: 16), AppText(label: 'add product')]),
+                        child: Row(
+                          children: const [
+                            SizedBox(width: 16),
+                            Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
+                            SizedBox(width: 16),
+                            AppText(label: 'add product'),
+                          ],
+                        ),
                       ),
                     ),
                   ],

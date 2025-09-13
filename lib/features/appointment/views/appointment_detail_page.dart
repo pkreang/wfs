@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
-import 'package:wfs/features/appointment/models/client.dart';
+import 'package:wfs/features/appointment/views/appointment_edit_page.dart';
 import 'package:wfs/features/appointment/views/appointment_visit_page.dart';
 import 'package:wfs/features/appointment/widgets/app_map.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
@@ -30,8 +30,15 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     super.initState();
   }
 
-  callEditPage() async {
-    final result = await Navigator.of(context).pushNamed<bool>('/appointmentEdit', arguments: widget.appointmentID);
+  void callEditPage() async {
+    final result = await Navigator.push(context, MaterialPageRoute<bool>(builder: (BuildContext context) => AppointmentEditPage(appointmentID: widget.appointmentID)));
+    if (result == true && mounted) {
+      await ref.read(appointmentDetailProvider(widget.appointmentID).notifier).refresh();
+    }
+  }
+
+  void callVisitPage() async {
+    final result = await Navigator.push(context, MaterialPageRoute<bool>(builder: (BuildContext context) => AppointmentVisitPage(appointmentID: widget.appointmentID)));
     if (result == true && mounted) {
       await ref.read(appointmentDetailProvider(widget.appointmentID).notifier).refresh();
     }
@@ -50,7 +57,12 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
           child: Row(
             children: [
               IconButton(
-                icon: Row(children: [const Icon(Icons.chevron_left), AppText(label: 'Back', textColor: colorPrimary)]),
+                icon: Row(
+                  children: [
+                    const Icon(Icons.chevron_left),
+                    AppText(label: 'Back', textColor: colorPrimary),
+                  ],
+                ),
                 onPressed: null,
                 style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary)),
               ),
@@ -58,7 +70,12 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
           ),
         ),
         title: AppText(label: 'Appointment details', fontSize: 17, fontWeight: FontWeight.w600),
-        actions: [TextButton(onPressed: () => callEditPage(), child: AppText(label: 'Edit', textColor: colorPrimary))],
+        actions: [
+          TextButton(
+            onPressed: () => callEditPage(),
+            child: AppText(label: 'Edit', textColor: colorPrimary),
+          ),
+        ],
       ),
       body: Consumer(
         builder: (_, ref, __) {
@@ -68,7 +85,9 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
             loading: () => Center(child: CircularProgressIndicator(color: colorPrimary)),
             error: (e, _) {
               print('e: $e');
-              return Center(child: AppText(label: "Appointment Not Found", textColor: Colors.red));
+              return Center(
+                child: AppText(label: "Appointment Not Found", textColor: Colors.red),
+              );
             },
             data: (detail) => buildContent(detail),
           );
@@ -82,6 +101,13 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     final client = appointmentDetail.client;
     final salesTerritory = client.salesTerritory;
     final products = appointmentDetail.products;
+
+    final visitActivities = appointmentDetail.visitActivities;
+    final isCheckIn = visitActivities.isEmpty;
+    final visitTitle = isCheckIn ? 'check in' : 'check out';
+
+    final latitude = visitActivities.isNotEmpty ? visitActivities.first.checkInLatitude : 0.0;
+    final longitude = visitActivities.isNotEmpty ? visitActivities.first.checkInLongitude : 0.0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -114,18 +140,18 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                 children: [
                   buildActionCard(icon: Icons.person, title: 'clients', onTap: () => print('client page')),
                   buildActionCard(icon: Icons.location_pin, title: 'map', onTap: () => print('map page')),
-                  buildActionCard(
-                    icon: Icons.menu_book,
-                    title: 'check in',
-                    onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (BuildContext context) => AppointmentVisitPage(appointmentID: appointmentDetail.appointmentId))),
-                  ),
+                  buildActionCard(icon: Icons.menu_book, title: visitTitle, onTap: () => callVisitPage()),
                   buildActionCard(icon: Icons.history, title: 'history', onTap: () => print('history page')),
                 ],
               ),
             ],
           ),
-          AppMap(lat: address.latitude, lng: address.longitude),
-          buildContentCard(title: 'purpose', descWidget: AppText(label: appointmentDetail.purposeTypeName, textColor: colorPrimary), fullWidth: true),
+          AppMap(lat: latitude, lng: longitude),
+          buildContentCard(
+            title: 'purpose',
+            descWidget: AppText(label: appointmentDetail.purposeTypeName, textColor: colorPrimary),
+            fullWidth: true,
+          ),
           Row(
             spacing: 16,
             children: [
@@ -135,13 +161,34 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                   descWidget: AppText(label: '${appointmentDetail.appointmentDateTimeFrom.dateTimetoHHmm()} - ${appointmentDetail.appointmentDateTimeTo.dateTimetoHHmm()}'),
                 ),
               ),
-              Expanded(child: buildContentCard(title: 'territory', descWidget: AppText(label: salesTerritory?.salesTerritoryName ?? ''))),
+              Expanded(
+                child: buildContentCard(
+                  title: 'territory',
+                  descWidget: AppText(label: salesTerritory?.salesTerritoryName ?? ''),
+                ),
+              ),
             ],
           ),
-          buildContentCard(title: 'address', descWidget: AppText(label: address.fullAddress, maxLines: 2), fullWidth: true),
-          buildContentCard(title: 'mobile', descWidget: AppText(label: appointmentDetail.phone), fullWidth: true),
-          buildContentCard(title: 'email', descWidget: AppText(label: appointmentDetail.email), fullWidth: true),
-          buildContentCard(title: 'company', descWidget: AppText(label: appointmentDetail.companyName), fullWidth: true),
+          buildContentCard(
+            title: 'address',
+            descWidget: AppText(label: address.fullAddress, maxLines: 2),
+            fullWidth: true,
+          ),
+          buildContentCard(
+            title: 'mobile',
+            descWidget: AppText(label: appointmentDetail.phone),
+            fullWidth: true,
+          ),
+          buildContentCard(
+            title: 'email',
+            descWidget: AppText(label: appointmentDetail.email),
+            fullWidth: true,
+          ),
+          buildContentCard(
+            title: 'company',
+            descWidget: AppText(label: appointmentDetail.companyName),
+            fullWidth: true,
+          ),
           buildContentCard(
             title: 'products',
             descWidget: ListView.separated(
@@ -150,13 +197,21 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: products.length,
               itemBuilder: (_, index) {
-                return Container(alignment: Alignment.centerLeft, height: 38, child: AppText(label: products[index].productName, textColor: colorPrimary));
+                return Container(
+                  alignment: Alignment.centerLeft,
+                  height: 38,
+                  child: AppText(label: products[index].productName, textColor: colorPrimary),
+                );
               },
               separatorBuilder: (_, __) => const Divider(height: 0, thickness: 0.33, color: Color(0xFFC7C7CC)),
             ),
             fullWidth: true,
           ),
-          buildContentCard(title: 'note', descWidget: AppText(label: appointmentDetail.noted, maxLines: null), fullWidth: true),
+          buildContentCard(
+            title: 'note',
+            descWidget: AppText(label: appointmentDetail.noted, maxLines: null),
+            fullWidth: true,
+          ),
         ],
       ),
     );
@@ -172,12 +227,15 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
         splashColor: const Color(0x33007AFF),
         highlightColor: Colors.transparent,
         child: Container(
-          width: 66,
+          width: 70,
           height: 58,
-          padding: EdgeInsets.all(8),
+          padding: EdgeInsets.all(6),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [Icon(icon, color: colorPrimary, size: 24), AppText(label: title, textColor: colorPrimary, fontSize: 12, lineHeight: 16)],
+            children: [
+              Icon(icon, color: colorPrimary, size: 24),
+              AppText(label: title, textColor: colorPrimary, fontSize: 12, lineHeight: 16),
+            ],
           ),
         ),
       ),
@@ -189,7 +247,13 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
       width: fullWidth ? double.infinity : null,
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       decoration: BoxDecoration(color: const Color(0xFFFFFFFF), borderRadius: BorderRadius.circular(11)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [AppText(label: title, fontSize: 12), descWidget]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText(label: title, fontSize: 12),
+          descWidget,
+        ],
+      ),
     );
   }
 }

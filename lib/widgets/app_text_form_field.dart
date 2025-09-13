@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:wfs/widgets/app_text.dart';
 
 class AppTextFormField extends StatelessWidget {
   final FocusNode? focusNode;
@@ -47,7 +48,7 @@ class AppTextFormField extends StatelessWidget {
       autovalidateMode: autovalidateMode,
       cursorColor: const Color(0xFF007AFF),
       decoration: InputDecoration(
-        hintText: hintText,
+        hint: AppText(label: hintText ?? '', textColor: Colors.grey.shade400),
         isDense: true,
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
@@ -55,7 +56,6 @@ class AppTextFormField extends StatelessWidget {
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
         disabledBorder: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.grey.shade400),
       ),
       style: textStyle ?? const TextStyle(fontSize: 14, height: 22 / 14),
     );

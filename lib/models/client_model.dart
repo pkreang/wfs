@@ -23,6 +23,7 @@ class Client {
   String? email;
   String? createdBy;
   String? salesTerritoryID;
+  String? salesTerritoryName;
   String? createdDate;
   List<Product>? products;
   ClientLevel? clientLevel;
@@ -51,6 +52,7 @@ class Client {
     this.email,
     this.createdBy,
     this.salesTerritoryID,
+    this.salesTerritoryName,
     this.createdDate,
     this.products,
     this.clientLevel,
@@ -80,6 +82,7 @@ class Client {
     email = json['Email'];
     createdBy = json['CreatedBy'];
     salesTerritoryID = json['SalesTerritoryID'];
+    salesTerritoryName = json['SalesTerritoryName'];
     createdDate = json['CreatedDate'];
     address = json['address'];
     salesTerritory = json['salesTerritory'];
@@ -90,12 +93,8 @@ class Client {
         products!.add(new Product.fromJson(v));
       });
     }
-    clientLevel = json['ClientLevel'] != null
-        ? new ClientLevel.fromJson(json['ClientLevel'])
-        : null;
-    clientStatus = json['ClientStatus'] != null
-        ? new ClientStatus.fromJson(json['ClientStatus'])
-        : null;
+    clientLevel = json['ClientLevel'] != null ? new ClientLevel.fromJson(json['ClientLevel']) : null;
+    clientStatus = json['ClientStatus'] != null ? new ClientStatus.fromJson(json['ClientStatus']) : null;
     if (json['company'] != null) {
       company = [];
       json['company'].forEach((v) {
@@ -149,6 +148,7 @@ class Client {
     data['Email'] = this.email;
     data['CreatedBy'] = this.createdBy;
     data['SalesTerritoryID'] = this.salesTerritoryID;
+    data['SalesTerritoryName'] = this.salesTerritoryName;
     data['CreatedDate'] = this.createdDate;
     data['address'] = this.address;
     data['salesTerritory'] = this.salesTerritory;
@@ -169,18 +169,14 @@ class Client {
       data['addresses'] = this.clientAddresses!.map((v) => v.toJson()).toList();
     }
     if (this.clientAddresses != null) {
-      data['ClientAddresses'] = this.clientAddresses!
-          .map((v) => v.toJson())
-          .toList();
+      data['ClientAddresses'] = this.clientAddresses!.map((v) => v.toJson()).toList();
     }
 
     if (this.clientProducts != null) {
       data['ClientProducts'] = this.clientProducts;
     }
     if (this.clientCompanies != null) {
-      data['ClientCompanies'] = this.clientCompanies!
-          .map((v) => v.toJson())
-          .toList();
+      data['ClientCompanies'] = this.clientCompanies!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -201,6 +197,7 @@ class Client {
     String? email,
     String? createdBy,
     String? salesTerritoryID,
+    String? salesTerritoryName,
     String? createdDate,
     List<Product>? products,
     ClientLevel? clientLevel,
@@ -228,6 +225,7 @@ class Client {
       email: email ?? this.email,
       createdBy: createdBy ?? this.createdBy,
       salesTerritoryID: salesTerritoryID ?? this.salesTerritoryID,
+      salesTerritoryName: salesTerritoryName ?? this.salesTerritoryName,
       createdDate: createdDate ?? this.createdDate,
       products: products ?? this.products,
       clientLevel: clientLevel ?? this.clientLevel,
