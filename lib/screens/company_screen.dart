@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/screens/createcompany_screen.dart';
 import '../models/company_model.dart';
 import '../providers/company_provider.dart';
-
 
 final companySearchProvider = StateProvider<String>((ref) => '');
 
@@ -17,8 +17,7 @@ final filteredCompaniesProvider = Provider<AsyncValue<List<Company>>>((ref) {
         return AsyncValue.data(companies);
       }
       final filteredList = companies.where((company) {
-        final companyNameMatch =
-            company.companyName?.toLowerCase().contains(searchQuery) ?? false;
+        final companyNameMatch = company.companyName?.toLowerCase().contains(searchQuery) ?? false;
 
         bool addressMatch = false;
         if (searchQuery.startsWith('status:')) {
@@ -33,15 +32,11 @@ final filteredCompaniesProvider = Provider<AsyncValue<List<Company>>>((ref) {
           return false;
         } else if (searchQuery.startsWith('name:')) {
           final nameQuery = searchQuery.substring(5).trim();
-          return company.companyName
-                  ?.toLowerCase()
-                  .contains(nameQuery.toLowerCase()) ??
-              false;
+          return company.companyName?.toLowerCase().contains(nameQuery.toLowerCase()) ?? false;
         }
 
         if (company.CompanyAddresses != null) {
-          addressMatch = company.CompanyAddresses!.any((address) =>
-              address.address?.toLowerCase().contains(searchQuery) ?? false);
+          addressMatch = company.CompanyAddresses!.any((address) => address.address?.toLowerCase().contains(searchQuery) ?? false);
         }
 
         return companyNameMatch || addressMatch;
@@ -54,8 +49,7 @@ final filteredCompaniesProvider = Provider<AsyncValue<List<Company>>>((ref) {
 });
 
 // เพิ่ม provider สำหรับจัดกลุ่มบริษัทตามตัวอักษรแรกของ companyName
-final companySectionsProvider =
-    Provider<Map<String, List<Company>>>((ref) {
+final companySectionsProvider = Provider<Map<String, List<Company>>>((ref) {
   final companiesAsync = ref.watch(filteredCompaniesProvider);
 
   return companiesAsync.when(
@@ -110,8 +104,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
   void _onSearchChanged() {
     ref.read(companySearchProvider.notifier).state = _searchController.text;
     setState(() {
-      _showSearchOptions =
-          _searchFocusNode.hasFocus && _searchController.text.isNotEmpty;
+      _showSearchOptions = _searchFocusNode.hasFocus && _searchController.text.isNotEmpty;
     });
   }
 
@@ -140,12 +133,11 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
               child: RefreshIndicator(
                 onRefresh: () async => refreshCompanies(ref),
                 child: companiesAsync.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(child: Text('Error: $error')),
                   data: (companies) {
                     if (companies.isEmpty && !_showSearchOptions) {
-                      return const Center(child: Text('No companies found.'));
+                      return const Center(child: AppText(label: 'No companies found.'));
                     }
                     return _buildCompanyList();
                   },
@@ -161,11 +153,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
   Widget _buildHeader() {
     final allCompaniesAsync = ref.watch(companiesProvider);
 
-    final countText = allCompaniesAsync.when(
-      data: (companies) => '${companies.length} Entry',
-      loading: () => 'Loading...',
-      error: (err, stack) => 'Error',
-    );
+    final countText = allCompaniesAsync.when(data: (companies) => '${companies.length} Entry', loading: () => 'Loading...', error: (err, stack) => 'Error');
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 8, 16, 8),
@@ -176,41 +164,21 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
             onPressed: () {},
             child: const Text(
               '',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.normal,
-                fontSize: 17,
-              ),
+              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.normal, fontSize: 17),
             ),
           ),
           Column(
             children: [
-              const Text(
-                'Company',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-              ),
+              const AppText(label: 'Company', fontSize: 17, fontWeight: FontWeight.bold),
               const SizedBox(height: 2),
-              Text(
-                countText,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              AppText(label: countText, fontSize: 12, textColor: Colors.grey),
             ],
           ),
           TextButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CreateCompanyScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => CreateCompanyScreen()));
             },
-            child: const Text(
-              'Add',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.normal,
-                fontSize: 17,
-              ),
-            ),
+            child: const AppText(label: 'Add', fontSize: 17, fontWeight: FontWeight.normal, textColor: Colors.blue),
           ),
         ],
       ),
@@ -229,10 +197,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
           prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
           filled: true,
           fillColor: const Color(0xFFF2F2F7),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide.none,
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
           contentPadding: const EdgeInsets.symmetric(vertical: 0),
         ),
       ),
@@ -264,19 +229,13 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
             onTap: () {
               setState(() {
                 _searchController.text = '$key ';
-                _searchController.selection = TextSelection.fromPosition(
-                  TextPosition(offset: _searchController.text.length),
-                );
+                _searchController.selection = TextSelection.fromPosition(TextPosition(offset: _searchController.text.length));
                 _showSearchOptions = false;
               });
             },
             title: RichText(
               text: TextSpan(
-                style: const TextStyle(
-                  fontSize: 17,
-                  color: Colors.black,
-                  fontFamily: 'System',
-                ),
+                style: const TextStyle(fontSize: 17, color: Colors.black, fontFamily: 'System'),
                 children: <TextSpan>[
                   TextSpan(
                     text: key,
@@ -288,8 +247,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
             ),
           );
         },
-        separatorBuilder: (context, index) =>
-            const Divider(height: 1, thickness: 1, indent: 16),
+        separatorBuilder: (context, index) => const Divider(height: 1, thickness: 1, indent: 16),
       ),
     );
   }
@@ -313,14 +271,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                sectionKey,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF6E6E73),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              child: AppText(label: sectionKey, textColor: Color(0xFF6E6E73), fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
             ListView.builder(
@@ -353,10 +304,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          company.companyName.toString(),
-                          style: const TextStyle(fontSize: 17),
-                        ),
+                        AppText(label: company.companyName.toString(), fontSize: 17),
                         const SizedBox(width: 8),
                         _buildStatusTag(company.isActive!),
                       ],
@@ -367,24 +315,14 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
-                          child: Icon(
-                            Icons.location_on,
-                            color: Colors.grey.shade600,
-                            size: 20,
-                          ),
+                          child: Icon(Icons.location_on, color: Colors.grey.shade600, size: 20),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            company.CompanyAddresses?.isNotEmpty == true
-                                ? company.CompanyAddresses!.first.address ??
-                                    "ไม่มีที่อยู่"
-                                : "ไม่มีที่อยู่",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                              height: 1.4,
-                            ),
+                          child: AppText(
+                            label: company.CompanyAddresses?.isNotEmpty == true ? company.CompanyAddresses!.first.address ?? "ไม่มีที่อยู่" : "ไม่มีที่อยู่",
+                            textColor: Colors.grey.shade600,
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -395,21 +333,12 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey.shade300,
-                ),
+                child: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade300),
               ),
             ],
           ),
         ),
-        const Divider(
-          height: 1,
-          thickness: 1,
-          indent: 16,
-          color: Color(0xFFEFEFEF),
-        ),
+        const Divider(height: 1, thickness: 1, indent: 16, color: Color(0xFFEFEFEF)),
       ],
     );
   }
@@ -417,18 +346,8 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
   Widget _buildStatusTag(bool isActive) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFD7F5E4) : const Color(0xFFF1F1F1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        isActive ? 'Active' : 'Inactive',
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: isActive ? const Color(0xFF2B8C43) : const Color(0xFF6A6A6A),
-        ),
-      ),
+      decoration: BoxDecoration(color: isActive ? const Color(0xFFD7F5E4) : const Color(0xFFF1F1F1), borderRadius: BorderRadius.circular(12)),
+      child: AppText(label: isActive ? 'Active' : 'Inactive', fontSize: 12, fontWeight: FontWeight.w500, textColor: isActive ? const Color(0xFF2B8C43) : const Color(0xFF6A6A6A)),
     );
   }
 }
