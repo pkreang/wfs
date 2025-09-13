@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:intl/intl.dart';
+import 'package:wfs/features/appointment/widgets/app_text.dart';
 import '../providers/appointment_provider.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
 import '../models/appointment_model.dart';
 import '../features/appointment/views/appointment_detail_page.dart';
 
-final currentDateProvider = StateProvider <DateTime>((ref) => DateTime.now());
+final currentDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 final currentMonthProvider = StateProvider<DateTime>((ref) => DateTime.now());
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
-
 
 class AppointmentScreen extends ConsumerWidget {
   const AppointmentScreen({super.key});
@@ -19,48 +19,35 @@ class AppointmentScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentDate = ref.watch(currentDateProvider);
     final currentMonth = ref.watch(currentMonthProvider);
-//    final selectedDate = ref.watch(selectedDateProvider);
+    //    final selectedDate = ref.watch(selectedDateProvider);
 
     final appointmentsAsyncValue = ref.watch(appointmentsProvider(currentDate));
 
-
     return Scaffold(
-      appBar: AppBar(
-        // title: const Text('Appointments'), // Remove default title
-        // centerTitle: true, // Remove centering
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
       body: SafeArea(
-
-
         child: ListView(
-         
           children: [
-
             _buildHeader(context),
             const SizedBox(height: 24),
 
             _buildCalendarHeader(context, ref, currentMonth, currentDate),
             const SizedBox(height: 24),
-            // Appointment List Header
-            
 
+            // Appointment List Header
             appointmentsAsyncValue.when(
               loading: () => const Center(heightFactor: 5, child: CircularProgressIndicator()),
               error: (error, stackTrace) => Center(heightFactor: 5, child: Text('Error: $error')),
               data: (appointments) {
                 if (appointments.isEmpty) {
                   //return  Center(heightFactor: 5, child: Text('No appointments found for ${DateFormat('MMMM d, yyyy').format(currentDate)}.'));
-                    return  Center(heightFactor: 5, child: Text('No appointments found'));
-                
+                  return Center(heightFactor: 5, child: AppText(label: 'No appointments found.'));
                 }
 
                 return Column(
                   children: appointments.map((appointment) {
                     return _buildAppointmentItem(
-                      appointment: appointment,context: context
+                      appointment: appointment,
+                      context: context,
                       // showHeader: false, // เราจะจัดการ header เวลาด้วยการจัดกลุ่มด้านล่าง
                     );
                   }).toList(),
@@ -69,72 +56,46 @@ class AppointmentScreen extends ConsumerWidget {
             ),
           ],
         ),
-
       ),
-
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    return  Stack(
-        alignment: Alignment.center,
-        children: [
-          // Centered Title
-          const Align(
-            alignment: Alignment.center,
-            child: Column(
-              children: [
-                Text(
-                  'Appointments',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                Text(
-                  '210 Entry', // As seen in the image
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Centered Title
+        const Align(
+          alignment: Alignment.center,
+          child: Column(
+            children: [
+              AppText(label: 'Appointments', fontSize: 18, fontWeight: FontWeight.bold),
+              AppText(label: '210 Entry', fontSize: 12, textColor: Colors.grey),
+            ],
+          ),
+        ),
+        // "+ Create" button on the left
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ClientAddAppointmentScreen(), fullscreenDialog: true));
+            },
+            icon: const Icon(Icons.add, size: 18),
+            label: const AppText(label: 'Create', textColor: Colors.blue),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.blue,
+              // backgroundColor: const Color(0xFFE3F2FD), // Removed background as per image
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8), // Adjusted padding
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ),
-          // "+ Create" button on the left
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ClientAddAppointmentScreen(),
-                    fullscreenDialog: true,
-                  ),
-                );
-              },
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text(
-                'Create',
-                style: TextStyle(fontSize: 14),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.blue,
-                // backgroundColor: const Color(0xFFE3F2FD), // Removed background as per image
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8), // Adjusted padding
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ),
-          // Optional: More options icon on the right if needed, matching the original AppBar
-          
-        ],
-      );
-    
+        ),
+
+        // Optional: More options icon on the right if needed, matching the original AppBar
+      ],
+    );
   }
 
   Widget _buildCalendarHeader(BuildContext context, WidgetRef ref, DateTime currentMonth, DateTime selectedDate) {
@@ -148,21 +109,14 @@ class AppointmentScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
                 onPressed: () {
-                  ref.read(currentMonthProvider.notifier).update(
-                        (state) => DateTime(state.year, state.month - 1, 1),
-                  );
+                  ref.read(currentMonthProvider.notifier).update((state) => DateTime(state.year, state.month - 1, 1));
                 },
               ),
-              Text(
-                DateFormat('MMMM yyyy').format(currentMonth),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
-              ),
+              AppText(label: DateFormat('MMMM yyyy').format(currentMonth), fontSize: 18, fontWeight: FontWeight.bold),
               IconButton(
                 icon: const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 20),
                 onPressed: () {
-                  ref.read(currentMonthProvider.notifier).update(
-                        (state) => DateTime(state.year, state.month + 1, 1),
-                  );
+                  ref.read(currentMonthProvider.notifier).update((state) => DateTime(state.year, state.month + 1, 1));
                 },
               ),
             ],
@@ -180,7 +134,7 @@ class AppointmentScreen extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: weekdays.map((day) => Text(day, style: const TextStyle(fontSize: 12, color: Colors.grey))).toList(),
+        children: weekdays.map((day) => AppText(label: day, fontSize: 12, textColor: Colors.grey)).toList(),
       ),
     );
   }
@@ -213,18 +167,9 @@ class AppointmentScreen extends ConsumerWidget {
           },
           child: Container(
             margin: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: isSelected ? Colors.blue : (isToday ? Colors.blue.withOpacity(0.2) : Colors.transparent),
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: isSelected ? Colors.blue : (isToday ? Colors.blue.withOpacity(0.2) : Colors.transparent), shape: BoxShape.circle),
             alignment: Alignment.center,
-            child: Text(
-              '$i',
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-                fontWeight: isSelected || isToday ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
+            child: AppText(label: '$i', textColor: isSelected ? Colors.white : Colors.black, fontWeight: isSelected || isToday ? FontWeight.bold : FontWeight.normal),
           ),
         ),
       );
@@ -233,10 +178,7 @@ class AppointmentScreen extends ConsumerWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 7,
-        childAspectRatio: 1.0,
-      ),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1.0),
       itemCount: dayWidgets.length,
       itemBuilder: (context, index) {
         return dayWidgets[index];
@@ -270,11 +212,7 @@ class AppointmentScreen extends ConsumerWidget {
     }
   }
 
-
-
-  Widget _buildAppointmentItem({
-    required Appointment appointment,required  context
-  }) {
+  Widget _buildAppointmentItem({required Appointment appointment, required context}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -291,42 +229,19 @@ class AppointmentScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Flexible(
-                          child: Text(
-                            appointment.clientName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
+                          child: AppText(label: appointment.clientName, fontSize: 16, fontWeight: FontWeight.bold, textColor: Colors.black),
                         ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _getTypeColor(appointment.appointmentTypeName),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            appointment.appointmentTypeName,
-                            style: const TextStyle(fontSize: 13, color: Colors.black, fontWeight: FontWeight.w500),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          decoration: BoxDecoration(color: _getTypeColor(appointment.appointmentTypeName), borderRadius: BorderRadius.circular(16)),
+                          child: AppText(label: appointment.appointmentTypeName, fontSize: 13, fontWeight: FontWeight.w500, textColor: Colors.black),
                         ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(appointment.appointmentStatusName),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            appointment.appointmentStatusName,
-                            style: const TextStyle(fontSize: 13, color: Colors.black, fontWeight: FontWeight.w500),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          decoration: BoxDecoration(color: _getStatusColor(appointment.appointmentStatusName), borderRadius: BorderRadius.circular(16)),
+                          child: AppText(label: appointment.appointmentStatusName, fontSize: 13, fontWeight: FontWeight.w500, textColor: Colors.black),
                         ),
                       ],
                     ),
@@ -336,21 +251,12 @@ class AppointmentScreen extends ConsumerWidget {
                       children: [
                         Icon(Icons.access_time_outlined, color: Colors.grey.shade600, size: 18),
                         const SizedBox(width: 4),
-                        Text(
-                          '${appointment.appointmentTimeFrom}-${appointment.appointmentTimeto.toString()}',
-                          style: TextStyle(color: Colors.grey.shade700, fontSize: 14, fontWeight: FontWeight.w500),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        AppText(label: '${appointment.appointmentTimeFrom}-${appointment.appointmentTimeto.toString()}', fontSize: 14, fontWeight: FontWeight.w500, textColor: Colors.grey.shade700),
                         const SizedBox(width: 12),
                         Icon(Icons.business_center_outlined, color: Colors.grey.shade600, size: 18),
                         const SizedBox(width: 4),
                         Expanded(
-                          child: Text(
-                            appointment.companyName,
-                            style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
+                          child: AppText(label: appointment.companyName, fontSize: 14, textColor: Colors.grey.shade700),
                         ),
                       ],
                     ),
@@ -361,12 +267,7 @@ class AppointmentScreen extends ConsumerWidget {
                         Icon(Icons.location_on_outlined, color: Colors.grey.shade600, size: 18),
                         const SizedBox(width: 4),
                         Expanded(
-                          child: Text(
-                            appointment.customerAddress,
-                            style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
+                          child: AppText(label: appointment.customerAddress, fontSize: 14, textColor: Colors.grey.shade700, maxLines: 2),
                         ),
                       ],
                     ),
@@ -377,12 +278,7 @@ class AppointmentScreen extends ConsumerWidget {
                         Icon(Icons.favorite_border, color: Colors.grey.shade600, size: 18),
                         const SizedBox(width: 4),
                         Expanded(
-                          child: Text(
-                            appointment.product,
-                            style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
+                          child: AppText(label: appointment.product, fontSize: 14, textColor: Colors.grey.shade700, maxLines: 2),
                         ),
                       ],
                     ),
@@ -390,17 +286,11 @@ class AppointmentScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-  
+
               GestureDetector(
                 onTap: () {
                   if (appointment.id != null) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => AppointmentDetailPage(
-                          appointmentID: appointment.id.toString(),
-                        ),
-                      ),
-                    );
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => AppointmentDetailPage(appointmentID: appointment.id.toString())));
                   } else {
                     print('Error: appointmentId is null');
                   }
