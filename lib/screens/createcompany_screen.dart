@@ -34,8 +34,7 @@ class CreateCompanyScreen extends ConsumerStatefulWidget {
   const CreateCompanyScreen({super.key});
 
   @override
-  ConsumerState<CreateCompanyScreen> createState() =>
-      _CreateCompanyScreenState();
+  ConsumerState<CreateCompanyScreen> createState() => _CreateCompanyScreenState();
 }
 
 class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
@@ -84,19 +83,13 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
               IconButton(
                 icon: const Icon(Icons.chevron_left),
                 onPressed: null,
-                style: ButtonStyle(
-                  iconColor: WidgetStateProperty.all(colorPrimary),
-                ),
+                style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary)),
               ),
               const AppText(label: 'Back', textColor: colorPrimary),
             ],
           ),
         ),
-        title: const AppText(
-          label: 'Create Company',
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-        ),
+        title: const AppText(label: 'Create Company', fontSize: 17, fontWeight: FontWeight.w600),
         actions: [
           TextButton(
             onPressed: () {
@@ -192,7 +185,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
 
                 AppDialogs.success(context);
                 Future.delayed(const Duration(seconds: 3), () {
-                  context.push('/company');
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                 });
               } catch (ex) {
                 AppDialogs.error(context, message: ex.toString());
@@ -207,25 +200,14 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
     );
   }
 
-  Widget infoTile({
-    required String label,
-    required Widget value,
-    VoidCallback? onTap,
-    double height = 44,
-    bool isShowBorderMiddle = true,
-    bool isShowBorderBottom = false,
-    bool isHideIcon = false,
-  }) {
+  Widget infoTile({required String label, required Widget value, VoidCallback? onTap, double height = 44, bool isShowBorderMiddle = true, bool isShowBorderBottom = false, bool isHideIcon = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: height,
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
-          border: Border(
-            top: borderSide,
-            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
-          ),
+          border: Border(top: borderSide, bottom: isShowBorderBottom ? borderSide : BorderSide.none),
         ),
         child: Row(
           children: [
@@ -235,9 +217,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 border: BorderDirectional(
-                  end: isShowBorderMiddle
-                      ? const BorderSide(color: colorGrey, width: borderWidth)
-                      : BorderSide.none,
+                  end: isShowBorderMiddle ? const BorderSide(color: colorGrey, width: borderWidth) : BorderSide.none,
                 ),
               ),
               child: AppText(label: label, textColor: const Color(0xFF007AFF)),
@@ -246,10 +226,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
             Expanded(
               child: Align(alignment: Alignment.centerLeft, child: value),
             ),
-            if (!isHideIcon) ...[
-              const Icon(Icons.chevron_right, size: 24, color: colorGrey),
-              const SizedBox(width: 8),
-            ],
+            if (!isHideIcon) ...[const Icon(Icons.chevron_right, size: 24, color: colorGrey), const SizedBox(width: 8)],
           ],
         ),
       ),
@@ -271,20 +248,14 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
         height: height,
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
-          border: Border(
-            top: borderSide,
-            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
-          ),
+          border: Border(top: borderSide, bottom: isShowBorderBottom ? borderSide : BorderSide.none),
         ),
         child: Row(
           children: [
             Expanded(
               child: Align(alignment: Alignment.centerLeft, child: value),
             ),
-            if (!isHideIcon) ...[
-              const Icon(Icons.chevron_right, size: 24, color: colorGrey),
-              const SizedBox(width: 8),
-            ],
+            if (!isHideIcon) ...[const Icon(Icons.chevron_right, size: 24, color: colorGrey), const SizedBox(width: 8)],
           ],
         ),
       ),
@@ -319,17 +290,13 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                   infoTile(
                     label: 'status',
                     value: AppText(label: selectClientStatusName ?? ''),
-                    onTap: () =>
-                        openStatusSheet(context, selectClientStatusName ?? ""),
+                    onTap: () => openStatusSheet(context, selectClientStatusName ?? ""),
                     isShowBorderBottom: true,
                   ),
                   infoTile(
                     label: 'territory',
                     value: AppText(label: selectSalesTerritorysName ?? ''),
-                    onTap: () => openTerritorySheet(
-                      context,
-                      selectSalesTerritorysName ?? '',
-                    ),
+                    onTap: () => openTerritorySheet(context, selectSalesTerritorysName ?? ''),
                     isShowBorderBottom: true,
                   ),
                 ],
@@ -343,10 +310,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
     );
   }
 
-  Future<void> openTerritorySheet(
-    BuildContext context,
-    String territoryID,
-  ) async {
+  Future<void> openTerritorySheet(BuildContext context, String territoryID) async {
     final selected = await CupertinoOptionsPicker.show<Territory>(
       context: context,
       title: 'Territory',
@@ -381,23 +345,20 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
   }
 
   Widget addressWidget() {
-    Widget addressField({
-      required Widget child,
-      bool hasRightBorder = false,
-      bool hasBottomBorder = true,
-    }) {
+    Widget addressField({required Widget child, bool hasRightBorder = false, bool hasBottomBorder = true}) {
       return Container(
         height: 44,
         decoration: BoxDecoration(
-          border: Border(
-            right: hasRightBorder ? borderSide : BorderSide.none,
-            bottom: hasBottomBorder ? borderSide : BorderSide.none,
-          ),
+          border: Border(right: hasRightBorder ? borderSide : BorderSide.none, bottom: hasBottomBorder ? borderSide : BorderSide.none),
         ),
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 16),
         child: child,
       );
+    }
+
+    Widget textHint({required String label}) {
+      return AppText(label: label, textColor: Colors.grey.shade400);
     }
 
     return Container(
@@ -423,10 +384,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
               const SizedBox(
                 width: 100,
                 child: Center(
-                  child: AppText(
-                    label: 'address',
-                    textColor: Color(0xFF007AFF),
-                  ),
+                  child: AppText(label: 'address', textColor: Color(0xFF007AFF)),
                 ),
               ),
               Expanded(
@@ -435,58 +393,39 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     addressField(
-                      child: AppTextFormField(controller: txtAddress),
+                      child: AppTextFormField(controller: txtAddress, hintText: 'ที่อยู่'),
                     ),
                     addressField(
-                      hasRightBorder: false,
+                      hasRightBorder: true,
                       child: infoTileDropdown(
-                        label: selectedSubdistrictName ?? '',
-                        value: AppText(label: selectedSubdistrictName ?? ''),
-                        onTap: () => openSubDistrictSheet(
-                          context,
-                          selectedSubdistrictName ?? "",
-                        ),
-                        isShowBorderBottom: true,
+                        label: selectedProvinceName ?? '',
+                        value: selectedProvinceName == null ? textHint(label: 'จังหวัด') : AppText(label: selectedProvinceName ?? ''),
+                        onTap: () => openProvinceSheet(context, selectedProvinceName ?? ""),
+                        // isShowBorderBottom: true,
                         isHideIcon: true,
                       ),
                     ),
                     addressField(
                       child: infoTileDropdown(
                         label: selectedDistrictName ?? '',
-                        value: AppText(label: selectedDistrictName ?? ''),
-                        onTap: () => openDistrictSheet(
-                          context,
-                          selectedDistrictName ?? "",
-                        ),
-                        isShowBorderBottom: true,
+                        value: selectedDistrictName == null ? textHint(label: 'อําเภอ') : AppText(label: selectedDistrictName ?? ''),
+                        onTap: () => openDistrictSheet(context, selectedDistrictName ?? ""),
+                        // isShowBorderBottom: true,
                         isHideIcon: true,
                       ),
                     ),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: addressField(
-                            hasRightBorder: true,
-                            child: infoTileDropdown(
-                              label: selectedProvinceName ?? '',
-                              value: AppText(label: selectedProvinceName ?? ''),
-                              onTap: () => openProvinceSheet(
-                                context,
-                                selectedProvinceName ?? "",
-                              ),
-                              isShowBorderBottom: true,
-                              isHideIcon: true,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: addressField(child: AppText(label: "ไทย")),
-                        ),
-                      ],
+                    addressField(
+                      hasRightBorder: false,
+                      child: infoTileDropdown(
+                        label: selectedSubdistrictName ?? '',
+                        value: selectedSubdistrictName == null ? textHint(label: 'ตำบล') : AppText(label: selectedSubdistrictName ?? ''),
+                        onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
+                        // isShowBorderBottom: true,
+                        isHideIcon: true,
+                      ),
                     ),
                     addressField(
-                      child: AppText(label: postCode ?? ""),
+                      child: postCode == null ? textHint(label: 'รหัสไปรษณีย์') : AppText(label: postCode ?? ""),
                       hasBottomBorder: false,
                     ),
                   ],
@@ -499,10 +438,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
     );
   }
 
-  Future<void> openProvinceSheet(
-    BuildContext context,
-    String subdistrictID,
-  ) async {
+  Future<void> openProvinceSheet(BuildContext context, String subdistrictID) async {
     final selected = await CupertinoOptionsPicker.show<Province>(
       context: context,
       title: 'Province',
@@ -523,10 +459,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
     });
   }
 
-  Future<void> openDistrictSheet(
-    BuildContext context,
-    String subdistrictID,
-  ) async {
+  Future<void> openDistrictSheet(BuildContext context, String subdistrictID) async {
     final selected = await CupertinoOptionsPicker.show<District>(
       context: context,
       title: 'District',
@@ -546,10 +479,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
     });
   }
 
-  Future<void> openSubDistrictSheet(
-    BuildContext context,
-    String subdistrictID,
-  ) async {
+  Future<void> openSubDistrictSheet(BuildContext context, String subdistrictID) async {
     final selected = await CupertinoOptionsPicker.show<Subdistrict>(
       context: context,
       title: 'SubDistrict',

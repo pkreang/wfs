@@ -251,7 +251,8 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                 // ref.refresh(appointmentsProvider);
                 AppDialogs.success(context);
                 Future.delayed(const Duration(seconds: 3), () {
-                  context.push('/dashboard');
+                  // context.push('/dashboard');
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                 });
               } catch (ex) {
                 AppDialogs.error(context, message: ex.toString());
@@ -372,8 +373,8 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                 isShowBorderBottom: true,
                 isHideIcon: true,
               ),
-              addressWidget(),
               companyTile(companys: companys),
+              addressWidget(),
               productTile(products: products),
             ],
           ),
@@ -605,16 +606,29 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
     );
 
     if (selected == null) return;
+    final companyAddress = (selected.CompanyAddresses ?? []).isNotEmpty ? selected.CompanyAddresses?.first : null;
 
-    if (isUpdate) {
-      setState(() {
-        companys?.remove(selected);
-      });
-    } else {
-      setState(() {
-        companys?.add(selected);
-      });
-    }
+    setState(() {
+      if (isUpdate) {
+        companys?.removeAt(0);
+      }
+
+      companys?.add(selected);
+
+      if (companyAddress != null) {
+        txtAddress.text = companyAddress.address ?? '';
+
+        selectedSubdistrictName = companyAddress.subDistrictName;
+        selectedSubdistrict = companyAddress.subDistrictID.toString();
+
+        selectedDistrictName = companyAddress.districtName;
+        selectedDistrict = companyAddress.districtID.toString();
+
+        selectedProvinceName = companyAddress.provinceName;
+        selectedProvince = companyAddress.provinceID.toString();
+        postCode = companyAddress.postCode;
+      }
+    });
   }
 
   void removeProduct(Product product, List<Product> products) {
@@ -625,6 +639,21 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
 
   void removeCompany(Company company, List<Company> companys) {
     setState(() {
+      final companyAddress = (company.CompanyAddresses ?? []).isNotEmpty ? company.CompanyAddresses?.first : null;
+      if (companyAddress != null) {
+        txtAddress.clear();
+
+        selectedSubdistrictName = null;
+        selectedSubdistrict = null;
+
+        selectedDistrictName = null;
+        selectedDistrict = null;
+
+        selectedProvinceName = null;
+        selectedProvince = null;
+        postCode = null;
+      }
+
       companys.remove(company);
     });
   }
@@ -640,6 +669,10 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
         padding: const EdgeInsets.only(left: 16),
         child: child,
       );
+    }
+
+    Widget textHint({required String label}) {
+      return AppText(label: label, textColor: Colors.grey.shade400);
     }
 
     return Container(
@@ -673,47 +706,42 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    addressField(child: AppTextFormField(controller: txtAddress)),
                     addressField(
-                      hasRightBorder: false,
+                      child: AppTextFormField(controller: txtAddress, hintText: 'ที่อยู่'),
+                    ),
+                    addressField(
+                      hasRightBorder: true,
                       child: infoTileDropdown(
-                        label: selectedSubdistrictName ?? '',
-                        value: AppText(label: selectedSubdistrictName ?? ''),
-                        onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
-                        isShowBorderBottom: true,
+                        label: selectedProvinceName ?? '',
+                        value: selectedProvinceName == null ? textHint(label: 'จังหวัด') : AppText(label: selectedProvinceName ?? ''),
+                        onTap: () => openProvinceSheet(context, selectedProvinceName ?? ""),
+                        // isShowBorderBottom: true,
                         isHideIcon: true,
                       ),
                     ),
                     addressField(
                       child: infoTileDropdown(
                         label: selectedDistrictName ?? '',
-                        value: AppText(label: selectedDistrictName ?? ''),
+                        value: selectedDistrictName == null ? textHint(label: 'อําเภอ') : AppText(label: selectedDistrictName ?? ''),
                         onTap: () => openDistrictSheet(context, selectedDistrictName ?? ""),
-                        isShowBorderBottom: true,
+                        // isShowBorderBottom: true,
                         isHideIcon: true,
                       ),
                     ),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: addressField(
-                            hasRightBorder: true,
-                            child: infoTileDropdown(
-                              label: selectedProvinceName ?? '',
-                              value: AppText(label: selectedProvinceName ?? ''),
-                              onTap: () => openProvinceSheet(context, selectedProvinceName ?? ""),
-                              isShowBorderBottom: true,
-                              isHideIcon: true,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: addressField(child: const AppText(label: "ไทย")),
-                        ),
-                      ],
+                    addressField(
+                      hasRightBorder: false,
+                      child: infoTileDropdown(
+                        label: selectedSubdistrictName ?? '',
+                        value: selectedSubdistrictName == null ? textHint(label: 'ตำบล') : AppText(label: selectedSubdistrictName ?? ''),
+                        onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
+                        // isShowBorderBottom: true,
+                        isHideIcon: true,
+                      ),
                     ),
-                    addressField(child: AppText(label: postCode ?? ""), hasBottomBorder: false),
+                    addressField(
+                      child: postCode == null ? textHint(label: 'รหัสไปรษณีย์') : AppText(label: postCode ?? ""),
+                      hasBottomBorder: false,
+                    ),
                   ],
                 ),
               ),
@@ -739,7 +767,9 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
       selectedProvince = selected.provinceID.toString();
       selectedProvinceName = selected.provinceName;
       selectedDistrict = null;
+      selectedDistrictName = null;
       selectedSubdistrict = null;
+      selectedSubdistrictName = null;
       postCode = "";
     });
   }
@@ -759,6 +789,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
       selectedDistrict = selected.districtID.toString();
       selectedDistrictName = selected.districtName;
       selectedSubdistrict = null;
+      selectedSubdistrictName = null;
       postCode = "";
     });
   }

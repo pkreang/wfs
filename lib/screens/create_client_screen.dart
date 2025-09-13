@@ -435,11 +435,11 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       child: AppTextFormField(controller: txtAddress, hintText: 'ที่อยู่'),
                     ),
                     addressField(
-                      hasRightBorder: false,
+                      hasRightBorder: true,
                       child: infoTileDropdown(
-                        label: selectedSubdistrictName ?? '',
-                        value: selectedSubdistrictName == null ? textHint(label: 'ตำบล') : AppText(label: selectedSubdistrictName ?? ''),
-                        onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
+                        label: selectedProvinceName ?? '',
+                        value: selectedProvinceName == null ? textHint(label: 'จังหวัด') : AppText(label: selectedProvinceName ?? ''),
+                        onTap: () => openProvinceSheet(context, selectedProvinceName ?? ""),
                         // isShowBorderBottom: true,
                         isHideIcon: true,
                       ),
@@ -453,24 +453,15 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                         isHideIcon: true,
                       ),
                     ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: addressField(
-                            hasRightBorder: true,
-                            child: infoTileDropdown(
-                              label: selectedProvinceName ?? '',
-                              value: selectedProvinceName == null ? textHint(label: 'จังหวัด') : AppText(label: selectedProvinceName ?? ''),
-                              onTap: () => openProvinceSheet(context, selectedProvinceName ?? ""),
-                              // isShowBorderBottom: true,
-                              isHideIcon: true,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: addressField(child: AppText(label: "ไทย")),
-                        ),
-                      ],
+                    addressField(
+                      hasRightBorder: false,
+                      child: infoTileDropdown(
+                        label: selectedSubdistrictName ?? '',
+                        value: selectedSubdistrictName == null ? textHint(label: 'ตำบล') : AppText(label: selectedSubdistrictName ?? ''),
+                        onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
+                        // isShowBorderBottom: true,
+                        isHideIcon: true,
+                      ),
                     ),
                     addressField(
                       child: postCode == null ? textHint(label: 'รหัสไปรษณีย์') : AppText(label: postCode ?? ""),
