@@ -9,7 +9,7 @@ class CupertinoOptionsPicker {
   static Future<T?> show<T>({
     required BuildContext context,
     required String title,
-    required ProviderListenable<AsyncValue<List<T>>> provider,
+    required ProviderListenable <AsyncValue<List<T>>> provider,
     required String Function(T) label,
     required String Function(T) initialKey,
     required String initialValue,

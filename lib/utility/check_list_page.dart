@@ -10,7 +10,8 @@ enum SelectionMode { single, multiple }
 
 class CheckListPage<T, K> extends ConsumerStatefulWidget {
   final String title;
-  final AutoDisposeFutureProvider<List<T>> items;
+  final AutoDisposeFutureProvider <List<T>> items;
+  
   final ItemLabel<T> label;
   final ItemKeyOf<T, K> keyOf;
   final Iterable<K> initial;

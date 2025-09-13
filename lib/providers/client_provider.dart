@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:wfs/models/clientaddresses_model.dart';
 import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/clientlevel_model.dart';
@@ -12,7 +13,7 @@ import 'auth_provider.dart';
 final clientServiceProvider = Provider<ClientService>((ref) {
   return ClientService();
 });
-final clientLoadTriggerProvider = StateProvider<bool>((ref) => false);
+final clientLoadTriggerProvider = StateProvider <bool>((ref) => false);
 
 final clientDataProvider = StateProvider<AsyncValue<List<Client>>>(
   (ref) => const AsyncValue.loading(),
@@ -266,7 +267,7 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
   }
 
   Future<bool> editClient() async {
-    final client = state.data.valueOrNull;
+    final client = state.data.value;
     if (!state.isDirty || client == null) return false;
 
     state = state.copyWith(isLoading: true);

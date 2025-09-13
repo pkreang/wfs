@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:intl/intl.dart';
 import '../providers/appointment_provider.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
 import '../models/appointment_model.dart';
 import '../features/appointment/views/appointment_detail_page.dart';
 
-final currentDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
+final currentDateProvider = StateProvider <DateTime>((ref) => DateTime.now());
 final currentMonthProvider = StateProvider<DateTime>((ref) => DateTime.now());
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
@@ -35,7 +36,7 @@ class AppointmentScreen extends ConsumerWidget {
 
 
         child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+         
           children: [
 
             _buildHeader(context),
@@ -75,9 +76,7 @@ class AppointmentScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0), // Add some top padding
-      child: Stack(
+    return  Stack(
         alignment: Alignment.center,
         children: [
           // Centered Title
@@ -134,8 +133,8 @@ class AppointmentScreen extends ConsumerWidget {
           // Optional: More options icon on the right if needed, matching the original AppBar
           
         ],
-      ),
-    );
+      );
+    
   }
 
   Widget _buildCalendarHeader(BuildContext context, WidgetRef ref, DateTime currentMonth, DateTime selectedDate) {

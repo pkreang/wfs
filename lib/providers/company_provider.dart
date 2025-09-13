@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:wfs/models/clientcompanies_model.dart';
 import 'package:wfs/models/companyaddress.dart';
 import 'package:wfs/models/territory_model.dart';
@@ -10,7 +11,7 @@ import 'auth_provider.dart';
 final companyServiceProvider = Provider<CompanyService>((ref) {
   return CompanyService();
 });
-final companyLoadTriggerProvider = StateProvider<bool>((ref) => false);
+final companyLoadTriggerProvider = StateProvider <bool>((ref) => false);
 
 final companiesDataProvider = StateProvider<AsyncValue<List<Company>>>(
   (ref) => const AsyncValue.loading(),
@@ -220,7 +221,7 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
   }
 
   Future<bool> editCompany() async {
-    final company = state.data.valueOrNull;
+    final company = state.data.value;
     if (!state.isDirty || company == null) return false;
 
     state = state.copyWith(isLoading: true);

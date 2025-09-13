@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:wfs/widgets/auth_checker.dart';
 
-final selectedItemProvider = StateProvider<String?>((ref) => null);
+final selectedItemProvider = StateProvider <String?>((ref) => null);
 void main() {
   runApp(const ProviderScope(child: MyApp()));
 }

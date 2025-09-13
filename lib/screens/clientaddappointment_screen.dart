@@ -1,10 +1,114 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/main.dart';
+import 'package:wfs/main.dart'; // ตรวจสอบว่า selectedItemProvider อยู่ใน main.dart หรือไม่
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/screens/create_appointment_screen.dart';
-import '../providers/company_provider.dart';
+// import '../providers/company_provider.dart'; // ไม่ได้ใช้สำหรับ ClientAddAppointmentScreen
+
+// --- Providers เฉพาะสำหรับหน้านี้หรือนำมาจากไฟล์ client_screen.dart ที่แก้ไขไปแล้ว ---
+// ถ้า ClientScreen และ ClientAddAppointmentScreen ใช้ Providers เดียวกัน
+// ให้เก็บ providers เหล่านี้ไว้ในไฟล์ client_provider.dart
+// และนำเข้าที่นี่ แทนการสร้างซ้ำ
+// แต่เพื่อความสมบูรณ์ของโค้ดที่ให้มา ผมจะรวมไว้ในไฟล์นี้ชั่วคราว
+// แต่แนะนำให้ย้ายไป client_provider.dart หากมีการใช้ซ้ำ
+
+// เพิ่ม provider สำหรับจัดการการค้นหา Client
+final clientSearchProvider = StateProvider<String>((ref) => '');
+
+// เพิ่ม provider สำหรับกรอง Client
+final filteredClientsProvider = Provider<AsyncValue<List<Client>>>((ref) {
+  final allClientsAsync = ref.watch(clientProvider); // ใช้ clientProvider
+  final searchQuery = ref.watch(clientSearchProvider).toLowerCase();
+
+  return allClientsAsync.when(
+    data: (clients) {
+      if (searchQuery.isEmpty) {
+        return AsyncValue.data(clients);
+      }
+      final filteredList = clients.where((client) {
+        // ตรวจสอบ firstName, lastName, phone, address, product name
+        final fullName =
+            '${client.firstName ?? ''} ${client.lastName ?? ''}'.toLowerCase();
+        final nameMatch = fullName.contains(searchQuery);
+
+        final phoneMatch = client.phone?.toLowerCase().contains(searchQuery) ?? false;
+
+        bool addressMatch = false;
+        if (client.clientAddresses != null) {
+          addressMatch = client.clientAddresses!.any((address) =>
+              address.address?.toLowerCase().contains(searchQuery) ?? false);
+        }
+
+        bool productMatch = false;
+        if (client.products != null) {
+          productMatch = client.products!.any((product) =>
+              product.productName?.toLowerCase().contains(searchQuery) ?? false);
+        }
+
+        // เพิ่มการค้นหาแบบเฉพาะเจาะจง
+        if (searchQuery.startsWith('status:')) {
+          final statusQuery = searchQuery.substring(7).trim();
+          final isActive = client.isActive ?? false;
+          if (statusQuery == 'active' && isActive) {
+            return true;
+          }
+          if (statusQuery == 'inactive' && !isActive) {
+            return true;
+          }
+          return false;
+        } else if (searchQuery.startsWith('name:')) {
+          final nameQuery = searchQuery.substring(5).trim();
+          return fullName.contains(nameQuery.toLowerCase());
+        } else if (searchQuery.startsWith('phone:')) {
+          final phoneQuery = searchQuery.substring(6).trim();
+          return client.phone?.toLowerCase().contains(phoneQuery.toLowerCase()) ?? false;
+        } else if (searchQuery.startsWith('address:')) {
+          final addressQuery = searchQuery.substring(8).trim();
+          return client.clientAddresses?.any((addr) =>
+                  addr.address?.toLowerCase().contains(addressQuery.toLowerCase()) ?? false) ??
+              false;
+        } else if (searchQuery.startsWith('product:')) {
+          final productQuery = searchQuery.substring(8).trim();
+          return client.products?.any((prod) =>
+                  prod.productName?.toLowerCase().contains(productQuery.toLowerCase()) ?? false) ??
+              false;
+        }
+
+        return nameMatch || phoneMatch || addressMatch || productMatch;
+      }).toList();
+      return AsyncValue.data(filteredList);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
+});
+
+// เพิ่ม provider สำหรับจัดกลุ่ม Client ตามตัวอักษรแรกของ firstName
+final clientSectionsProvider = Provider<Map<String, List<Client>>>((ref) {
+  final clientsAsync = ref.watch(filteredClientsProvider);
+
+  return clientsAsync.when(
+    data: (clients) {
+      final Map<String, List<Client>> sections = {};
+      for (var client in clients) {
+        if (client.firstName != null && client.firstName!.isNotEmpty) {
+          final firstChar = client.firstName![0].toUpperCase();
+          sections.putIfAbsent(firstChar, () => []).add(client);
+        }
+      }
+      return sections;
+    },
+    loading: () => {},
+    error: (error, stack) => {},
+  );
+});
+
+// เพิ่มฟังก์ชันสำหรับ refresh client list
+Future<void> refreshClients(WidgetRef ref) async {
+  ref.invalidate(clientProvider); // Invalidate the main client provider
+}
+// --- สิ้นสุด Providers ที่อาจต้องย้ายไป client_provider.dart ---
 
 class ClientAddAppointmentScreen extends ConsumerStatefulWidget {
   const ClientAddAppointmentScreen({super.key});
@@ -37,7 +141,8 @@ class _ClientAddAppointmentScreenState
   }
 
   void _onSearchChanged() {
-    ref.read(companySearchProvider.notifier).state = _searchController.text;
+    ref.read(clientSearchProvider.notifier).state =
+        _searchController.text; // ใช้ clientSearchProvider
     setState(() {
       _showSearchOptions =
           _searchFocusNode.hasFocus && _searchController.text.isNotEmpty;
@@ -54,29 +159,50 @@ class _ClientAddAppointmentScreenState
 
   @override
   Widget build(BuildContext context) {
-    final companiesAsync = ref.watch(clientCompaniesProvider);
+    final clientsAsync =
+        ref.watch(filteredClientsProvider); // ใช้ filteredClientsProvider
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        // เพิ่ม AppBar เพื่อให้มีปุ่มย้อนกลับและชื่อหน้าจอ
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Select Client',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.blue),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            // _buildHeader() ถูกย้ายไปอยู่ใน AppBar แล้ว หรือสามารถปรับใช้ได้หากต้องการ
             _buildSearchBar(),
             if (_showSearchOptions) _buildSearchOptions(),
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () async => refreshCompanies(ref),
-                child: companiesAsync.when(
+                onRefresh: () async =>
+                    refreshClients(ref), // ใช้ refreshClients
+                child: clientsAsync.when(
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => Center(child: Text('Error: $error')),
-                  data: (companies) {
-                    if (companies.isEmpty && !_showSearchOptions) {
-                      return const Center(child: Text('No companies found.'));
+                  error: (error, stack) =>
+                      Center(child: Text('Error: $error')),
+                  data: (clients) {
+                    if (clients.isEmpty && !_showSearchOptions) {
+                      return const Center(child: Text('No clients found.'));
                     }
-                    return _buildCompanyList();
+                    return _buildClientList(); // เปลี่ยนเป็น _buildClientList
                   },
                 ),
               ),
@@ -88,64 +214,8 @@ class _ClientAddAppointmentScreenState
   }
 
   // --- ส่วนที่แก้ไข ---
-  Widget _buildHeader() {
-    // Watch provider ที่เก็บข้อมูลบริษัททั้งหมดจาก API เพื่อนำจำนวนมาแสดง
-    // **หมายเหตุ**: โค้ดนี้สันนิษฐานว่า provider ของคุณชื่อ `companyProvider`
-    // หากใช้ชื่ออื่น กรุณาแก้ไขตามความเหมาะสม
-    final allCompaniesAsync = ref.watch(clientProvider);
-
-    // สร้างข้อความจำนวนจากสถานะของ AsyncValue
-    final countText = allCompaniesAsync.when(
-      data: (companies) => '${companies.length} Entry',
-      loading: () => 'Loading...',
-      error: (err, stack) => 'Error',
-    );
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 8, 16, 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              '',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.normal,
-                fontSize: 17,
-              ),
-            ),
-          ),
-          Column(
-            children: [
-              const Text(
-                'Client',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                countText, // แสดงจำนวนที่ได้จาก provider
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              '',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.normal,
-                fontSize: 17,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  // --- สิ้นสุดส่วนที่แก้ไข ---
+  // _buildHeader() ถูกนำออกไปเพราะ AppBar ทำหน้าที่คล้ายกันแล้ว
+  // หากยังต้องการแสดงจำนวน Client สามารถนำ countText ไปแสดงใน AppBar ได้
 
   Widget _buildSearchBar() {
     return Padding(
@@ -171,9 +241,11 @@ class _ClientAddAppointmentScreenState
 
   Widget _buildSearchOptions() {
     final options = {
-      'name:': 'company',
-      'status:': 'status',
-      'client:': 'name',
+      'name:': 'client name',
+      'status:': 'status (active/inactive)',
+      'phone:': 'phone number',
+      'address:': 'client address',
+      'product:': 'product name',
     };
 
     return Container(
@@ -224,19 +296,23 @@ class _ClientAddAppointmentScreenState
     );
   }
 
-  Widget _buildCompanyList() {
+  Widget _buildClientList() {
     if (_showSearchOptions) {
-      return Container();
+      return Container(); // ไม่แสดงรายการ Client เมื่อ search options เปิดอยู่
     }
     final sections = ref.watch(clientSectionsProvider);
     final sectionKeys = sections.keys.toList()..sort();
+
+    if (sectionKeys.isEmpty) {
+      return const Center(child: Text('No clients found.'));
+    }
 
     return ListView.builder(
       padding: EdgeInsets.zero,
       itemCount: sectionKeys.length,
       itemBuilder: (context, index) {
         final sectionKey = sectionKeys[index];
-        final sectionCompanies = sections[sectionKey]!;
+        final sectionClients = sections[sectionKey]!;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,10 +333,10 @@ class _ClientAddAppointmentScreenState
               padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: sectionCompanies.length,
+              itemCount: sectionClients.length,
               itemBuilder: (context, itemIndex) {
-                final company = sectionCompanies[itemIndex];
-                return _buildCompanyItem(company);
+                final client = sectionClients[itemIndex];
+                return _buildClientItem(client);
               },
             ),
           ],
@@ -269,11 +345,12 @@ class _ClientAddAppointmentScreenState
     );
   }
 
-  Widget _buildCompanyItem(Client client) {
+  Widget _buildClientItem(Client client) {
     return Column(
       children: [
         GestureDetector(
           onTap: () {
+            // เมื่อเลือก client ให้ส่ง clientID ไปยัง selectedItemProvider
             ref.read(selectedItemProvider.notifier).state = client.clientID;
             Navigator.push(
               context,
@@ -294,43 +371,102 @@ class _ClientAddAppointmentScreenState
                       Row(
                         children: [
                           Text(
-                            client.firstName.toString() +
-                                ' ' +
-                                client.lastName.toString(),
+                            '${client.firstName ?? ''} ${client.lastName ?? ''}', // จัดการ null
                             style: const TextStyle(fontSize: 17),
                           ),
                           const SizedBox(width: 8),
-                          _buildStatusTag(client.isActive as bool),
+                          _buildStatusTag(client.isActive ?? false), // จัดการ null
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2.0),
-                            child: Icon(
-                              Icons.location_on,
-                              color: Colors.grey.shade600,
-                              size: 20,
-                            ),
+                      // Phone
+                      if (client.phone != null && client.phone!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2.0),
+                                child: Icon(
+                                  Icons.phone,
+                                  color: Colors.grey.shade600,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  client.phone.toString(),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              client.clientAddresses?.isNotEmpty == true
-                                  ? client.clientAddresses!.first.address ??
-                                        "ไม่มีที่อยู่"
-                                  : "ไม่มีที่อยู่",
-                              style: TextStyle(
-                                fontSize: 14,
+                        ),
+                      // Address
+                      if (client.clientAddresses?.isNotEmpty == true &&
+                          client.clientAddresses!.first.address != null &&
+                          client.clientAddresses!.first.address!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2.0),
+                                child: Icon(
+                                  Icons.location_on,
+                                  color: Colors.grey.shade600,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  client.clientAddresses!.first.address!,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      // Product (ถ้ามี)
+                      if (client.products?.isNotEmpty == true &&
+                          client.products!.first.productName != null &&
+                          client.products!.first.productName!.isNotEmpty)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2.0),
+                              child: Icon(
+                                Icons.production_quantity_limits,
                                 color: Colors.grey.shade600,
-                                height: 1.4,
+                                size: 20,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                client.products!.first.productName!,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade600,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),

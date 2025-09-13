@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
 import 'package:wfs/models/district_model.dart';
@@ -11,7 +12,7 @@ final districtProvider = Provider<DistrictService>((ref) {
   return DistrictService();
 });
 
-final selectedDistrictProvider = StateProvider<String?>((ref) => null);
+final selectedDistrictProvider = StateProvider <String?>((ref) => null);
 
 final districtGetList = FutureProvider<List<District>>((ref) async {
   final authState = ref.watch(authProvider);

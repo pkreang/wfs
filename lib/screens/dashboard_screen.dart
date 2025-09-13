@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:intl/intl.dart';
 import 'package:wfs/models/appointment_summary_model.dart';
 import '../models/appointment_model.dart';
@@ -71,15 +72,8 @@ class DashboardScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // ปุ่มย้อนกลับ (ลดวัน)
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-            onPressed: () {
-              // อ่าน notifier และอัปเดต state (ลด 1 วัน)
-              ref.read(currentDateProvider.notifier).update(
-                (state) => state.subtract(const Duration(days: 1)),
-              );
-            },
-          ),
+       
+       
           // แสดงวันที่ปัจจุบัน
           Text(
             DateFormat('MMMM d').format(currentDate),
@@ -145,7 +139,7 @@ Widget _buildSummarySection(BuildContext context, AsyncValue<AppointmentSummary>
               loading: () => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildLegendItem(Colors.blue, "Total Completed", "-", "-"),
+                  _buildLegendItem(Colors.blue, "Completed", "-", "-"),
                   const SizedBox(height: 16),
                   _buildLegendItem(Colors.red, "Pending", "-", "-"),
                   const SizedBox(height: 16),

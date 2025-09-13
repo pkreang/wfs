@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 
 class CupertinoOptionsPicker {
@@ -9,7 +10,7 @@ class CupertinoOptionsPicker {
   static Future<T?> show<T>({
     required BuildContext context,
     required String title,
-    required ProviderListenable<AsyncValue<List<T>>> provider,
+    required ProviderListenable <AsyncValue<List<T>>> provider,
     required String Function(T) label,
     required String Function(T) initialKey,
     required String initialValue,

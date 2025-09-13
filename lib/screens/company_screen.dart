@@ -4,6 +4,81 @@ import 'package:wfs/screens/createcompany_screen.dart';
 import '../models/company_model.dart';
 import '../providers/company_provider.dart';
 
+
+final companySearchProvider = StateProvider<String>((ref) => '');
+
+final filteredCompaniesProvider = Provider<AsyncValue<List<Company>>>((ref) {
+  final allCompaniesAsync = ref.watch(companiesProvider);
+  final searchQuery = ref.watch(companySearchProvider).toLowerCase();
+
+  return allCompaniesAsync.when(
+    data: (companies) {
+      if (searchQuery.isEmpty) {
+        return AsyncValue.data(companies);
+      }
+      final filteredList = companies.where((company) {
+        final companyNameMatch =
+            company.companyName?.toLowerCase().contains(searchQuery) ?? false;
+
+        bool addressMatch = false;
+        if (searchQuery.startsWith('status:')) {
+          final statusQuery = searchQuery.substring(7).trim();
+          final isActive = company.isActive ?? false;
+          if (statusQuery == 'active' && isActive) {
+            return true;
+          }
+          if (statusQuery == 'inactive' && !isActive) {
+            return true;
+          }
+          return false;
+        } else if (searchQuery.startsWith('name:')) {
+          final nameQuery = searchQuery.substring(5).trim();
+          return company.companyName
+                  ?.toLowerCase()
+                  .contains(nameQuery.toLowerCase()) ??
+              false;
+        }
+
+        if (company.CompanyAddresses != null) {
+          addressMatch = company.CompanyAddresses!.any((address) =>
+              address.address?.toLowerCase().contains(searchQuery) ?? false);
+        }
+
+        return companyNameMatch || addressMatch;
+      }).toList();
+      return AsyncValue.data(filteredList);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
+});
+
+// เพิ่ม provider สำหรับจัดกลุ่มบริษัทตามตัวอักษรแรกของ companyName
+final companySectionsProvider =
+    Provider<Map<String, List<Company>>>((ref) {
+  final companiesAsync = ref.watch(filteredCompaniesProvider);
+
+  return companiesAsync.when(
+    data: (companies) {
+      final Map<String, List<Company>> sections = {};
+      for (var company in companies) {
+        if (company.companyName != null && company.companyName!.isNotEmpty) {
+          final firstChar = company.companyName![0].toUpperCase();
+          sections.putIfAbsent(firstChar, () => []).add(company);
+        }
+      }
+      return sections;
+    },
+    loading: () => {},
+    error: (error, stack) => {},
+  );
+});
+
+// เพิ่มฟังก์ชันสำหรับ refresh company list
+Future<void> refreshCompanies(WidgetRef ref) async {
+  ref.invalidate(companiesProvider); // Invalidate the main company provider
+}
+
 class CompanyScreen extends ConsumerStatefulWidget {
   const CompanyScreen({super.key});
 
@@ -63,7 +138,6 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
             Expanded(
               child: RefreshIndicator(
-                // giả sử refreshCompanies sẽ invalidate companyProvider
                 onRefresh: () async => refreshCompanies(ref),
                 child: companiesAsync.when(
                   loading: () =>
@@ -84,14 +158,9 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
     );
   }
 
-  // --- ส่วนที่แก้ไข ---
   Widget _buildHeader() {
-    // Watch provider ที่เก็บข้อมูลบริษัททั้งหมดจาก API เพื่อนำจำนวนมาแสดง
-    // **หมายเหตุ**: โค้ดนี้สันนิษฐานว่า provider ของคุณชื่อ `companyProvider`
-    // หากใช้ชื่ออื่น กรุณาแก้ไขตามความเหมาะสม
     final allCompaniesAsync = ref.watch(companiesProvider);
 
-    // สร้างข้อความจำนวนจากสถานะของ AsyncValue
     final countText = allCompaniesAsync.when(
       data: (companies) => '${companies.length} Entry',
       loading: () => 'Loading...',
@@ -106,7 +175,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
           TextButton(
             onPressed: () {},
             child: const Text(
-              'Cancel',
+              '',
               style: TextStyle(
                 color: Colors.blue,
                 fontWeight: FontWeight.normal,
@@ -122,7 +191,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
               ),
               const SizedBox(height: 2),
               Text(
-                countText, // แสดงจำนวนที่ได้จาก provider
+                countText,
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
@@ -147,7 +216,6 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
       ),
     );
   }
-  // --- สิ้นสุดส่วนที่แก้ไข ---
 
   Widget _buildSearchBar() {
     return Padding(
@@ -175,7 +243,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
     final options = {
       'name:': 'company',
       'status:': 'status',
-      'client:': 'name',
+      'client:': 'name', // ไม่แน่ใจว่า 'client' จะใช้ field ไหนใน Company model
     };
 
     return Container(
@@ -228,7 +296,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
 
   Widget _buildCompanyList() {
     if (_showSearchOptions) {
-      return Container();
+      return Container(); // ไม่แสดงรายการบริษัทเมื่อ search options เปิดอยู่
     }
     final sections = ref.watch(companySectionsProvider);
     final sectionKeys = sections.keys.toList()..sort();
@@ -310,7 +378,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                           child: Text(
                             company.CompanyAddresses?.isNotEmpty == true
                                 ? company.CompanyAddresses!.first.address ??
-                                      "ไม่มีที่อยู่"
+                                    "ไม่มีที่อยู่"
                                 : "ไม่มีที่อยู่",
                             style: TextStyle(
                               fontSize: 14,

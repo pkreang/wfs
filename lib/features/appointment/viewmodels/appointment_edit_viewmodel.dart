@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
 import 'package:wfs/features/appointment/models/appointment_status.dart';
@@ -22,7 +23,7 @@ class AppointmentEditState {
       AppointmentEditState(data: data ?? this.data, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
 }
 
-class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
+class AppointmentEditViewModel extends StateNotifier <AppointmentEditState> {
   AppointmentEditViewModel(this.ref, this.id) : super(const AppointmentEditState(data: AsyncValue.loading())) {
     fetch();
   }
@@ -112,7 +113,7 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
   }
 
   Future<bool> updateAppointment({String? noted}) async {
-    final detail = state.data.valueOrNull;
+    final detail = state.data.value;
     if (!state.isDirty || detail == null) return false;
 
     state = state.copyWith(isLoading: true);

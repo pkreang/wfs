@@ -223,7 +223,7 @@ class _CreateAppointmentScreenState
                 appointmentTypeID: "7DEEC491-A5AE-4856-B981-7E91870179FF", //
                 userID: authState.userID, //
                 clientID: selectedItem,
-                companyID: company,
+                companyID: companys[0].companyID,
                 appointmentDateTimeFrom: dateTimeFrom,
                 appointmentDateTimeTo: dateTimeTo,
                 appointmentStatusID: selectStatusID, //

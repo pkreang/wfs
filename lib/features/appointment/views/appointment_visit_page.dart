@@ -166,7 +166,7 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
       error: (e, _) => Center(child: AppText(label: "Appointment Not Found", textColor: Colors.red)),
       data: (detail) {
         final visitActivities = detail.visitActivities;
-        final location = state.location.valueOrNull;
+        final location = state.location.value;
 
         final isCheckIn = visitActivities.isEmpty;
         final title = isCheckIn ? 'Check In' : 'Check Out';

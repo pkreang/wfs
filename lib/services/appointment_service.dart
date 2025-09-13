@@ -23,6 +23,7 @@ class AppointmentService {
     final uri = Uri.parse('${ApiConfig.appointmentUrl}/bydate/').replace(
       queryParameters: {
       'AppointmentDateFrom' : dateAppoinment, 
+      'AppointmentDateTo' : dateAppoinment, 
       },
     );
 

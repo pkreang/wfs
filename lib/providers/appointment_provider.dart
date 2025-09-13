@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:intl/intl.dart';
 import '../models/appointment_model.dart';
 import '../services/appointment_service.dart';
@@ -76,7 +77,7 @@ final appointmentGetByDateProvider = FutureProvider.autoDispose.family<List<Appo
 
 
 // currentDateProvider ยังคงเหมือนเดิม
-final currentDateProvider = StateProvider<DateTime>((ref) => DateTime.now()); 
+final currentDateProvider = StateProvider <DateTime>((ref) => DateTime.now()); 
 
 
 final appointmentEditProvider =

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:intl/intl.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
@@ -23,7 +24,7 @@ class AppointmentVisitState {
   }
 }
 
-class AppointmentVisitViewModel extends StateNotifier<AppointmentVisitState> {
+class AppointmentVisitViewModel extends StateNotifier <AppointmentVisitState> {
   AppointmentVisitViewModel(this.ref, this.id) : super(const AppointmentVisitState(data: AsyncValue.loading(), location: AsyncValue.loading())) {
     fetch();
   }

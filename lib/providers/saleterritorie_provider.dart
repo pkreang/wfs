@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:wfs/models/sales_territory.dart';
 import 'package:wfs/models/territory_model.dart';
 import 'package:wfs/services/saleterritorie_service.dart';
@@ -30,7 +31,7 @@ final territoryGetListProvider = FutureProvider.autoDispose<List<Territory>>((
       .getList(authState.accessToken.toString());
 });
 
-final SalesTerritoryEditProvider = StateNotifierProvider.autoDispose
+final SalesTerritoryEditProvider = StateNotifierProvider .autoDispose
     .family<SalesTerritoryEditViewModel, SalesTerritoryEditState, String>((
       ref,
       id,

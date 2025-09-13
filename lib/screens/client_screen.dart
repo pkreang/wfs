@@ -3,7 +3,103 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/screens/create_client_screen.dart';
-import '../providers/company_provider.dart';
+// import '../providers/company_provider.dart'; // ไม่ได้ใช้แล้วสำหรับ ClientScreen
+
+// เพิ่ม provider สำหรับจัดการการค้นหา Client
+final clientSearchProvider = StateProvider<String>((ref) => '');
+
+// เพิ่ม provider สำหรับกรอง Client
+final filteredClientsProvider = Provider<AsyncValue<List<Client>>>((ref) {
+  final allClientsAsync = ref.watch(clientProvider); // ใช้ clientProvider
+  final searchQuery = ref.watch(clientSearchProvider).toLowerCase();
+
+  return allClientsAsync.when(
+    data: (clients) {
+      if (searchQuery.isEmpty) {
+        return AsyncValue.data(clients);
+      }
+      final filteredList = clients.where((client) {
+        // ตรวจสอบ firstName, lastName, phone, address, product name
+        final fullName =
+            '${client.firstName ?? ''} ${client.lastName ?? ''}'.toLowerCase();
+        final nameMatch = fullName.contains(searchQuery);
+
+        final phoneMatch = client.phone?.toLowerCase().contains(searchQuery) ?? false;
+
+        bool addressMatch = false;
+        if (client.clientAddresses != null) {
+          addressMatch = client.clientAddresses!.any((address) =>
+              address.address?.toLowerCase().contains(searchQuery) ?? false);
+        }
+
+        bool productMatch = false;
+        if (client.products != null) {
+          productMatch = client.products!.any((product) =>
+              product.productName?.toLowerCase().contains(searchQuery) ?? false);
+        }
+
+        // เพิ่มการค้นหาแบบเฉพาะเจาะจง
+        if (searchQuery.startsWith('status:')) {
+          final statusQuery = searchQuery.substring(7).trim();
+          final isActive = client.isActive ?? false;
+          if (statusQuery == 'active' && isActive) {
+            return true;
+          }
+          if (statusQuery == 'inactive' && !isActive) {
+            return true;
+          }
+          return false;
+        } else if (searchQuery.startsWith('name:')) {
+          final nameQuery = searchQuery.substring(5).trim();
+          return fullName.contains(nameQuery.toLowerCase());
+        } else if (searchQuery.startsWith('phone:')) {
+          final phoneQuery = searchQuery.substring(6).trim();
+          return client.phone?.toLowerCase().contains(phoneQuery.toLowerCase()) ?? false;
+        } else if (searchQuery.startsWith('address:')) {
+          final addressQuery = searchQuery.substring(8).trim();
+          return client.clientAddresses?.any((addr) =>
+                  addr.address?.toLowerCase().contains(addressQuery.toLowerCase()) ?? false) ??
+              false;
+        } else if (searchQuery.startsWith('product:')) {
+          final productQuery = searchQuery.substring(8).trim();
+          return client.products?.any((prod) =>
+                  prod.productName?.toLowerCase().contains(productQuery.toLowerCase()) ?? false) ??
+              false;
+        }
+
+        return nameMatch || phoneMatch || addressMatch || productMatch;
+      }).toList();
+      return AsyncValue.data(filteredList);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
+});
+
+// เพิ่ม provider สำหรับจัดกลุ่ม Client ตามตัวอักษรแรกของ firstName
+final clientSectionsProvider = Provider<Map<String, List<Client>>>((ref) {
+  final clientsAsync = ref.watch(filteredClientsProvider);
+
+  return clientsAsync.when(
+    data: (clients) {
+      final Map<String, List<Client>> sections = {};
+      for (var client in clients) {
+        if (client.firstName != null && client.firstName!.isNotEmpty) {
+          final firstChar = client.firstName![0].toUpperCase();
+          sections.putIfAbsent(firstChar, () => []).add(client);
+        }
+      }
+      return sections;
+    },
+    loading: () => {},
+    error: (error, stack) => {},
+  );
+});
+
+// เพิ่มฟังก์ชันสำหรับ refresh client list
+Future<void> refreshClients(WidgetRef ref) async {
+  ref.invalidate(clientProvider); // Invalidate the main client provider
+}
 
 class ClientScreen extends ConsumerStatefulWidget {
   const ClientScreen({super.key});
@@ -34,7 +130,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
   }
 
   void _onSearchChanged() {
-    ref.read(companySearchProvider.notifier).state = _searchController.text;
+    ref.read(clientSearchProvider.notifier).state = _searchController.text; // ใช้ clientSearchProvider
     setState(() {
       _showSearchOptions =
           _searchFocusNode.hasFocus && _searchController.text.isNotEmpty;
@@ -51,7 +147,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final companiesAsync = ref.watch(clientCompaniesProvider);
+    final clientsAsync = ref.watch(filteredClientsProvider); // ใช้ filteredClientsProvider
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -64,16 +160,16 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () async => refreshCompanies(ref),
-                child: companiesAsync.when(
+                onRefresh: () async => refreshClients(ref), // ใช้ refreshClients
+                child: clientsAsync.when(
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(child: Text('Error: $error')),
-                  data: (companies) {
-                    if (companies.isEmpty && !_showSearchOptions) {
-                      return const Center(child: Text('No companies found.'));
+                  data: (clients) {
+                    if (clients.isEmpty && !_showSearchOptions) {
+                      return const Center(child: Text('No clients found.'));
                     }
-                    return _buildCompanyList();
+                    return _buildClientList(); // เปลี่ยนเป็น _buildClientList
                   },
                 ),
               ),
@@ -84,12 +180,9 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
     );
   }
 
-
   Widget _buildHeader() {
+    final allClientAsync = ref.watch(clientProvider); // ใช้ clientProvider
 
-    final allClientAsync = ref.watch(clientProvider);
-
-    // สร้างข้อความจำนวนจากสถานะของ AsyncValue
     final countText = allClientAsync.when(
       data: (clients) => '${clients.length} Entry',
       loading: () => 'Loading...',
@@ -125,15 +218,20 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
               ),
               const SizedBox(height: 2),
               Text(
-                countText, // แสดงจำนวนที่ได้จาก provider
+                countText,
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateClientScreen()),
+              );
+            },
             child: const Text(
-              '',
+              'Add',
               style: TextStyle(
                 color: Colors.blue,
                 fontWeight: FontWeight.normal,
@@ -145,7 +243,6 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
       ),
     );
   }
-  // --- สิ้นสุดส่วนที่แก้ไข ---
 
   Widget _buildSearchBar() {
     return Padding(
@@ -171,9 +268,11 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
 
   Widget _buildSearchOptions() {
     final options = {
-      'name:': 'company',
-      'status:': 'status',
-      'client:': 'name',
+      'name:': 'client name',
+      'status:': 'status (active/inactive)',
+      'phone:': 'phone number',
+      'address:': 'client address',
+      'product:': 'product name',
     };
 
     return Container(
@@ -224,19 +323,23 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
     );
   }
 
-  Widget _buildCompanyList() {
+  Widget _buildClientList() {
     if (_showSearchOptions) {
-      return Container();
+      return Container(); // ไม่แสดงรายการ Client เมื่อ search options เปิดอยู่
     }
     final sections = ref.watch(clientSectionsProvider);
     final sectionKeys = sections.keys.toList()..sort();
+
+    if (sectionKeys.isEmpty) {
+      return const Center(child: Text('No clients found.'));
+    }
 
     return ListView.builder(
       padding: EdgeInsets.zero,
       itemCount: sectionKeys.length,
       itemBuilder: (context, index) {
         final sectionKey = sectionKeys[index];
-        final sectionCompanies = sections[sectionKey]!;
+        final sectionClients = sections[sectionKey]!;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,10 +360,10 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
               padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: sectionCompanies.length,
+              itemCount: sectionClients.length,
               itemBuilder: (context, itemIndex) {
-                final company = sectionCompanies[itemIndex];
-                return _buildCompanyItem(company);
+                final client = sectionClients[itemIndex];
+                return _buildClientItem(client);
               },
             ),
           ],
@@ -269,7 +372,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
     );
   }
 
-  Widget _buildCompanyItem(Client client) {
+  Widget _buildClientItem(Client client) {
     return Column(
       children: [
         Padding(
@@ -284,89 +387,102 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
                     Row(
                       children: [
                         Text(
-                          client.firstName.toString() +
-                              ' ' +
-                              client.lastName.toString(),
+                          '${client.firstName ?? ''} ${client.lastName ?? ''}',
                           style: const TextStyle(fontSize: 17),
                         ),
                         const SizedBox(width: 8),
-                        _buildStatusTag(client.isActive as bool),
+                        _buildStatusTag(client.isActive ?? false), // Handle null with default false
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2.0),
-                          child: Icon(
-                            Icons.phone,
-                            color: Colors.grey.shade600,
-                            size: 20,
-                          ),
+                    // Phone
+                    if (client.phone != null && client.phone!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2.0),
+                              child: Icon(
+                                Icons.phone,
+                                color: Colors.grey.shade600,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                client.phone.toString(),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade600,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            client.phone.toString(),
-                            style: TextStyle(
-                              fontSize: 14,
+                      ),
+                    // Address
+                    if (client.clientAddresses?.isNotEmpty == true &&
+                        client.clientAddresses!.first.address != null &&
+                        client.clientAddresses!.first.address!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2.0),
+                              child: Icon(
+                                Icons.location_on,
+                                color: Colors.grey.shade600,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                client.clientAddresses!.first.address!,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade600,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // Product
+                    if (client.products?.isNotEmpty == true &&
+                        client.products!.first.productName != null &&
+                        client.products!.first.productName!.isNotEmpty)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: Icon(
+                              Icons.production_quantity_limits,
                               color: Colors.grey.shade600,
-                              height: 1.4,
+                              size: 20,
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2.0),
-                          child: Icon(
-                            Icons.location_on,
-                            color: Colors.grey.shade600,
-                            size: 20,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            client.clientAddresses?.isNotEmpty == true
-                                ? client.clientAddresses!.first.address ??
-                                      "ไม่มีที่อยู่"
-                                : "ไม่มีที่อยู่",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                              height: 1.4,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              client.products!.first.productName!,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                                height: 1.4,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2.0),
-                          child: Icon(
-                            Icons.production_quantity_limits,
-                            color: Colors.grey.shade600,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            client.products?.isNotEmpty == true
-                                ? client.products!.first.productName ??
-                                      "ไม่มีสินค้า"
-                                : "ไม่มีสินค้า",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -382,7 +498,6 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
             ],
           ),
         ),
-
         const Divider(
           height: 1,
           thickness: 1,
