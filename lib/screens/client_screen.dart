@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/screens/create_client_screen.dart';
@@ -20,22 +21,19 @@ final filteredClientsProvider = Provider<AsyncValue<List<Client>>>((ref) {
       }
       final filteredList = clients.where((client) {
         // ตรวจสอบ firstName, lastName, phone, address, product name
-        final fullName =
-            '${client.firstName ?? ''} ${client.lastName ?? ''}'.toLowerCase();
+        final fullName = '${client.firstName ?? ''} ${client.lastName ?? ''}'.toLowerCase();
         final nameMatch = fullName.contains(searchQuery);
 
         final phoneMatch = client.phone?.toLowerCase().contains(searchQuery) ?? false;
 
         bool addressMatch = false;
         if (client.clientAddresses != null) {
-          addressMatch = client.clientAddresses!.any((address) =>
-              address.address?.toLowerCase().contains(searchQuery) ?? false);
+          addressMatch = client.clientAddresses!.any((address) => address.address?.toLowerCase().contains(searchQuery) ?? false);
         }
 
         bool productMatch = false;
         if (client.products != null) {
-          productMatch = client.products!.any((product) =>
-              product.productName?.toLowerCase().contains(searchQuery) ?? false);
+          productMatch = client.products!.any((product) => product.productName?.toLowerCase().contains(searchQuery) ?? false);
         }
 
         // เพิ่มการค้นหาแบบเฉพาะเจาะจง
@@ -57,14 +55,10 @@ final filteredClientsProvider = Provider<AsyncValue<List<Client>>>((ref) {
           return client.phone?.toLowerCase().contains(phoneQuery.toLowerCase()) ?? false;
         } else if (searchQuery.startsWith('address:')) {
           final addressQuery = searchQuery.substring(8).trim();
-          return client.clientAddresses?.any((addr) =>
-                  addr.address?.toLowerCase().contains(addressQuery.toLowerCase()) ?? false) ??
-              false;
+          return client.clientAddresses?.any((addr) => addr.address?.toLowerCase().contains(addressQuery.toLowerCase()) ?? false) ?? false;
         } else if (searchQuery.startsWith('product:')) {
           final productQuery = searchQuery.substring(8).trim();
-          return client.products?.any((prod) =>
-                  prod.productName?.toLowerCase().contains(productQuery.toLowerCase()) ?? false) ??
-              false;
+          return client.products?.any((prod) => prod.productName?.toLowerCase().contains(productQuery.toLowerCase()) ?? false) ?? false;
         }
 
         return nameMatch || phoneMatch || addressMatch || productMatch;
@@ -132,8 +126,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
   void _onSearchChanged() {
     ref.read(clientSearchProvider.notifier).state = _searchController.text; // ใช้ clientSearchProvider
     setState(() {
-      _showSearchOptions =
-          _searchFocusNode.hasFocus && _searchController.text.isNotEmpty;
+      _showSearchOptions = _searchFocusNode.hasFocus && _searchController.text.isNotEmpty;
     });
   }
 
@@ -162,12 +155,11 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
               child: RefreshIndicator(
                 onRefresh: () async => refreshClients(ref), // ใช้ refreshClients
                 child: clientsAsync.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(child: Text('Error: $error')),
                   data: (clients) {
                     if (clients.isEmpty && !_showSearchOptions) {
-                      return const Center(child: Text('No clients found.'));
+                      return const Center(child: AppText(label: 'No clients found.'));
                     }
                     return _buildClientList(); // เปลี่ยนเป็น _buildClientList
                   },
@@ -183,11 +175,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
   Widget _buildHeader() {
     final allClientAsync = ref.watch(clientProvider); // ใช้ clientProvider
 
-    final countText = allClientAsync.when(
-      data: (clients) => '${clients.length} Entry',
-      loading: () => 'Loading...',
-      error: (err, stack) => 'Error',
-    );
+    final countText = allClientAsync.when(data: (clients) => '${clients.length} Entry', loading: () => 'Loading...', error: (err, stack) => 'Error');
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 8, 16, 8),
@@ -196,48 +184,22 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
         children: [
           TextButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CreateClientScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => CreateClientScreen()));
             },
-            child: const Text(
-              'Create',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.normal,
-                fontSize: 17,
-              ),
-            ),
+            child: const AppText(label: 'Create', fontSize: 17, fontWeight: FontWeight.normal, textColor: Colors.blue),
           ),
           Column(
             children: [
-              const Text(
-                'Client',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-              ),
+              const AppText(label: 'Client', fontSize: 17, fontWeight: FontWeight.bold),
               const SizedBox(height: 2),
-              Text(
-                countText,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              AppText(label: countText, fontSize: 12, textColor: Colors.grey),
             ],
           ),
           TextButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CreateClientScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => CreateClientScreen()));
             },
-            child: const Text(
-              'Add',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.normal,
-                fontSize: 17,
-              ),
-            ),
+            child: const AppText(label: 'Add', fontSize: 17, fontWeight: FontWeight.normal, textColor: Colors.blue),
           ),
         ],
       ),
@@ -256,10 +218,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
           prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
           filled: true,
           fillColor: const Color(0xFFF2F2F7),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide.none,
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
           contentPadding: const EdgeInsets.symmetric(vertical: 0),
         ),
       ),
@@ -267,13 +226,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
   }
 
   Widget _buildSearchOptions() {
-    final options = {
-      'name:': 'client name',
-      'status:': 'status (active/inactive)',
-      'phone:': 'phone number',
-      'address:': 'client address',
-      'product:': 'product name',
-    };
+    final options = {'name:': 'client name', 'status:': 'status (active/inactive)', 'phone:': 'phone number', 'address:': 'client address', 'product:': 'product name'};
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -293,19 +246,13 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
             onTap: () {
               setState(() {
                 _searchController.text = '$key ';
-                _searchController.selection = TextSelection.fromPosition(
-                  TextPosition(offset: _searchController.text.length),
-                );
+                _searchController.selection = TextSelection.fromPosition(TextPosition(offset: _searchController.text.length));
                 _showSearchOptions = false;
               });
             },
             title: RichText(
               text: TextSpan(
-                style: const TextStyle(
-                  fontSize: 17,
-                  color: Colors.black,
-                  fontFamily: 'System',
-                ),
+                style: const TextStyle(fontSize: 17, color: Colors.black, fontFamily: 'System'),
                 children: <TextSpan>[
                   TextSpan(
                     text: key,
@@ -317,8 +264,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
             ),
           );
         },
-        separatorBuilder: (context, index) =>
-            const Divider(height: 1, thickness: 1, indent: 16),
+        separatorBuilder: (context, index) => const Divider(height: 1, thickness: 1, indent: 16),
       ),
     );
   }
@@ -331,7 +277,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
     final sectionKeys = sections.keys.toList()..sort();
 
     if (sectionKeys.isEmpty) {
-      return const Center(child: Text('No clients found.'));
+      return const Center(child: AppText(label: 'No clients found.'));
     }
 
     return ListView.builder(
@@ -346,14 +292,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                sectionKey,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF6E6E73),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              child: AppText(label: sectionKey, textColor: Color(0xFF6E6E73), fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
             ListView.builder(
@@ -386,10 +325,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          '${client.firstName ?? ''} ${client.lastName ?? ''}',
-                          style: const TextStyle(fontSize: 17),
-                        ),
+                        AppText(label: '${client.firstName ?? ''} ${client.lastName ?? ''}', fontSize: 17),
                         const SizedBox(width: 8),
                         _buildStatusTag(client.isActive ?? false), // Handle null with default false
                       ],
@@ -404,30 +340,17 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.only(top: 2.0),
-                              child: Icon(
-                                Icons.phone,
-                                color: Colors.grey.shade600,
-                                size: 20,
-                              ),
+                              child: Icon(Icons.phone, color: Colors.grey.shade600, size: 20),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(
-                                client.phone.toString(),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade600,
-                                  height: 1.4,
-                                ),
-                              ),
+                              child: AppText(label: client.phone.toString(), fontSize: 14, textColor: Colors.grey.shade600),
                             ),
                           ],
                         ),
                       ),
                     // Address
-                    if (client.clientAddresses?.isNotEmpty == true &&
-                        client.clientAddresses!.first.address != null &&
-                        client.clientAddresses!.first.address!.isNotEmpty)
+                    if (client.clientAddresses?.isNotEmpty == true && client.clientAddresses!.first.address != null && client.clientAddresses!.first.address!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: Row(
@@ -435,51 +358,27 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.only(top: 2.0),
-                              child: Icon(
-                                Icons.location_on,
-                                color: Colors.grey.shade600,
-                                size: 20,
-                              ),
+                              child: Icon(Icons.location_on, color: Colors.grey.shade600, size: 20),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(
-                                client.clientAddresses!.first.address!,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade600,
-                                  height: 1.4,
-                                ),
-                              ),
+                              child: AppText(label: client.clientAddresses!.first.address!, fontSize: 14, textColor: Colors.grey.shade600),
                             ),
                           ],
                         ),
                       ),
                     // Product
-                    if (client.products?.isNotEmpty == true &&
-                        client.products!.first.productName != null &&
-                        client.products!.first.productName!.isNotEmpty)
+                    if (client.products?.isNotEmpty == true && client.products!.first.productName != null && client.products!.first.productName!.isNotEmpty)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(top: 2.0),
-                            child: Icon(
-                              Icons.production_quantity_limits,
-                              color: Colors.grey.shade600,
-                              size: 20,
-                            ),
+                            child: Icon(Icons.production_quantity_limits, color: Colors.grey.shade600, size: 20),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(
-                              client.products!.first.productName!,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                                height: 1.4,
-                              ),
-                            ),
+                            child: AppText(label: client.products!.first.productName!, fontSize: 14, textColor: Colors.grey.shade600),
                           ),
                         ],
                       ),
@@ -489,21 +388,12 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey.shade300,
-                ),
+                child: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade300),
               ),
             ],
           ),
         ),
-        const Divider(
-          height: 1,
-          thickness: 1,
-          indent: 16,
-          color: Color(0xFFEFEFEF),
-        ),
+        const Divider(height: 1, thickness: 1, indent: 16, color: Color(0xFFEFEFEF)),
       ],
     );
   }
@@ -511,18 +401,8 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
   Widget _buildStatusTag(bool isActive) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFD7F5E4) : const Color(0xFFF1F1F1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        isActive ? 'Active' : 'Inactive',
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: isActive ? const Color(0xFF2B8C43) : const Color(0xFF6A6A6A),
-        ),
-      ),
+      decoration: BoxDecoration(color: isActive ? const Color(0xFFD7F5E4) : const Color(0xFFF1F1F1), borderRadius: BorderRadius.circular(12)),
+      child: AppText(label: isActive ? 'Active' : 'Inactive', fontSize: 12, fontWeight: FontWeight.w500, textColor: isActive ? const Color(0xFF2B8C43) : const Color(0xFF6A6A6A)),
     );
   }
 }
