@@ -111,38 +111,25 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     IconButton(
                       icon: const Icon(Icons.chevron_left),
                       onPressed: null,
-                      style: ButtonStyle(
-                        iconColor: WidgetStateProperty.all(colorPrimary),
-                      ),
+                      style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary)),
                     ),
                     AppText(label: 'Back', textColor: colorPrimary),
                   ],
                 ),
               ),
-              title: const AppText(
-                label: 'Create Client',
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-              ),
+              title: const AppText(label: 'Create Client', fontSize: 17, fontWeight: FontWeight.w600),
               actions: [
                 TextButton(
-                  
                   onPressed: () {
                     String? error;
                     error = Validator.required(txtFirstName.text);
                     if (error != null) {
-                      AppDialogs.error(
-                        context,
-                        message: "$error First Name",
-                      );
+                      AppDialogs.error(context, message: "$error First Name");
                       return;
                     }
                     error = Validator.required(txtLastName.text);
                     if (error != null) {
-                      AppDialogs.error(
-                        context,
-                        message: "$error Last Name",
-                      );
+                      AppDialogs.error(context, message: "$error Last Name");
                       return;
                     }
 
@@ -160,10 +147,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
                     error = Validator.required(selectSalesTerritorys);
                     if (error != null) {
-                      AppDialogs.error(
-                        context,
-                        message: "กรุณาเลือก Territory",
-                      );
+                      AppDialogs.error(context, message: "กรุณาเลือก Territory");
                       return;
                     }
 
@@ -196,10 +180,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     }
 
                     if (selectedSubdistrict == null) {
-                      AppDialogs.error(
-                        context,
-                        message: "กรุณาเลือก SubDistrict",
-                      );
+                      AppDialogs.error(context, message: "กรุณาเลือก SubDistrict");
                       return;
                     }
 
@@ -224,12 +205,8 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       clientStatusID: selectClientStatus,
                       clientLevelID: selectClientLevel,
                       noted: "xxxxxxxxxxxxxxx",
-                      availableTimeStart: DateFormat(
-                        'HH:mm',
-                      ).format(dateTimeFrom!), //"09:00",
-                      availableTimeEnd: DateFormat(
-                        'HH:mm',
-                      ).format(dateTimeTo!), //"16:00",
+                      availableTimeStart: DateFormat('HH:mm').format(dateTimeFrom!), //"09:00",
+                      availableTimeEnd: DateFormat('HH:mm').format(dateTimeTo!), //"16:00",
                       isActive: true,
                       createdBy: authState.userID,
                       modifiedBy: authState.userID,
@@ -239,9 +216,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                           countryID: 1,
                           provinceID: int.parse(selectedProvince!), // 1,
                           districtID: int.parse(selectedDistrict!), //13,
-                          subDistrictID: int.parse(
-                            selectedSubdistrict!,
-                          ), // 2583,
+                          subDistrictID: int.parse(selectedSubdistrict!), // 2583,
                           latitude: null,
                           longitude: null,
                           isPrimary: true,
@@ -251,9 +226,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       clientID: "",
                       createdDate: DateTime.now().toIso8601String(),
                       modifiedDate: DateTime.now().toIso8601String(),
-                      clientProducts: products
-                          .map((f) => f.productID!)
-                          .toList(),
+                      clientProducts: products.map((f) => f.productID!).toList(),
                       clientCompanies: companys
                           .map(
                             (c) => ClientCompanies(
@@ -263,8 +236,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                               availableTimeStart: null,
                               availableTimeEnd: null,
                               createdBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
-                              modifiedBy:
-                                  "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
+                              modifiedBy: "9E0DC5F7-1FD6-41F3-9137-14711FC510F6",
                             ),
                           )
                           .toList(),
@@ -324,7 +296,6 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     value: AppTextFormField(controller: txtFirstName),
                     isShowBorderBottom: true,
                     isHideIcon: true,
-                    
                   ),
                   infoTile(
                     label: 'Last Name',
@@ -335,24 +306,19 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   infoTile(
                     label: 'Status',
                     value: AppText(label: selectClientStatusName ?? ''),
-                    onTap: () =>
-                        openStatusSheet(context, selectClientStatusName ?? ""),
+                    onTap: () => openStatusSheet(context, selectClientStatusName ?? ""),
                     isShowBorderBottom: true,
                   ),
                   infoTile(
                     label: 'Level',
                     value: AppText(label: selectClientLevelName ?? ''),
-                    onTap: () =>
-                        openLevelSheet(context, selectClientLevelName ?? ""),
+                    onTap: () => openLevelSheet(context, selectClientLevelName ?? ""),
                     isShowBorderBottom: true,
                   ),
                   infoTile(
                     label: 'Territory',
                     value: AppText(label: selectSalesTerritorysName ?? ''),
-                    onTap: () => openTerritorySheet(
-                      context,
-                      selectSalesTerritorysName ?? '',
-                    ),
+                    onTap: () => openTerritorySheet(context, selectSalesTerritorysName ?? ''),
                     isShowBorderBottom: true,
                   ),
                 ],
@@ -367,13 +333,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                         ? () => openTimePicker(
                             datetime: dateTimeFrom!.toIso8601String(),
                             onSelected: (value) => setState(() {
-                              dateTimeFrom = DateTime(
-                                dateTimeFrom!.year,
-                                dateTimeFrom!.month,
-                                dateTimeFrom!.day,
-                                value.hour,
-                                value.minute,
-                              );
+                              dateTimeFrom = DateTime(dateTimeFrom!.year, dateTimeFrom!.month, dateTimeFrom!.day, value.hour, value.minute);
                             }),
                           )
                         : null,
@@ -381,18 +341,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   datetime(
                     label: 'Ends',
                     datetime: dateTimeTo!.toIso8601String(),
-              
+
                     timeOnTap: isCanEdit
                         ? () => openTimePicker(
                             datetime: dateTimeTo!.toIso8601String(),
                             onSelected: (value) => setState(() {
-                              dateTimeTo = DateTime(
-                                dateTimeTo!.year,
-                                dateTimeTo!.month,
-                                dateTimeTo!.day,
-                                value.hour,
-                                value.minute,
-                              );
+                              dateTimeTo = DateTime(dateTimeTo!.year, dateTimeTo!.month, dateTimeTo!.day, value.hour, value.minute);
                             }),
                           )
                         : null,
@@ -430,23 +384,20 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   }
 
   Widget addressWidget() {
-    Widget addressField({
-      required Widget child,
-      bool hasRightBorder = false,
-      bool hasBottomBorder = true,
-    }) {
+    Widget addressField({required Widget child, bool hasRightBorder = false, bool hasBottomBorder = true}) {
       return Container(
         height: 44,
         decoration: BoxDecoration(
-          border: Border(
-            right: hasRightBorder ? borderSide : BorderSide.none,
-            bottom: hasBottomBorder ? borderSide : BorderSide.none,
-          ),
+          border: Border(right: hasRightBorder ? borderSide : BorderSide.none, bottom: hasBottomBorder ? borderSide : BorderSide.none),
         ),
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 16),
         child: child,
       );
+    }
+
+    Widget textHint({required String label}) {
+      return AppText(label: label, textColor: Colors.grey.shade400);
     }
 
     return Container(
@@ -472,10 +423,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               const SizedBox(
                 width: 100,
                 child: Center(
-                  child: AppText(
-                    label: 'address',
-                    textColor: Color(0xFF007AFF),
-                  ),
+                  child: AppText(label: 'address', textColor: Color(0xFF007AFF)),
                 ),
               ),
               Expanded(
@@ -484,7 +432,26 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     addressField(
-                      child: AppTextFormField(controller: txtAddress),
+                      child: AppTextFormField(controller: txtAddress, hintText: 'ที่อยู่'),
+                    ),
+                    addressField(
+                      hasRightBorder: false,
+                      child: infoTileDropdown(
+                        label: selectedSubdistrictName ?? '',
+                        value: selectedSubdistrictName == null ? textHint(label: 'ตำบล') : AppText(label: selectedSubdistrictName ?? ''),
+                        onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
+                        // isShowBorderBottom: true,
+                        isHideIcon: true,
+                      ),
+                    ),
+                    addressField(
+                      child: infoTileDropdown(
+                        label: selectedDistrictName ?? '',
+                        value: selectedDistrictName == null ? textHint(label: 'อําเภอ') : AppText(label: selectedDistrictName ?? ''),
+                        onTap: () => openDistrictSheet(context, selectedDistrictName ?? ""),
+                        // isShowBorderBottom: true,
+                        isHideIcon: true,
+                      ),
                     ),
                     Row(
                       children: [
@@ -493,12 +460,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                             hasRightBorder: true,
                             child: infoTileDropdown(
                               label: selectedProvinceName ?? '',
-                              value: AppText(label: selectedProvinceName ?? ''),
-                              onTap: () => openProvinceSheet(
-                                context,
-                                selectedProvinceName ?? "",
-                              ),
-                              isShowBorderBottom: true,
+                              value: selectedProvinceName == null ? textHint(label: 'จังหวัด') : AppText(label: selectedProvinceName ?? ''),
+                              onTap: () => openProvinceSheet(context, selectedProvinceName ?? ""),
+                              // isShowBorderBottom: true,
                               isHideIcon: true,
                             ),
                           ),
@@ -508,37 +472,30 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                         ),
                       ],
                     ),
-                   
+
                     addressField(
                       child: infoTileDropdown(
                         label: selectedDistrictName ?? '',
-                        
+
                         value: AppText(label: selectedDistrictName ?? ''),
-                        onTap: () => openDistrictSheet(
-                          context,
-                          selectedDistrictName ?? "",
-                        ),
+                        onTap: () => openDistrictSheet(context, selectedDistrictName ?? ""),
                         isShowBorderBottom: true,
                         isHideIcon: true,
                       ),
                     ),
-                     addressField(
+                    addressField(
                       hasRightBorder: false,
                       child: infoTileDropdown(
                         label: selectedSubdistrictName ?? '',
                         value: AppText(label: selectedSubdistrictName ?? ''),
-                        onTap: () => openSubDistrictSheet(
-                          context,
-                          selectedSubdistrictName ?? "",
-                        ),
+                        onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
                         isShowBorderBottom: true,
                         isHideIcon: true,
                       ),
                     ),
 
-                    
                     addressField(
-                      child: AppText(label: postCode ?? ""),
+                      child: postCode == null ? textHint(label: 'รหัสไปรษณีย์') : AppText(label: postCode ?? ""),
                       hasBottomBorder: false,
                     ),
                   ],
@@ -551,11 +508,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  void openTimePicker({
-    required String datetime,
-    required Function(TimeOfDay) onSelected,
-    String? limitFirstDate,
-  }) async {
+  void openTimePicker({required String datetime, required Function(TimeOfDay) onSelected, String? limitFirstDate}) async {
     final picked = await showCupertinoTimeDialog(initial: datetime, context);
 
     if (picked != null) {
@@ -568,11 +521,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: AppText(
-                label: 'Please select a time after the appointment start time.',
-                textColor: Colors.white,
-                maxLines: 2,
-              ),
+              content: AppText(label: 'Please select a time after the appointment start time.', textColor: Colors.white, maxLines: 2),
             ),
           );
           return;
@@ -583,18 +532,8 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     }
   }
 
-  void openDatePicker({
-    required String datetime,
-    required Function(DateTime) onSelected,
-    String? limitFirstDate,
-  }) async {
-    final picked = await DatePickerHelper.pickDate(
-      context,
-      initialDate: DateTime.parse(datetime),
-      limitFirstDate: limitFirstDate == null
-          ? null
-          : DateTime.parse(limitFirstDate),
-    );
+  void openDatePicker({required String datetime, required Function(DateTime) onSelected, String? limitFirstDate}) async {
+    final picked = await DatePickerHelper.pickDate(context, initialDate: DateTime.parse(datetime), limitFirstDate: limitFirstDate == null ? null : DateTime.parse(limitFirstDate));
     if (picked != null) onSelected(picked);
   }
 
@@ -602,13 +541,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  Widget datetime({
-    required String label,
-    required String datetime,
-    bool isShowBorderBottom = false,
-    VoidCallback? dateOnTap,
-    timeOnTap,
-  }) {
+  Widget datetime({required String label, required String datetime, bool isShowBorderBottom = false, VoidCallback? dateOnTap, timeOnTap}) {
     final dt = DateTime.parse(datetime);
 
     final time = DateFormat("h:mm a").format(dt);
@@ -621,10 +554,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
             height: 35,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: Color.fromRGBO(118, 118, 128, 0.12),
-              borderRadius: BorderRadius.all(Radius.circular(7)),
-            ),
+            decoration: const BoxDecoration(color: Color.fromRGBO(118, 118, 128, 0.12), borderRadius: BorderRadius.all(Radius.circular(7))),
             child: AppText(label: value, fontSize: 17),
           ),
         ),
@@ -638,10 +568,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           spacing: 4,
-          children: [
-        
-            datetimeField(value: time, onTap: timeOnTap),
-          ],
+          children: [datetimeField(value: time, onTap: timeOnTap)],
         ),
       ),
       isShowBorderMiddle: false,
@@ -650,10 +577,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  Widget companyTile({
-    required List<Company> companys,
-    bool isShowBorderBottom = false,
-  }) {
+  Widget companyTile({required List<Company> companys, bool isShowBorderBottom = false}) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -677,10 +601,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               const SizedBox(
                 width: 100,
                 child: Center(
-                  child: AppText(
-                    label: 'companys',
-                    textColor: Color(0xFF007AFF),
-                  ),
+                  child: AppText(label: 'companys', textColor: Color(0xFF007AFF)),
                 ),
               ),
               Expanded(
@@ -699,10 +620,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                         return Container(
                           decoration: const BoxDecoration(
                             border: Border(
-                              bottom: BorderSide(
-                                color: colorGrey,
-                                width: borderWidth,
-                              ),
+                              bottom: BorderSide(color: colorGrey, width: borderWidth),
                             ),
                           ),
                           height: 44,
@@ -712,26 +630,15 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                                 onTap: () => removeCompany(company, companys),
                                 child: const Padding(
                                   padding: EdgeInsets.only(left: 16),
-                                  child: Icon(
-                                    Icons.remove_circle,
-                                    color: Color(0xFFFF382B),
-                                    size: 24,
-                                  ),
+                                  child: Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 24),
                                 ),
                               ),
                               Expanded(
                                 child: GestureDetector(
-                                  onTap: () => openCompanySheet(
-                                    context: context,
-                                    companyID: company.companyID ?? "",
-                                    isUpdate: true,
-                                    companys: companys,
-                                  ),
+                                  onTap: () => openCompanySheet(context: context, companyID: company.companyID ?? "", isUpdate: true, companys: companys),
                                   child: Padding(
                                     padding: const EdgeInsets.only(left: 16),
-                                    child: AppText(
-                                      label: company.companyName ?? "",
-                                    ),
+                                    child: AppText(label: company.companyName ?? ""),
                                   ),
                                 ),
                               ),
@@ -741,21 +648,13 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       },
                     ),
                     GestureDetector(
-                      onTap: () => openCompanySheet(
-                        context: context,
-                        companyID: "",
-                        companys: companys,
-                      ),
+                      onTap: () => openCompanySheet(context: context, companyID: "", companys: companys),
                       child: const SizedBox(
                         height: 44,
                         child: Row(
                           children: [
                             SizedBox(width: 16),
-                            Icon(
-                              Icons.add_circle,
-                              color: Color(0xFF31C859),
-                              size: 24,
-                            ),
+                            Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
                             SizedBox(width: 16),
                             AppText(label: 'add company'),
                           ],
@@ -772,10 +671,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  Widget productTile({
-    required List<Product> products,
-    bool isShowBorderBottom = false,
-  }) {
+  Widget productTile({required List<Product> products, bool isShowBorderBottom = false}) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -799,10 +695,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               const SizedBox(
                 width: 100,
                 child: Center(
-                  child: AppText(
-                    label: 'products',
-                    textColor: Color(0xFF007AFF),
-                  ),
+                  child: AppText(label: 'products', textColor: Color(0xFF007AFF)),
                 ),
               ),
               Expanded(
@@ -821,10 +714,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                         return Container(
                           decoration: const BoxDecoration(
                             border: Border(
-                              bottom: BorderSide(
-                                color: colorGrey,
-                                width: borderWidth,
-                              ),
+                              bottom: BorderSide(color: colorGrey, width: borderWidth),
                             ),
                           ),
                           height: 44,
@@ -834,26 +724,15 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                                 onTap: () => removeProduct(product, products),
                                 child: const Padding(
                                   padding: EdgeInsets.only(left: 16),
-                                  child: Icon(
-                                    Icons.remove_circle,
-                                    color: Color(0xFFFF382B),
-                                    size: 24,
-                                  ),
+                                  child: Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 24),
                                 ),
                               ),
                               Expanded(
                                 child: GestureDetector(
-                                  onTap: () => openProdctSheet(
-                                    context: context,
-                                    productID: product.productID ?? "",
-                                    isUpdate: true,
-                                    products: products,
-                                  ),
+                                  onTap: () => openProdctSheet(context: context, productID: product.productID ?? "", isUpdate: true, products: products),
                                   child: Padding(
                                     padding: const EdgeInsets.only(left: 16),
-                                    child: AppText(
-                                      label: product.productName ?? "",
-                                    ),
+                                    child: AppText(label: product.productName ?? ""),
                                   ),
                                 ),
                               ),
@@ -863,21 +742,13 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       },
                     ),
                     GestureDetector(
-                      onTap: () => openProdctSheet(
-                        context: context,
-                        productID: "",
-                        products: products,
-                      ),
+                      onTap: () => openProdctSheet(context: context, productID: "", products: products),
                       child: const SizedBox(
                         height: 44,
                         child: Row(
                           children: [
                             SizedBox(width: 16),
-                            Icon(
-                              Icons.add_circle,
-                              color: Color(0xFF31C859),
-                              size: 24,
-                            ),
+                            Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
                             SizedBox(width: 16),
                             AppText(label: 'add product'),
                           ],
@@ -906,12 +777,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     });
   }
 
-  Future<void> openCompanySheet({
-    required BuildContext context,
-    required String companyID,
-    bool isUpdate = false,
-    required List<Company>? companys,
-  }) async {
+  Future<void> openCompanySheet({required BuildContext context, required String companyID, bool isUpdate = false, required List<Company>? companys}) async {
     final selected = await CupertinoOptionsPicker.show<Company>(
       context: context,
       title: 'Company',
@@ -934,12 +800,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     }
   }
 
-  Future<void> openProdctSheet({
-    required BuildContext context,
-    required String productID,
-    bool isUpdate = false,
-    required List<Product>? products,
-  }) async {
+  Future<void> openProdctSheet({required BuildContext context, required String productID, bool isUpdate = false, required List<Product>? products}) async {
     final selected = await CupertinoOptionsPicker.show<Product>(
       context: context,
       title: 'Product',
@@ -962,26 +823,14 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     }
   }
 
-  Widget infoTile({
-    required String label,
-    required Widget value,
-    VoidCallback? onTap,
-    double height = 44,
-    bool isShowBorderMiddle = true,
-    bool isShowBorderBottom = false,
-    bool isHideIcon = false,
-  
-  }) {
+  Widget infoTile({required String label, required Widget value, VoidCallback? onTap, double height = 44, bool isShowBorderMiddle = true, bool isShowBorderBottom = false, bool isHideIcon = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: height,
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
-          border: Border(
-            top: borderSide,
-            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
-          ),
+          border: Border(top: borderSide, bottom: isShowBorderBottom ? borderSide : BorderSide.none),
         ),
         child: Row(
           children: [
@@ -991,9 +840,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 border: BorderDirectional(
-                  end: isShowBorderMiddle
-                      ? const BorderSide(color: colorGrey, width: borderWidth)
-                      : BorderSide.none,
+                  end: isShowBorderMiddle ? const BorderSide(color: colorGrey, width: borderWidth) : BorderSide.none,
                 ),
               ),
               child: AppText(label: label, textColor: const Color(0xFF007AFF)),
@@ -1002,10 +849,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
             Expanded(
               child: Align(alignment: Alignment.centerLeft, child: value),
             ),
-            if (!isHideIcon) ...[
-              Icon(Icons.chevron_right, size: 24, color: colorGrey),
-              const SizedBox(width: 8),
-            ],
+            if (!isHideIcon) ...[Icon(Icons.chevron_right, size: 24, color: colorGrey), const SizedBox(width: 8)],
           ],
         ),
       ),
@@ -1027,30 +871,21 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
         height: height,
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
-          border: Border(
-            top: borderSide,
-            bottom: isShowBorderBottom ? borderSide : BorderSide.none,
-          ),
+          border: Border(top: borderSide, bottom: isShowBorderBottom ? borderSide : BorderSide.none),
         ),
         child: Row(
           children: [
             Expanded(
               child: Align(alignment: Alignment.centerLeft, child: value),
             ),
-            if (!isHideIcon) ...[
-              Icon(Icons.chevron_right, size: 24, color: colorGrey),
-              const SizedBox(width: 8),
-            ],
+            if (!isHideIcon) ...[Icon(Icons.chevron_right, size: 24, color: colorGrey), const SizedBox(width: 8)],
           ],
         ),
       ),
     );
   }
 
-  Future<void> openTerritorySheet(
-    BuildContext context,
-    String territoryID,
-  ) async {
+  Future<void> openTerritorySheet(BuildContext context, String territoryID) async {
     final selected = await CupertinoOptionsPicker.show<Territory>(
       context: context,
       title: 'Territory',
@@ -1101,10 +936,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     });
   }
 
-  Future<void> openSubDistrictSheet(
-    BuildContext context,
-    String subdistrictID,
-  ) async {
+  Future<void> openSubDistrictSheet(BuildContext context, String subdistrictID) async {
     final selected = await CupertinoOptionsPicker.show<Subdistrict>(
       context: context,
       title: 'SubDistrict',
@@ -1112,6 +944,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       label: (p) => p.subDistrictName.toString(),
       initialKey: (p) => p.subDistrictID.toString(),
       initialValue: subdistrictID,
+      alertMsg: selectedDistrict == null ? "กรุณาเลือกข้อมูลอำเภอ" : null,
     );
 
     if (selected == null) return;
@@ -1123,10 +956,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     });
   }
 
-  Future<void> openDistrictSheet(
-    BuildContext context,
-    String subdistrictID,
-  ) async {
+  Future<void> openDistrictSheet(BuildContext context, String subdistrictID) async {
     final selected = await CupertinoOptionsPicker.show<District>(
       context: context,
       title: 'District',
@@ -1134,6 +964,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       label: (p) => p.districtName.toString(),
       initialKey: (p) => p.districtID.toString(),
       initialValue: subdistrictID,
+      alertMsg: selectedProvince == null ? "กรุณาเลือกข้อมูลจังหวัด" : null,
     );
 
     if (selected == null) return;
@@ -1146,10 +977,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     });
   }
 
-  Future<void> openProvinceSheet(
-    BuildContext context,
-    String subdistrictID,
-  ) async {
+  Future<void> openProvinceSheet(BuildContext context, String subdistrictID) async {
     final selected = await CupertinoOptionsPicker.show<Province>(
       context: context,
       title: 'Province',

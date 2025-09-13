@@ -11,6 +11,7 @@ class AppTextFormField extends StatelessWidget {
   final AutovalidateMode? autovalidateMode;
   final TextStyle? textStyle;
   final isDisabled;
+  final int? maxLength;
 
   const AppTextFormField({
     super.key,
@@ -24,9 +25,13 @@ class AppTextFormField extends StatelessWidget {
     this.autovalidateMode,
     this.textStyle,
     this.isDisabled = false,
+    this.maxLength,
   });
 
-  OutlineInputBorder _border(Color color) => OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: color, width: 1));
+  OutlineInputBorder _border(Color color) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: BorderSide(color: color, width: 1),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +44,7 @@ class AppTextFormField extends StatelessWidget {
       enabled: enabled,
       autovalidateMode: autovalidateMode,
       cursorColor: const Color(0xFF007AFF),
+      maxLength: maxLength,
       decoration: InputDecoration(
         isDense: true,
         border: InputBorder.none,

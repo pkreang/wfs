@@ -12,8 +12,7 @@ class AppTextFormField extends StatelessWidget {
   final AutovalidateMode? autovalidateMode;
   final TextStyle? textStyle;
   final isDisabled;
-
- 
+  final String? hintText;
 
   const AppTextFormField({
     super.key,
@@ -23,22 +22,22 @@ class AppTextFormField extends StatelessWidget {
     this.isValidate = false,
     this.validator,
     this.maxLines = 1,
-    
+
     this.enabled = true,
     this.autovalidateMode,
     this.textStyle,
     this.isDisabled = false,
-  
-    
-  
+    this.hintText,
   });
 
-  OutlineInputBorder _border(Color color) => OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: color, width: 1));
+  OutlineInputBorder _border(Color color) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: BorderSide(color: color, width: 1),
+  );
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      
       focusNode: isDisabled ? AlwaysDisabledFocusNode() : focusNode,
       controller: controller,
       onChanged: isDisabled ? null : onChanged,
@@ -48,6 +47,7 @@ class AppTextFormField extends StatelessWidget {
       autovalidateMode: autovalidateMode,
       cursorColor: const Color(0xFF007AFF),
       decoration: InputDecoration(
+        hintText: hintText,
         isDense: true,
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
@@ -55,7 +55,7 @@ class AppTextFormField extends StatelessWidget {
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
         disabledBorder: InputBorder.none,
-    
+        hintStyle: TextStyle(color: Colors.grey.shade400),
       ),
       style: textStyle ?? const TextStyle(fontSize: 14, height: 22 / 14),
     );
