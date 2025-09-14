@@ -61,6 +61,8 @@ class AppointmentScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+
+    
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -74,7 +76,6 @@ class AppointmentScreen extends ConsumerWidget {
             ],
           ),
         ),
-        // "+ Create" button on the left
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton.icon(

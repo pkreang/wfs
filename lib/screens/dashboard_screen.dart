@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:intl/intl.dart';
+import 'package:wfs/features/appointment/views/appointment_detail_page.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/models/appointment_summary_model.dart';
 import '../models/appointment_model.dart';
 import '../providers/appointment_provider.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
+
 
 final currentDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
@@ -49,7 +51,7 @@ class DashboardScreen extends ConsumerWidget {
 
                   return Column(
                     children: appointments.map((appointment) {
-                      return _buildAppointmentItem(appointment: appointment, showHeader: false);
+                      return _buildAppointmentItem(appointment: appointment, showHeader: false,context: context);
                     }).toList(),
                   );
                 },
@@ -65,20 +67,10 @@ class DashboardScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ปุ่มย้อนกลับ (ลดวัน)
-
-          // แสดงวันที่ปัจจุบัน
+       
           AppText(label: DateFormat('MMMM d').format(currentDate), fontSize: 18, fontWeight: FontWeight.bold),
-          // ปุ่มถัดไป (เพิ่มวัน)
-          IconButton(
-            icon: const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 20),
-            onPressed: () {
-              // อ่าน notifier และอัปเดต state (เพิ่ม 1 วัน)
-              ref.read(currentDateProvider.notifier).update((state) => state.add(const Duration(days: 1)));
-            },
-          ),
         ],
       ),
     );
@@ -151,7 +143,7 @@ class DashboardScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLegendItem(Colors.blue, "Total Completed", "${summary.completed}/${summary.total} tasks", "${completedRatio.toStringAsFixed(0)}%"),
+        _buildLegendItem(Colors.blue, "Completed", "${summary.completed}/${summary.total} tasks", "${completedRatio.toStringAsFixed(0)}%"),
         const SizedBox(height: 16),
         _buildLegendItem(Colors.red, "Pending", "${summary.pending}/${summary.total} tasks", "${pendingRatio.toStringAsFixed(0)}%"),
         const SizedBox(height: 16),
@@ -249,7 +241,7 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAppointmentItem({required Appointment appointment, required bool showHeader}) {
+  Widget _buildAppointmentItem({required Appointment appointment, required bool showHeader,required context}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -328,7 +320,18 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                GestureDetector(
+                onTap: () {
+                  if (appointment.id != null) {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => AppointmentDetailPage(appointmentID: appointment.id.toString())));
+                  } else {
+                    print('Error: appointmentId is null');
+                  }
+                },
+                child: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              ),
+              
+              
             ],
           ),
         ),
