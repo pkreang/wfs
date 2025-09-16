@@ -58,7 +58,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          Align( // Use Align to position the SingleChildScrollView at the bottom
+          Align(
+            // Use Align to position the SingleChildScrollView at the bottom
             alignment: Alignment.bottomCenter,
             child: SingleChildScrollView(
               child: Padding(
@@ -70,16 +71,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     // The Align widget will handle positioning the form at the bottom.
                     Container(
                       width: double.infinity, // Make the container take full width
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0,
-                        vertical: 48.0,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20.0),
-                          topRight: Radius.circular(20.0),
-                        ), // Only top corners are rounded
+                        borderRadius: const BorderRadius.only(topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0)), // Only top corners are rounded
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey.withOpacity(0.1),
@@ -93,11 +88,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch, // Change to stretch
                         children: [
-                          const Text(
-                            'Welcome!',
-                            style: TextStyle(
-                                fontSize: 28, fontWeight: FontWeight.bold),
-                          ),
+                          const Text('Welcome!', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
                           const SizedBox(height: 32),
 
@@ -106,9 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             controller: emailController,
                             decoration: InputDecoration(
                               labelText: 'Email Address',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0)),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12.0),
                                 borderSide: const BorderSide(
@@ -128,9 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0)),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12.0),
                                 borderSide: const BorderSide(
@@ -140,9 +127,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
+                                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
                                   color: Colors.grey, // ทำให้ icon เป็นสีเทา
                                 ),
                                 onPressed: () {
@@ -164,27 +149,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFE42226), // เปลี่ยนสีปุ่มเป็น #E42226
                                 padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
                                 elevation: 2,
                               ),
                               child: authState.isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
+                                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                                   : const Text(
                                       'Login',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                      style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
                                     ),
                             ),
                           ),
@@ -201,20 +173,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.error_outline,
-                                    color: Colors.red.shade600,
-                                    size: 20,
-                                  ),
+                                  Icon(Icons.error_outline, color: Colors.red.shade600, size: 20),
                                   const SizedBox(width: 8),
                                   Expanded(
-                                    child: Text(
-                                      authState.error!,
-                                      style: TextStyle(
-                                        color: Colors.red.shade700,
-                                        fontSize: 14,
-                                      ),
-                                    ),
+                                    child: Text(authState.error!, style: TextStyle(color: Colors.red.shade700, fontSize: 14)),
                                   ),
                                 ],
                               ),
@@ -246,18 +208,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    email = "systemadmin@mail.com";
+    // email = "systemadmin@mail.com";
+    // password = "abcd1234";
+
+    email = "Sup01@mail.com";
+    // email = "sale01@mail.com";
     password = "abcd1234";
 
     //email = "john@mail.com";
     //password = "abcd1234";
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter both email and password'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter both email and password'), backgroundColor: Colors.orange));
       return;
     }
     ref.read(authProvider.notifier).login(email, password);

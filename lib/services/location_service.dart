@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 enum LocationPermissionStatus { granted, denied, deniedForever, servicesOff }
 
 class LocationService {
-  static String mapApiKey = "";
+  static String mapApiKey = "AIzaSyCrR1LdUvCr3Lwn7JBdQj__zDDvcdSEgWk";
 
   Future<LocationPermissionStatus> requestPermission({bool requestIfDenied = true}) async {
     if (!await Geolocator.isLocationServiceEnabled()) return LocationPermissionStatus.servicesOff;

@@ -4,11 +4,11 @@ class CompanyAddress {
   int? districtID;
   int? countryID;
   int? subDistrictID;
-  int? latitude;
+  double? latitude;
   bool? isPrimary;
   String? createdBy;
   String? modifiedBy;
-  int? longitude;
+  double? longitude;
   bool? isActive;
   String? provinceName;
   String? districtName;

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:wfs/widgets/app_text.dart';
 
 class AppTextFormField extends StatelessWidget {
@@ -12,8 +11,9 @@ class AppTextFormField extends StatelessWidget {
   final bool enabled;
   final AutovalidateMode? autovalidateMode;
   final TextStyle? textStyle;
-  final isDisabled;
+  final bool isDisabled;
   final String? hintText;
+  final bool isShowBorder;
 
   const AppTextFormField({
     super.key,
@@ -23,12 +23,12 @@ class AppTextFormField extends StatelessWidget {
     this.isValidate = false,
     this.validator,
     this.maxLines = 1,
-
     this.enabled = true,
     this.autovalidateMode,
     this.textStyle,
     this.isDisabled = false,
     this.hintText,
+    this.isShowBorder = false,
   });
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -50,9 +50,9 @@ class AppTextFormField extends StatelessWidget {
       decoration: InputDecoration(
         hint: AppText(label: hintText ?? '', textColor: Colors.grey.shade400),
         isDense: true,
-        border: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        focusedBorder: InputBorder.none,
+        border: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
+        enabledBorder: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
+        focusedBorder: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
         disabledBorder: InputBorder.none,

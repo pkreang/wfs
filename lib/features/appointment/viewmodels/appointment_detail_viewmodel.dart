@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:wfs/core/base_provider.dart';
@@ -17,10 +16,20 @@ class AppointmentDetailViewModel extends StateNotifier<AsyncValue<AppointmentDet
 
   Future<void> fetch() async {
     state = const AsyncLoading();
-  final Ref ref;
-    final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(this.ref,id));
+    final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(ref, id));
     state = res;
   }
 
   Future<void> refresh() => fetch();
+
+  Future<void> updateAppointmentStatus({required String appointmentID, required String appointmentStatusID}) async {
+    state = const AsyncLoading();
+
+    try {
+      final result = await _appointmentService.updateAppointmentStatus(ref, appointmentID, appointmentStatusID, null);
+      if (result) refresh();
+    } catch (e) {
+      print('updateAppointmentStatus catch: $e');
+    } finally {}
+  }
 }

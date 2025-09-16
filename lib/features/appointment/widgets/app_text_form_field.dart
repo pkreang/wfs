@@ -10,8 +10,9 @@ class AppTextFormField extends StatelessWidget {
   final bool enabled;
   final AutovalidateMode? autovalidateMode;
   final TextStyle? textStyle;
-  final isDisabled;
+  final bool isDisabled;
   final int? maxLength;
+  final String? hintText;
 
   const AppTextFormField({
     super.key,
@@ -26,6 +27,7 @@ class AppTextFormField extends StatelessWidget {
     this.textStyle,
     this.isDisabled = false,
     this.maxLength,
+    this.hintText,
   });
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -46,6 +48,7 @@ class AppTextFormField extends StatelessWidget {
       cursorColor: const Color(0xFF007AFF),
       maxLength: maxLength,
       decoration: InputDecoration(
+        hintText: hintText,
         isDense: true,
         border: InputBorder.none,
         enabledBorder: InputBorder.none,

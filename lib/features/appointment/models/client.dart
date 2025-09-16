@@ -105,4 +105,6 @@ class Client {
       salesTerritory: salesTerritory ?? this.salesTerritory,
     );
   }
+
+  String get clientName => '$firstName $lastName';
 }

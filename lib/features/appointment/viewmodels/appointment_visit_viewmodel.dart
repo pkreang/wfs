@@ -24,7 +24,7 @@ class AppointmentVisitState {
   }
 }
 
-class AppointmentVisitViewModel extends StateNotifier <AppointmentVisitState> {
+class AppointmentVisitViewModel extends StateNotifier<AppointmentVisitState> {
   AppointmentVisitViewModel(this.ref, this.id) : super(const AppointmentVisitState(data: AsyncValue.loading(), location: AsyncValue.loading())) {
     fetch();
   }
@@ -40,37 +40,36 @@ class AppointmentVisitViewModel extends StateNotifier <AppointmentVisitState> {
     if (permission != LocationPermissionStatus.granted) return null;
 
     final pos = await _locationService.getPosition();
-    print('pos: $pos');
     final address = await _locationService.reverseGeocodeGoogle(pos.latitude, pos.longitude);
+
     return Location(lat: pos.latitude, lng: pos.longitude, address: address);
   }
 
   Future<void> fetch() async {
     final resAppointment = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(ref, id));
+    resAppointment.whenData((appointmentDetail) async {
+      AsyncValue<Location?>? resLocation;
 
-    state = state.copyWith(data: resAppointment);
+      final outcomID = appointmentDetail.visitActivities.isNotEmpty ? appointmentDetail.visitActivities.first.outcomeID : null;
+      if ((outcomID ?? '').isEmpty) {
+        resLocation = await AsyncValue.guard(fetchLocation);
+      }
 
-    resAppointment.whenData((appointmentDetail) {
       state = state.copyWith(
+        data: resAppointment,
         visitActivity: VisitActivity(
           activityID: appointmentDetail.visitActivities.isNotEmpty ? appointmentDetail.visitActivities.first.activityID : null,
-          appointmentID: appointmentDetail.appointmentId,
-          userID: appointmentDetail.userId,
-          clientID: appointmentDetail.clientId,
-          outcomeID: appointmentDetail.visitActivities.isNotEmpty ? appointmentDetail.visitActivities.first.outcomeID : null,
+          appointmentID: appointmentDetail.appointmentID,
+          userID: appointmentDetail.userID,
+          clientID: appointmentDetail.clientID,
+          outcomeID: outcomID,
           createdBy: appointmentDetail.createdBy,
           modifiedBy: appointmentDetail.modifiedBy,
           isActive: appointmentDetail.isActive,
         ),
+        location: resLocation,
       );
     });
-
-    print('state.visitActivity?.outcomeID: ${state.visitActivity?.outcomeID}');
-
-    if ((state.visitActivity?.outcomeID ?? '').isEmpty) {
-      final resLocation = await AsyncValue.guard(fetchLocation);
-      state = state.copyWith(location: resLocation);
-    }
   }
 
   void setNotes(String notes) {
@@ -78,7 +77,9 @@ class AppointmentVisitViewModel extends StateNotifier <AppointmentVisitState> {
   }
 
   void setOutcome(Outcome outcome) {
-    state = state.copyWith(visitActivity: state.visitActivity?.copyWith(outcomeID: outcome.outcomeID, outcomeName: outcome.outcomeName));
+    state = state.copyWith(
+      visitActivity: state.visitActivity?.copyWith(outcomeID: outcome.outcomeID, outcomeName: outcome.outcomeName),
+    );
   }
 
   bool validateOutcome() {
@@ -93,7 +94,9 @@ class AppointmentVisitViewModel extends StateNotifier <AppointmentVisitState> {
     final now = DateTime.now();
     final checkInTime = DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(now);
 
-    state = state.copyWith(visitActivity: state.visitActivity!.copyWith(checkInTime: checkInTime, checkInLatitude: latitude, checkInLongitude: longitude));
+    state = state.copyWith(
+      visitActivity: state.visitActivity!.copyWith(checkInTime: checkInTime, checkInLatitude: latitude, checkInLongitude: longitude),
+    );
 
     try {
       final result = await _appointmentService.checkIn(state.visitActivity!, ref);
@@ -115,12 +118,13 @@ class AppointmentVisitViewModel extends StateNotifier <AppointmentVisitState> {
     final now = DateTime.now();
     final checkOutTime = DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(now);
 
-    state = state.copyWith(isLoading: true);
-    state = state.copyWith(visitActivity: state.visitActivity!.copyWith(checkOutTime: checkOutTime, checkOutLatitude: latitude, checkOutLongitude: longitude), isLoading: true);
+    state = state.copyWith(
+      visitActivity: state.visitActivity!.copyWith(checkOutTime: checkOutTime, checkOutLatitude: latitude, checkOutLongitude: longitude),
+      isLoading: true,
+    );
 
     try {
-      final result = await _appointmentService.checkOut(state.visitActivity!, ref);
-      print('result: $result');
+      await _appointmentService.checkOut(state.visitActivity!, ref);
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));
     } finally {

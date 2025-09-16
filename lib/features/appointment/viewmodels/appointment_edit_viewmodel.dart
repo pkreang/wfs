@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
@@ -23,7 +24,7 @@ class AppointmentEditState {
       AppointmentEditState(data: data ?? this.data, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
 }
 
-class AppointmentEditViewModel extends StateNotifier <AppointmentEditState> {
+class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
   AppointmentEditViewModel(this.ref, this.id) : super(const AppointmentEditState(data: AsyncValue.loading())) {
     fetch();
   }
@@ -34,26 +35,38 @@ class AppointmentEditViewModel extends StateNotifier <AppointmentEditState> {
   AppointmentService get _appointmentService => ref.read(appointmentServiceProvider);
 
   Future<void> fetch() async {
-    final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(ref,id));
+    final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(ref, id));
     state = state.copyWith(data: res, isDirty: false);
   }
 
   void setAppointmentType(AppointmentType status) {
-    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(appointmentTypeId: status.appointmentTypeID, appointmentTypeName: status.appointmentTypeName)), isDirty: true);
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(appointmentTypeID: status.appointmentTypeID, appointmentTypeName: status.appointmentTypeName)),
+      isDirty: true,
+    );
   }
 
   void setAppointmentStatus(AppointmentStatus status) {
-    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(appointmentStatusId: status.appointmentStatusID, appointmentStatusName: status.appointmentStatusName)), isDirty: true);
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(appointmentStatusID: status.appointmentStatusID, appointmentStatusName: status.appointmentStatusName)),
+      isDirty: true,
+    );
   }
 
   void setPurpose(Purpose status) {
-    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(purposeTypeId: status.purposeTypeID, purposeTypeName: status.purposeTypeName)), isDirty: true);
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(purposeTypeID: status.purposeTypeID, purposeTypeName: status.purposeTypeName)),
+      isDirty: true,
+    );
   }
 
   void setTerritory(Territory status) {
     final newSalesTerritory = SalesTerritory(salesTerritoryID: status.salesTerritoryID, salesTerritoryName: status.salesTerritoryName);
 
-    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(client: v.client.copyWith(salesTerritory: newSalesTerritory))), isDirty: true);
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(client: v.client.copyWith(salesTerritory: newSalesTerritory))),
+      isDirty: true,
+    );
   }
 
   void setAppointmentFromDate(DateTime newDateTime) {
@@ -119,7 +132,12 @@ class AppointmentEditViewModel extends StateNotifier <AppointmentEditState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      return await _appointmentService.updateAppointment(detail,ref);
+      final result = await _appointmentService.updateAppointment(detail, ref);
+      if (!result) return result;
+
+      ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(DateTime.now())).notifier).refresh();
+
+      return result;
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));
     } finally {
@@ -133,7 +151,7 @@ class AppointmentEditViewModel extends StateNotifier <AppointmentEditState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      return await _appointmentService.deleteAppointment(id,ref);
+      return await _appointmentService.deleteAppointment(id, ref);
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));
     } finally {

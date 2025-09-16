@@ -4,7 +4,7 @@ import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/main.dart'; // ตรวจสอบว่า selectedItemProvider อยู่ใน main.dart หรือไม่
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/providers/client_provider.dart';
-import 'package:wfs/screens/create_appointment_screen.dart';
+import 'package:wfs/features/appointment/views/appointment_create_page.dart';
 // import '../providers/company_provider.dart'; // ไม่ได้ใช้สำหรับ ClientAddAppointmentScreen
 
 // --- Providers เฉพาะสำหรับหน้านี้หรือนำมาจากไฟล์ client_screen.dart ที่แก้ไขไปแล้ว ---
@@ -308,7 +308,7 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
           onTap: () {
             // เมื่อเลือก client ให้ส่ง clientID ไปยัง selectedItemProvider
             ref.read(selectedItemProvider.notifier).state = client.clientID;
-            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateAppointmentScreen()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateAppointmentScreen(clientId: client.clientID ?? '')));
           },
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),

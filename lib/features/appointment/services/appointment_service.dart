@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
@@ -15,20 +14,39 @@ import 'package:wfs/providers/auth_provider.dart';
 
 class AppointmentService {
   final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
-  final token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzeXN0ZW1hZG1pbkBtYWlsLmNvbSIsImV4cCI6MTc1NzAyOTY1NX0.9_GjEOLlXxOgBSqqZKcSPVPpm_fI8C3_T6DN4w_8JnU";
 
-  Future<List<Appointment>> fetchAppointments() async {
+  Future<List<Appointment>> fetchAppointmentsByDate(Ref ref, String date) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+
     final appointments = await apiClient.get(
-      path: "/appointment/?IsActive=true", //&AppointmentDate=2025-08-04&UserID=9E0DC5F7-1FD6-41F3-9137-14711FC510F6
+      path: "/appointment/bydate/?AppointmentDate=$date",
       decode: (json) {
         final map = json as Map<String, dynamic>;
         final list = map['appointments'] as List? ?? const [];
+
         return Appointment.listFromJson(list);
       },
-      headers: {"Authorization": "Bearer $token"},
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     return appointments;
+  }
+
+  Future<List<String>> fetchAppointmentByMonthYear(Ref ref, String month, year) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+
+    final appointmentDates = await apiClient.get(
+      path: "/appointment/dates/?Month=$month&Year=$year",
+      decode: (json) {
+        final map = json as Map<String, dynamic>;
+        return List<String>.from(map['appointment_dates']);
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+
+    return appointmentDates;
   }
 
   Future<AppointmentDetail> fetchAppointmentById(Ref ref, String appointmentID) async {
@@ -157,11 +175,30 @@ class AppointmentService {
     return companies;
   }
 
+  Future<bool> createAppointment(Appointment appointment, Ref ref) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    try {
+      return await apiClient.post(
+        path: "/appointment/",
+        body: appointment.toJson(),
+        decode: (json) {
+          final map = json as Map<String, dynamic>;
+          return (map['status'] as String?)?.toLowerCase() == "success";
+        },
+        headers: {"Authorization": "Bearer $accessToken"},
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<bool> updateAppointment(AppointmentDetail appointmentDetail, Ref ref) async {
     final authState = ref.watch(authProvider);
     final accessToken = authState.accessToken;
     try {
-      return await apiClient.put(path: "/appointment/${appointmentDetail.appointmentId.toString()}", body: appointmentDetail.toJsonUpdate(), headers: {"Authorization": "Bearer $accessToken"});
+      return await apiClient.put(path: "/appointment/${appointmentDetail.appointmentID.toString()}", body: appointmentDetail.toJsonUpdate(), headers: {"Authorization": "Bearer $accessToken"});
     } catch (e) {
       print(e);
       return false;
@@ -230,8 +267,7 @@ class AppointmentService {
         body: {'ActivityID': activityId, 'ModifiedBy': modifiedBy, 'ImageData': imgBase64},
         decode: (json) {
           final map = json as Map<String, dynamic>;
-          print('uploadImage map: $map');
-          return (map['status'] as String?)?.toLowerCase() != "success";
+          return (map['status'] as String?)?.toLowerCase() == "success";
         },
         headers: {"Authorization": "Bearer $accessToken"},
       );
@@ -250,12 +286,31 @@ class AppointmentService {
         body: visitActivity.toJson(),
         decode: (json) {
           final map = json as Map<String, dynamic>;
-          return (map['status'] as String?)?.toLowerCase() != "success";
+          return (map['status'] as String?)?.toLowerCase() == "success";
         },
         headers: {"Authorization": "Bearer $accessToken"},
       );
     } catch (e) {
       print('checkOut catch: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateAppointmentStatus(Ref ref, String appointmentID, String appointmentStatusID, String? cancelNoted) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+    try {
+      return await apiClient.post(
+        path: "/appointment/update_status",
+        body: {'AppointmentID': appointmentID, 'AppointmentStatusID': appointmentStatusID, 'CancelNoted': cancelNoted},
+        decode: (json) {
+          final map = json as Map<String, dynamic>;
+          return (map['status'] as String?)?.toLowerCase() == "success";
+        },
+        headers: {"Authorization": "Bearer $accessToken"},
+      );
+    } catch (e) {
+      print('updateAppointmentStatus catch: $e');
       return false;
     }
   }

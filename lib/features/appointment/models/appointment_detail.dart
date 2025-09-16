@@ -5,20 +5,20 @@ import 'package:wfs/features/appointment/models/product.dart';
 import 'package:wfs/features/appointment/models/visit_activities.dart';
 
 class AppointmentDetail {
-  final String userId;
-  final String clientId;
+  final String userID;
+  final String clientID;
   final String clientName;
   final String noted;
   final String? assignedBy;
   final String appointmentTitle;
-  final String appointmentTypeId;
+  final String appointmentTypeID;
   final String appointmentTypeName;
-  final String appointmentStatusId;
+  final String appointmentStatusID;
   final String appointmentStatusName;
-  final String appointmentId;
-  final String purposeTypeId;
+  final String appointmentID;
+  final String purposeTypeID;
   final String purposeTypeName;
-  final String? companyId;
+  final String? companyID;
   final String companyName;
   final String appointmentDateTimeFrom;
   final String appointmentDateTimeTo;
@@ -34,20 +34,20 @@ class AppointmentDetail {
   final bool isActive;
 
   AppointmentDetail({
-    required this.userId,
-    required this.clientId,
+    required this.userID,
+    required this.clientID,
     required this.clientName,
     required this.noted,
     this.assignedBy,
     required this.appointmentTitle,
-    required this.appointmentTypeId,
+    required this.appointmentTypeID,
     required this.appointmentTypeName,
-    required this.appointmentStatusId,
+    required this.appointmentStatusID,
     required this.appointmentStatusName,
-    required this.appointmentId,
-    required this.purposeTypeId,
+    required this.appointmentID,
+    required this.purposeTypeID,
     required this.purposeTypeName,
-    required this.companyId,
+    required this.companyID,
     required this.companyName,
     required this.appointmentDateTimeFrom,
     required this.appointmentDateTimeTo,
@@ -64,20 +64,20 @@ class AppointmentDetail {
   });
 
   factory AppointmentDetail.fromJson(Map<String, dynamic> json) => AppointmentDetail(
-    userId: json["UserID"],
-    clientId: json["ClientID"],
+    userID: json["UserID"],
+    clientID: json["ClientID"],
     clientName: json["ClientName"] ?? '',
     noted: json["Noted"] ?? '',
     assignedBy: json["AssignedBy"],
     appointmentTitle: json["AppointmentTitle"],
-    appointmentTypeId: json["AppointmentTypeID"],
+    appointmentTypeID: json["AppointmentTypeID"],
     appointmentTypeName: json["AppointmentTypeName"] ?? '',
-    appointmentStatusId: json["AppointmentStatusID"],
+    appointmentStatusID: json["AppointmentStatusID"],
     appointmentStatusName: json["AppointmentStatusName"] ?? '',
-    appointmentId: json["AppointmentID"],
-    purposeTypeId: json["PurposeTypeID"],
+    appointmentID: json["AppointmentID"],
+    purposeTypeID: json["PurposeTypeID"],
     purposeTypeName: json['PurposeTypeName'] ?? '',
-    companyId: json["CompanyID"],
+    companyID: json["CompanyID"],
     companyName: json["CompanyName"] ?? '',
     appointmentDateTimeFrom: json["AppointmentDateTimeFrom"],
     appointmentDateTimeTo: json["AppointmentDateTimeTo"],
@@ -94,20 +94,20 @@ class AppointmentDetail {
   );
 
   Map<String, dynamic> toJson() => {
-    "UserID": userId,
-    "ClientID": clientId,
+    "UserID": userID,
+    "ClientID": clientID,
     "ClientName": clientName,
     "Noted": noted,
     "AssignedBy": assignedBy,
     "AppointmentTitle": appointmentTitle,
-    "AppointmentTypeID": appointmentTypeId,
+    "AppointmentTypeID": appointmentTypeID,
     "AppointmentTypeName": appointmentTypeName,
-    "AppointmentStatusID": appointmentStatusId,
+    "AppointmentStatusID": appointmentStatusID,
     "AppointmentStatusName": appointmentStatusName,
-    "AppointmentID": appointmentId,
-    "PurposeTypeID": purposeTypeId,
+    "AppointmentID": appointmentID,
+    "PurposeTypeID": purposeTypeID,
     'PurposeTypeName': purposeTypeName,
-    "CompanyID": companyId,
+    "CompanyID": companyID,
     "CompanyName": companyName,
     "AppointmentDateTimeFrom": appointmentDateTimeFrom,
     "AppointmentDateTimeTo": appointmentDateTimeTo,
@@ -124,15 +124,15 @@ class AppointmentDetail {
 
   Map<String, dynamic> toJsonUpdate() {
     return {
-      "UserID": userId,
-      "ClientID": clientId,
-      "CompanyID": companyId,
+      "UserID": userID,
+      "ClientID": clientID,
+      "CompanyID": companyID,
       "Noted": noted,
       "AssignedBy": assignedBy,
       "AppointmentTitle": appointmentTitle,
-      "AppointmentTypeID": appointmentTypeId,
-      "AppointmentStatusID": appointmentStatusId,
-      "PurposeTypeID": purposeTypeId,
+      "AppointmentTypeID": appointmentTypeID,
+      "AppointmentStatusID": appointmentStatusID,
+      "PurposeTypeID": purposeTypeID,
       "SalesTerritoryID": client.salesTerritory?.salesTerritoryID,
       "AppointmentDateTimeFrom": appointmentDateTimeFrom,
       "AppointmentDateTimeTo": appointmentDateTimeTo,
@@ -143,10 +143,10 @@ class AppointmentDetail {
         "Latitude": address.latitude,
         "Longitude": address.longitude,
         "Address": address.address,
-        "SubDistrictID": address.subDistrictId,
-        "DistrictID": address.districtId,
-        "ProvinceID": address.provinceId,
-        "CountryID": address.countryId,
+        "SubDistrictID": address.subDistrictID,
+        "DistrictID": address.districtID,
+        "ProvinceID": address.provinceID,
+        "CountryID": address.countryID,
       },
       "AppointmentProducts": products.map((p) => p.productId).toList(),
       "ModifiedBy": modifiedBy,
@@ -158,20 +158,20 @@ class AppointmentDetail {
   }
 
   AppointmentDetail copyWith({
-    String? userId,
-    String? clientId,
+    String? userID,
+    String? clientID,
     String? clientName,
     String? noted,
     String? assignedBy,
     String? appointmentTitle,
-    String? appointmentTypeId,
+    String? appointmentTypeID,
     String? appointmentTypeName,
-    String? appointmentStatusId,
+    String? appointmentStatusID,
     String? appointmentStatusName,
-    String? appointmentId,
-    String? purposeTypeId,
+    String? appointmentID,
+    String? purposeTypeID,
     String? purposeTypeName,
-    String? companyId,
+    String? companyID,
     String? companyName,
     String? appointmentDateTimeFrom,
     String? appointmentDateTimeTo,
@@ -186,20 +186,20 @@ class AppointmentDetail {
     bool? isActive,
   }) {
     return AppointmentDetail(
-      userId: userId ?? this.userId,
-      clientId: clientId ?? this.clientId,
+      userID: userID ?? this.userID,
+      clientID: clientID ?? this.clientID,
       clientName: clientName ?? this.clientName,
       noted: noted ?? this.noted,
       assignedBy: assignedBy,
       appointmentTitle: appointmentTitle ?? this.appointmentTitle,
-      appointmentTypeId: appointmentTypeId ?? this.appointmentTypeId,
+      appointmentTypeID: appointmentTypeID ?? this.appointmentTypeID,
       appointmentTypeName: appointmentTypeName ?? this.appointmentTypeName,
-      appointmentStatusId: appointmentStatusId ?? this.appointmentStatusId,
+      appointmentStatusID: appointmentStatusID ?? this.appointmentStatusID,
       appointmentStatusName: appointmentStatusName ?? this.appointmentStatusName,
-      appointmentId: appointmentId ?? this.appointmentId,
-      purposeTypeId: purposeTypeId ?? this.purposeTypeId,
+      appointmentID: appointmentID ?? this.appointmentID,
+      purposeTypeID: purposeTypeID ?? this.purposeTypeID,
       purposeTypeName: purposeTypeName ?? this.purposeTypeName,
-      companyId: companyId ?? this.companyId,
+      companyID: companyID ?? this.companyID,
       companyName: companyName ?? this.companyName,
       appointmentDateTimeFrom: appointmentDateTimeFrom ?? this.appointmentDateTimeFrom,
       appointmentDateTimeTo: appointmentDateTimeTo ?? this.appointmentDateTimeTo,
@@ -215,6 +215,11 @@ class AppointmentDetail {
       isActive: isActive ?? this.isActive,
     );
   }
+}
+
+extension Status on String {
+  bool get isCompleted => this == 'Completed' || this == 'C9B78060-8F8C-46FA-92A6-65D932701EB7';
+  bool get isCanceled => this == 'Canceled' || this == '16CBDB62-30BB-4679-A1ED-CB935E11B7E2';
 }
 
 extension TimeFormat on String {

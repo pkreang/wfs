@@ -25,16 +25,27 @@ class _AppMapState extends State<AppMap> {
     final latitude = widget.lat;
     final longitude = widget.lng;
 
+    print('latitude: $latitude longitude: $longitude');
+
     if (latitude == null || longitude == null) return const SizedBox.shrink();
 
     final pos = CameraPosition(target: LatLng(latitude, longitude), zoom: 16);
 
-    final markers = <Marker>{Marker(markerId: const MarkerId('target'), position: LatLng(latitude, longitude), infoWindow: const InfoWindow(title: 'ตำแหน่งของคุณ'))};
+    final markers = <Marker>{
+      Marker(
+        markerId: const MarkerId('target'),
+        position: LatLng(latitude, longitude),
+        infoWindow: const InfoWindow(title: 'ตำแหน่งของคุณ'),
+      ),
+    };
 
     return Container(
       width: 352,
       height: 225,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 32)]),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 32)],
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16), // คงที่ = ถูกสุด
         child: GoogleMap(

@@ -1,0 +1,137 @@
+import 'package:flutter/material.dart';
+import 'package:wfs/core/base_provider.dart';
+import 'package:wfs/features/appointment/models/appointment_status.dart';
+import 'package:wfs/features/appointment/models/appointment_type.dart';
+import 'package:wfs/features/appointment/models/purpose.dart';
+import 'package:wfs/features/appointment/models/territory.dart';
+import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
+import 'package:wfs/models/company_model.dart';
+import 'package:wfs/models/district_model.dart';
+import 'package:wfs/models/province_model.dart';
+import 'package:wfs/models/subdistrict_model.dart';
+import 'package:wfs/providers/company_provider.dart';
+import 'package:wfs/providers/district_provider.dart';
+import 'package:wfs/providers/province_provider.dart';
+import 'package:wfs/providers/subdistrict_provider.dart';
+
+class AppSheet {
+  static Future<void> openMeetingSheet({required BuildContext context, required String appointmentTypeID, required void Function(AppointmentType) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<AppointmentType>(
+      context: context,
+      title: 'Meeting',
+      provider: appointmentTypeProvider,
+      label: (p) => p.appointmentTypeName,
+      initialKey: (p) => p.appointmentTypeID,
+      initialValue: appointmentTypeID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openAppointmentStatusSheet({required BuildContext context, required String appointmentStatusID, required void Function(AppointmentStatus) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<AppointmentStatus>(
+      context: context,
+      title: 'Status',
+      provider: appointmentStatusProvider,
+      label: (p) => p.appointmentStatusName,
+      initialKey: (p) => p.appointmentStatusID,
+      initialValue: appointmentStatusID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openPurposeSheet({required BuildContext context, required String purposeTypeID, required void Function(Purpose) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<Purpose>(
+      context: context,
+      title: 'Purpose',
+      provider: purposesProvider,
+      label: (p) => p.purposeTypeName,
+      initialKey: (p) => p.purposeTypeID,
+      initialValue: purposeTypeID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openTerritorySheet({required BuildContext context, required String territoryID, required void Function(Territory) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<Territory>(
+      context: context,
+      title: 'Territory',
+      provider: territoryProvider,
+      label: (p) => p.salesTerritoryName,
+      initialKey: (p) => p.salesTerritoryID,
+      initialValue: territoryID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openCompanySheet({required BuildContext context, required String companyID, required void Function(Company) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<Company>(
+      context: context,
+      title: 'Company',
+      provider: companyGetListProvider,
+      label: (p) => p.companyName ?? "",
+      initialKey: (p) => p.companyID ?? "",
+      initialValue: companyID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openProvinceSheet({required BuildContext context, required String provinceID, required void Function(Province) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<Province>(
+      context: context,
+      title: 'Province',
+      provider: provincesProvider,
+      label: (p) => p.provinceName.toString(),
+      initialKey: (p) => p.provinceID.toString(),
+      initialValue: provinceID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openDistrictSheet({required BuildContext context, required String provinceID, required String districtID, required void Function(District) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<District>(
+      context: context,
+      title: 'District',
+      provider: districtsProvider(provinceID),
+      label: (p) => p.districtName.toString(),
+      initialKey: (p) => p.districtID.toString(),
+      initialValue: districtID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openSubDistrictSheet({required BuildContext context, required String districtID, required String subdistrictID, required void Function(Subdistrict) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<Subdistrict>(
+      context: context,
+      title: 'SubDistrict',
+      provider: subdistrictsProvider(districtID),
+      label: (p) => p.subDistrictName.toString(),
+      initialKey: (p) => p.subDistrictID.toString(),
+      initialValue: subdistrictID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+}

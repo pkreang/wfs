@@ -11,12 +11,14 @@ import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
 import 'package:wfs/features/appointment/widgets/app_map.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
-import 'package:wfs/features/appointment/widgets/appointment_status.dart';
-import 'package:wfs/features/appointment/widgets/appointment_type.dart';
+import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
+import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/client_status.dart';
 import 'package:wfs/features/appointment/widgets/level_status.dart';
 import 'package:wfs/services/camera_service.dart';
 import 'package:wfs/services/location_service.dart';
+import 'package:wfs/utility/appdialogs.dart';
+import 'package:wfs/utility/validator.dart';
 
 class Location {
   final double lat;
@@ -129,9 +131,7 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
 
     final isValidate = ref.read(appointmentVisitProvider(widget.appointmentID).notifier).validateOutcome();
     if (!isValidate) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(backgroundColor: Colors.red, content: AppText(label: 'Please Select Outcome.', textColor: Colors.white, textAlign: TextAlign.center, fontSize: 16)));
+      AppDialogs.error(context, message: "กรุณาเลือก outcome");
 
       ref.read(appointmentVisitProvider(widget.appointmentID).notifier).loading(false);
 
@@ -162,8 +162,13 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
     final state = ref.watch(appointmentVisitProvider(widget.appointmentID));
 
     return state.data.when(
-      loading: () => Scaffold(backgroundColor: Colors.white, body: Center(child: CircularProgressIndicator(color: colorPrimary))),
-      error: (e, _) => Center(child: AppText(label: "Appointment Not Found", textColor: Colors.red)),
+      loading: () => Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator(color: colorPrimary)),
+      ),
+      error: (e, _) => Center(
+        child: AppText(label: "Appointment Not Found", textColor: Colors.red),
+      ),
       data: (detail) {
         final visitActivities = detail.visitActivities;
         final location = state.location.value;
@@ -189,7 +194,11 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(backgroundColor: colorPrimary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorPrimary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
                     child: AppText(label: 'Back', fontSize: 17, textColor: Colors.white),
                   ),
                 ),
@@ -213,7 +222,11 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
                     onTap: () => Navigator.pop(context),
                     child: Row(
                       children: [
-                        IconButton(icon: const Icon(Icons.chevron_left), onPressed: null, style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary))),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left),
+                          onPressed: null,
+                          style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary)),
+                        ),
                         AppText(label: 'Cancel', textColor: colorPrimary),
                       ],
                     ),
@@ -231,7 +244,11 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () => isCheckIn ? handleCheckIn() : handleCheckOut(),
-                            style: ElevatedButton.styleFrom(backgroundColor: colorPrimary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorPrimary,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
+                            ),
                             child: AppText(label: title, fontSize: 17, textColor: Colors.white),
                           ),
                         ),
@@ -271,8 +288,8 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
                       children: [
                         ClientStatus(clientStatusName: client.clientStatusName),
                         LevelStatus(levelStatusName: client.clientLevelName),
-                        AppointmentType(appointmentTypeName: appointmentDetail.appointmentTypeName),
-                        AppointmentStatus(appointmentStatusName: appointmentDetail.appointmentStatusName),
+                        AppointmentTypeCapsule(appointmentTypeName: appointmentDetail.appointmentTypeName),
+                        AppointmentStatusCapsule(appointmentStatusName: appointmentDetail.appointmentStatusName),
                       ],
                     ),
                   ],
@@ -283,8 +300,16 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
               spacing: 16,
               children: [
                 AppMap(lat: location?.lat ?? 0, lng: location?.lng ?? 0),
-                buildContentCard(title: 'current time', descWidget: AppText(label: DateFormat.Hm().format(now), textColor: colorGray), fullWidth: true),
-                buildContentCard(title: 'current location', descWidget: AppText(label: location?.address ?? '', textColor: colorGray, maxLines: null), fullWidth: true),
+                buildContentCard(
+                  title: 'current time',
+                  descWidget: AppText(label: DateFormat.Hm().format(now), textColor: colorGray),
+                  fullWidth: true,
+                ),
+                buildContentCard(
+                  title: 'current location',
+                  descWidget: AppText(label: location?.address ?? '', textColor: colorGray, maxLines: null),
+                  fullWidth: true,
+                ),
                 if (!isCheckIn)
                   buildContentCard(
                     title: 'outcome',

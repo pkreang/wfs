@@ -1,22 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:wfs/core/base_provider.dart';
-import 'package:wfs/core/utils/date_picker_helper.dart';
-import 'package:wfs/core/utils/time_picker_helper.dart';
-import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
-import 'package:wfs/features/appointment/models/appointment_type.dart' as appointment_type_model;
 import 'package:wfs/features/appointment/models/product.dart';
-import 'package:wfs/features/appointment/models/appointment_status.dart' as appointment_status_model;
-import 'package:wfs/features/appointment/models/purpose.dart';
-import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
+import 'package:wfs/features/appointment/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
-import 'package:wfs/features/appointment/widgets/appointment_status.dart';
-import 'package:wfs/features/appointment/widgets/appointment_type.dart';
+import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
+import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
+import 'package:wfs/lib/widgets/form_address.dart';
+import 'package:wfs/lib/widgets/form_datetime_picker.dart';
+import 'package:wfs/lib/widgets/form_info_tile.dart';
 
 class AppointmentEditPage extends ConsumerStatefulWidget {
   final String appointmentID;
@@ -32,103 +28,9 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
   static const borderWidth = 0.33;
   static const borderSide = BorderSide(color: colorGrey, width: borderWidth);
 
-  bool isCanEdit = true;
-
-  late final TextEditingController notedController;
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController notedController = TextEditingController();
   bool _noteInitialized = false;
-
-  Future<void> openAppointmentTypeSheet(BuildContext context, String appointmentTypeID) async {
-    final selected = await CupertinoOptionsPicker.show<appointment_type_model.AppointmentType>(
-      context: context,
-      title: 'Meeting',
-      provider: appointmentTypeProvider,
-      label: (p) => p.appointmentTypeName,
-      initialKey: (p) => p.appointmentTypeID,
-      initialValue: appointmentTypeID,
-    );
-
-    if (selected == null) return;
-
-    ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentType(selected);
-  }
-
-  Future<void> openAppointmentStatusSheet(BuildContext context, String appointmentStatusID) async {
-    final selected = await CupertinoOptionsPicker.show<appointment_status_model.AppointmentStatus>(
-      context: context,
-      title: 'Status',
-      provider: appointmentStatusProvider,
-      label: (p) => p.appointmentStatusName,
-      initialKey: (p) => p.appointmentStatusID,
-      initialValue: appointmentStatusID,
-    );
-
-    if (selected == null) return;
-
-    ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentStatus(selected);
-  }
-
-  Future<void> openPurposeSheet(BuildContext context, String purposeTypeID) async {
-    final selected = await CupertinoOptionsPicker.show<Purpose>(
-      context: context,
-      title: 'Purpose',
-      provider: purposesProvider,
-      label: (p) => p.purposeTypeName,
-      initialKey: (p) => p.purposeTypeID,
-      initialValue: purposeTypeID,
-    );
-
-    if (selected == null) return;
-
-    ref.read(appointmentEditProvider(widget.appointmentID).notifier).setPurpose(selected);
-  }
-
-  Future<void> openTerritorySheet(BuildContext context, String territoryID) async {
-    final selected = await CupertinoOptionsPicker.show<Territory>(
-      context: context,
-      title: 'Territory',
-      provider: territoryProvider,
-      label: (p) => p.salesTerritoryName,
-      initialKey: (p) => p.salesTerritoryID,
-      initialValue: territoryID,
-    );
-
-    if (selected == null) return;
-
-    ref.read(appointmentEditProvider(widget.appointmentID).notifier).setTerritory(selected);
-  }
-
-  bool isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
-  void openDatePicker({required String datetime, required Function(DateTime) onSelected, String? limitFirstDate}) async {
-    final picked = await DatePickerHelper.pickDate(context, initialDate: DateTime.parse(datetime), limitFirstDate: limitFirstDate == null ? null : DateTime.parse(limitFirstDate));
-    if (picked != null) onSelected(picked);
-  }
-
-  void openTimePicker({required String datetime, required Function(TimeOfDay) onSelected, String? limitFirstDate}) async {
-    final picked = await showCupertinoTimeDialog(initial: datetime, context);
-
-    if (picked != null) {
-      if (limitFirstDate != null) {
-        final current = DateTime.parse(datetime);
-        final limit = DateTime.parse(limitFirstDate);
-        final limitTime = TimeOfDay(hour: limit.hour, minute: limit.minute);
-
-        if (isSameDay(limit, current) && picked.isBefore(limitTime)) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: AppText(label: 'Please select a time after the appointment start time.', textColor: Colors.white, maxLines: 2),
-            ),
-          );
-          return;
-        }
-      }
-
-      onSelected(picked);
-    }
-  }
 
   Future<void> openProdctSheet({required BuildContext context, required String productID, bool isUpdate = false}) async {
     final selected = await CupertinoOptionsPicker.show<Product>(
@@ -233,6 +135,9 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
     final result = await ref.read(appointmentEditProvider(widget.appointmentID).notifier).deleteAppointment();
     if (!result) return;
 
+    // final currentDate = ref.read(currentDateProvider);
+    // ref.read(appointmentsByDateProvider(currentDate).notifier).refresh()
+
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
@@ -245,13 +150,8 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    notedController = TextEditingController();
-  }
-
-  @override
   void dispose() {
+    addressController.dispose();
     notedController.dispose();
     super.dispose();
   }
@@ -334,86 +234,78 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
             children: [
               Column(
                 children: [
-                  infoTile(
+                  FormInfoTile(
                     label: 'meeting',
-                    value: AppointmentType(appointmentTypeName: appointmentDetail.appointmentTypeName),
-                    onTap: () => openAppointmentTypeSheet(context, appointmentDetail.appointmentTypeId),
+                    value: AppointmentTypeCapsule(appointmentTypeName: appointmentDetail.appointmentTypeName),
+                    onTap: () => AppSheet.openMeetingSheet(
+                      context: context,
+                      appointmentTypeID: appointmentDetail.appointmentTypeID,
+                      onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentType(value),
+                    ),
                   ),
-                  infoTile(
+                  FormInfoTile(
                     label: 'status',
-                    value: AppointmentStatus(appointmentStatusName: appointmentDetail.appointmentStatusName),
-                    onTap: () => openAppointmentStatusSheet(context, appointmentDetail.appointmentStatusId),
+                    value: AppointmentStatusCapsule(appointmentStatusName: appointmentDetail.appointmentStatusName),
+                    onTap: () => AppSheet.openAppointmentStatusSheet(
+                      context: context,
+                      appointmentStatusID: appointmentDetail.appointmentStatusID,
+                      onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentStatus(value),
+                    ),
                   ),
-                  infoTile(
+                  FormInfoTile(
                     label: 'purpose',
                     value: AppText(label: appointmentDetail.purposeTypeName),
-                    onTap: isCanEdit ? () => openPurposeSheet(context, appointmentDetail.purposeTypeId) : null,
-                    isHideIcon: !isCanEdit,
+                    onTap: () => AppSheet.openPurposeSheet(
+                      context: context,
+                      purposeTypeID: appointmentDetail.purposeTypeID,
+                      onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setPurpose(value),
+                    ),
                   ),
-                  infoTile(
+                  FormInfoTile(
                     label: 'territory',
                     value: AppText(label: salesTerritory?.salesTerritoryName ?? ''),
-                    onTap: isCanEdit ? () => openTerritorySheet(context, salesTerritory?.salesTerritoryID ?? '') : null,
-                    isHideIcon: !isCanEdit,
+                    onTap: () => AppSheet.openTerritorySheet(
+                      context: context,
+                      territoryID: salesTerritory?.salesTerritoryID ?? '',
+                      onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setTerritory(value),
+                    ),
                     isShowBorderBottom: true,
                   ),
                 ],
               ),
               if (isShowCancelNote)
                 Column(
-                  children: [infoTile(label: 'canceled note', value: AppTextFormField(maxLines: 5), height: 126, isShowBorderBottom: true, isHideIcon: true)],
+                  children: [FormInfoTile(label: 'canceled note', value: AppTextFormField(maxLines: 5), height: 126, isShowBorderBottom: true, isHideIcon: true)],
                 ),
               Column(
                 children: [
-                  datetime(
+                  FormDatetimePicker(
                     label: 'Starts',
-                    datetime: appointmentDetail.appointmentDateTimeFrom,
-                    dateOnTap: isCanEdit
-                        ? () => openDatePicker(
-                            datetime: appointmentDetail.appointmentDateTimeFrom,
-                            onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromDate(value),
-                          )
-                        : null,
-                    timeOnTap: isCanEdit
-                        ? () => openTimePicker(
-                            datetime: appointmentDetail.appointmentDateTimeFrom,
-                            onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromTime(value),
-                          )
-                        : null,
+                    datetime: DateTime.parse(appointmentDetail.appointmentDateTimeFrom),
+                    onDateSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromDate(value),
+                    onTimeSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromTime(value),
                   ),
-                  datetime(
+                  FormDatetimePicker(
                     label: 'Ends',
-                    datetime: appointmentDetail.appointmentDateTimeTo,
-                    dateOnTap: isCanEdit
-                        ? () => openDatePicker(
-                            datetime: appointmentDetail.appointmentDateTimeTo,
-                            onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToDate(value),
-                            limitFirstDate: appointmentDetail.appointmentDateTimeFrom,
-                          )
-                        : null,
-                    timeOnTap: isCanEdit
-                        ? () => openTimePicker(
-                            datetime: appointmentDetail.appointmentDateTimeTo,
-                            onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToTime(value),
-                            limitFirstDate: appointmentDetail.appointmentDateTimeFrom,
-                          )
-                        : null,
+                    datetime: DateTime.parse(appointmentDetail.appointmentDateTimeTo),
+                    onDateSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToDate(value),
+                    onTimeSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToTime(value),
                   ),
                 ],
               ),
               Column(
                 children: [
-                  infoTile(
+                  FormInfoTile(
                     label: 'mobile',
                     value: AppText(label: appointmentDetail.phone),
                     isHideIcon: true,
                   ),
-                  infoTile(
+                  FormInfoTile(
                     label: 'email',
                     value: AppText(label: appointmentDetail.email),
                     isHideIcon: true,
                   ),
-                  infoTile(
+                  FormInfoTile(
                     label: 'company',
                     value: AppText(label: appointmentDetail.companyName),
                     isHideIcon: true,
@@ -421,9 +313,9 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                   ),
                 ],
               ),
-              addressWidget(address),
-              productTile(products: products),
-              infoTile(
+              FormAddress(addressContoller: addressController, address: address, onSelected: (value) {}),
+              // productTile(products: products),
+              FormInfoTile(
                 label: 'note',
                 value: AppTextFormField(controller: notedController, onChanged: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setNoted(value), maxLines: 5),
                 height: 126,
@@ -431,7 +323,7 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                 isHideIcon: true,
               ),
               GestureDetector(
-                onTap: () => deleteAppointment(appointmentDetail.appointmentId),
+                onTap: () => deleteAppointment(appointmentDetail.appointmentID),
                 child: Container(
                   width: double.infinity,
                   height: 44,
@@ -439,146 +331,6 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                   child: Center(
                     child: AppText(label: 'Delete Appointment', fontSize: 17, textColor: Color(0xFFFF382B)),
                   ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget infoTile({required String label, required Widget value, VoidCallback? onTap, double height = 44, bool isShowBorderMiddle = true, bool isShowBorderBottom = false, bool isHideIcon = false}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: Color(0xFFFFFFFF),
-          border: Border(top: borderSide, bottom: isShowBorderBottom ? borderSide : BorderSide.none),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 16),
-            Container(
-              width: 100,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                border: BorderDirectional(
-                  end: isShowBorderMiddle ? BorderSide(color: colorGrey, width: borderWidth) : BorderSide.none,
-                ),
-              ),
-              child: AppText(label: label, textColor: const Color(0xFF007AFF)),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Align(alignment: Alignment.centerLeft, child: value),
-            ),
-            if (!isHideIcon) ...[Icon(Icons.chevron_right, size: 24, color: colorGrey), const SizedBox(width: 8)],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget datetime({required String label, required String datetime, bool isShowBorderBottom = false, VoidCallback? dateOnTap, timeOnTap}) {
-    final dt = DateTime.parse(datetime);
-    final date = DateFormat("MMM d, yyyy").format(dt);
-    final time = DateFormat("h:mm a").format(dt);
-
-    Widget datetimeField({required String value, VoidCallback? onTap}) {
-      return GestureDetector(
-        onTap: onTap,
-        child: IntrinsicWidth(
-          child: Container(
-            height: 35,
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(color: Color.fromRGBO(118, 118, 128, 0.12), borderRadius: BorderRadius.all(Radius.circular(7))),
-            child: AppText(label: value, fontSize: 17),
-          ),
-        ),
-      );
-    }
-
-    return infoTile(
-      label: label,
-      value: Container(
-        margin: EdgeInsets.only(right: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          spacing: 4,
-          children: [
-            datetimeField(value: date, onTap: dateOnTap),
-            datetimeField(value: time, onTap: timeOnTap),
-          ],
-        ),
-      ),
-      isShowBorderMiddle: false,
-      isShowBorderBottom: isShowBorderBottom,
-      isHideIcon: true,
-    );
-  }
-
-  Widget addressWidget(Address address) {
-    Widget addressField({required Widget child, bool hasRightBorder = false, bool hasBottomBorder = true}) {
-      return Container(
-        height: 44,
-        decoration: BoxDecoration(
-          border: Border(right: hasRightBorder ? borderSide : BorderSide.none, bottom: hasBottomBorder ? borderSide : BorderSide.none),
-        ),
-        alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.only(left: 16),
-        child: child,
-      );
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: const Border(top: borderSide, bottom: borderSide),
-      ),
-      child: Stack(
-        children: [
-          const Positioned(
-            left: 16 + 100,
-            top: 0,
-            bottom: 0,
-            child: SizedBox(
-              width: borderWidth,
-              child: ColoredBox(color: colorGrey),
-            ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(width: 16),
-              SizedBox(
-                width: 100,
-                child: Center(
-                  child: AppText(label: 'address', textColor: Color(0xFF007AFF)),
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    addressField(child: AppText(label: address.address)),
-                    addressField(child: AppText(label: address.subDistrictName)),
-                    addressField(child: AppText(label: address.districtName)),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: addressField(child: AppText(label: address.provinceName), hasRightBorder: true),
-                        ),
-                        Expanded(
-                          child: addressField(child: AppText(label: address.countryName)),
-                        ),
-                      ],
-                    ),
-                    addressField(child: AppText(label: address.postCode), hasBottomBorder: false),
-                  ],
                 ),
               ),
             ],

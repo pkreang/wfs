@@ -1,30 +1,50 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as apiClient;
 import 'package:wfs/config/api_config.dart';
+import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/models/client_model.dart';
+import 'package:wfs/features/appointment/models/client.dart' as client_model;
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/utility/json_helper.dart';
 
 class ClientService {
+  final apiClient = ApiClient(ApiConfig.baseUrl);
+
+  Future<client_model.Client> getById(Ref ref, String clientId) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    print('something;');
+
+    final client = await apiClient.get(
+      path: "/client/id/" + clientId,
+      decode: (json) {
+        print('json: $json');
+        final map = json as Map<String, dynamic>;
+
+        return client_model.Client.fromJson(map['client']);
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+
+    return client;
+  }
+
   Future<Client> GetById(String accessToken, String guid) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
     final uri = Uri.parse(ApiConfig.getByIdClientUrl + guid);
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
     if (response.statusCode == 200) {
+      print('response: ${response.body}');
       final data = json.decode(response.body);
       final dynamic ClientListJson = data['client'];
       return Client.fromJson(ClientListJson);
     } else {
-      throw Exception(
-        'Failed to load Clients. Status code: ${response.statusCode}',
-      );
+      throw Exception('Failed to load Clients. Status code: ${response.statusCode}');
     }
   }
 
@@ -33,21 +53,13 @@ class ClientService {
       throw Exception('Authentication token is not available.');
     }
     final uri = Uri.parse(ApiConfig.clientUrl);
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> ClientListJson = data['clients'];
       return ClientListJson.map((json) => Client.fromJson(json)).toList();
     } else {
-      throw Exception(
-        'Failed to load Clients. Status code: ${response.statusCode}',
-      );
+      throw Exception('Failed to load Clients. Status code: ${response.statusCode}');
     }
   }
 
@@ -56,21 +68,13 @@ class ClientService {
       throw Exception('Authentication token is not available.');
     }
     final uri = Uri.parse(ApiConfig.clientUrl);
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> ClientListJson = data['clients'];
       return ClientListJson.map((json) => Client.fromJson(json)).toList();
     } else {
-      throw Exception(
-        'Failed to load Clients. Status code: ${response.statusCode}',
-      );
+      throw Exception('Failed to load Clients. Status code: ${response.statusCode}');
     }
   }
 
@@ -81,11 +85,7 @@ class ClientService {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.addClientUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: json.encode(client),
       );
       if (response.statusCode == 200) {
@@ -93,9 +93,7 @@ class ClientService {
         final dynamic ClientJson = data['client'];
         return Client.fromJson(ClientJson);
       } else {
-        throw Exception(
-          'Failed to load Clients. Status code: ${response.statusCode}',
-        );
+        throw Exception('Failed to load Clients. Status code: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to load Clients. Status code: ');
@@ -138,11 +136,7 @@ class ClientService {
     try {
       final response = await http.put(
         Uri.parse(ApiConfig.editClientUrl + guid),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: jsonEncode(clientEdit),
       );
 
@@ -151,9 +145,7 @@ class ClientService {
         final dynamic clientJson = data['client'];
         return Client.fromJson(clientJson);
       } else {
-        throw Exception(
-          'Failed to load appointments. Status code: ${response.statusCode}',
-        );
+        throw Exception('Failed to load appointments. Status code: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to load appointments. Status code:');

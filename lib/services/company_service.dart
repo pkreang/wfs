@@ -8,13 +8,7 @@ import '../models/company_model.dart';
 class CompanyService {
   Future<CompanyResponse> getCompanies(String accessToken) async {
     try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.companyUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
+      final response = await http.get(Uri.parse(ApiConfig.companyUrl), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
@@ -24,15 +18,11 @@ class CompanyService {
       } else if (response.statusCode == 403) {
         throw Exception('Access forbidden - CORS issue or server error');
       } else {
-        throw Exception(
-          'Failed to get companies: ${response.statusCode} - ${response.body}',
-        );
+        throw Exception('Failed to get companies: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       if (e.toString().contains('XMLHttpRequest')) {
-        throw Exception(
-          'Network error - Please check your internet connection',
-        );
+        throw Exception('Network error - Please check your internet connection');
       }
       rethrow;
     }
@@ -71,11 +61,7 @@ class CompanyService {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.addCompanyUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: json.encode(company),
       );
       if (response.statusCode == 200) {
@@ -83,9 +69,7 @@ class CompanyService {
         final dynamic companyTypeJson = data['company'];
         return Company.fromJson(companyTypeJson);
       } else {
-        throw Exception(
-          'Failed to load Clients. Status code: ${response.statusCode}',
-        );
+        throw Exception('Failed to load Clients. Status code: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to load Clients. Status code: ');
@@ -97,21 +81,14 @@ class CompanyService {
       throw Exception('Authentication token is not available.');
     }
     final uri = Uri.parse(ApiConfig.companyUrl);
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
+
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> companyTypeListJson = data['companies'];
       return companyTypeListJson.map((json) => Company.fromJson(json)).toList();
     } else {
-      throw Exception(
-        'Failed to load Clients. Status code: ${response.statusCode}',
-      );
+      throw Exception('Failed to load Clients. Status code: ${response.statusCode}');
     }
   }
 
@@ -120,23 +97,13 @@ class CompanyService {
       throw Exception('Authentication token is not available.');
     }
     final uri = Uri.parse(ApiConfig.companyUrl);
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> companyTypeListJson = data['companies'];
-      return companyTypeListJson
-          .map((json) => ClientCompanies.fromJson(json))
-          .toList();
+      return companyTypeListJson.map((json) => ClientCompanies.fromJson(json)).toList();
     } else {
-      throw Exception(
-        'Failed to load Clients. Status code: ${response.statusCode}',
-      );
+      throw Exception('Failed to load Clients. Status code: ${response.statusCode}');
     }
   }
 
@@ -145,21 +112,13 @@ class CompanyService {
       throw Exception('Authentication token is not available.');
     }
     final uri = Uri.parse(ApiConfig.getByIdCompanyUrl + guid);
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final dynamic companyJson = data['companies'];
       return Company.fromJson(companyJson[0]);
     } else {
-      throw Exception(
-        'Failed to load Clients. Status code: ${response.statusCode}',
-      );
+      throw Exception('Failed to load Clients. Status code: ${response.statusCode}');
     }
   }
 
@@ -172,11 +131,7 @@ class CompanyService {
     try {
       final response = await http.put(
         Uri.parse(ApiConfig.editCompanyUrl + guid),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: jsonEncode(company),
       );
 
@@ -185,9 +140,7 @@ class CompanyService {
         final dynamic listCompanyJson = data['companies'];
         return Company.fromJson(listCompanyJson[0]);
       } else {
-        throw Exception(
-          'Failed to load appointments. Status code: ${response.statusCode}',
-        );
+        throw Exception('Failed to load appointments. Status code: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to load appointments. Status code:');
