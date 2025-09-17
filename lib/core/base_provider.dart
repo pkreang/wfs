@@ -17,6 +17,13 @@ import 'package:wfs/services/client_service.dart';
 
 final appointmentServiceProvider = Provider<AppointmentService>((ref) => AppointmentService());
 final appointmentProvider = StateNotifierProvider.autoDispose<AppointmentViewModel, AppointmentState>((ref) => AppointmentViewModel(ref));
+
+final selectedMonthProvider = NotifierProvider<SelectedMonthViewModel, DateTime>(SelectedMonthViewModel.new);
+final selectedDateProvider = NotifierProvider<SelectedDateViewModel, DateTime>(SelectedDateViewModel.new);
+
+final appointmentMarkDateProvider = StateNotifierProvider.autoDispose.family<AppointmentMarkDateViewModel, AsyncValue<Map<String, bool>>, DateTime>(
+  (ref, date) => AppointmentMarkDateViewModel(ref, date),
+);
 final appointmentsByDateProvider = StateNotifierProvider.autoDispose.family<AppointmentsByDateViewModel, AsyncValue<List<Appointment>>, String>((ref, date) => AppointmentsByDateViewModel(ref, date));
 final appointmentCreateProvider = StateNotifierProvider.autoDispose.family<AppointmentCreateViewModel, AppointmentCreateState, String>((ref, id) {
   return AppointmentCreateViewModel(ref, id);
@@ -33,20 +40,20 @@ final appointmentVisitProvider = StateNotifierProvider.autoDispose.family<Appoin
   return AppointmentVisitViewModel(ref, id);
 });
 
-final appointmentMarkDateProvider = FutureProvider.autoDispose.family<Map<String, bool>, DateTime>((ref, date) async {
-  final year = date.year.toString();
-  final month = date.month.toString();
+// final appointmentMarkDateProvider = FutureProvider.autoDispose.family<Map<String, bool>, DateTime>((ref, date) async {
+//   final year = date.year.toString();
+//   final month = date.month.toString();
 
-  final dates = await ref.read(appointmentServiceProvider).fetchAppointmentByMonthYear(ref, month, year);
+//   final dates = await ref.read(appointmentServiceProvider).fetchAppointmentByMonthYear(ref, month, year);
 
-  Map<String, bool> map = {};
+//   Map<String, bool> map = {};
 
-  for (var appointmentDate in dates) {
-    map[appointmentDate] = true;
-  }
+//   for (var appointmentDate in dates) {
+//     map[appointmentDate] = true;
+//   }
 
-  return map;
-});
+//   return map;
+// });
 
 // final appointmentsByDateProvider = FutureProvider.autoDispose.family<List<Appointment>, DateTime>((ref, date) async {
 //   return ref.read(appointmentServiceProvider).fetchAppointmentsByDate(ref, date.toIso8601String());

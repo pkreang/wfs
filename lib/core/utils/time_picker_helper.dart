@@ -19,6 +19,7 @@ Future<TimeOfDay?> showCupertinoTimeDialog(BuildContext context, {required Strin
               _CupertinoDialogHeader(onCancel: () => Navigator.of(ctx).pop(null), onDone: () => Navigator.of(ctx).pop(selected)),
               Expanded(
                 child: CupertinoDatePicker(
+                  use24hFormat: true,
                   mode: CupertinoDatePickerMode.time,
                   initialDateTime: DateTime.now().copyWith(hour: selected.hour, minute: selected.minute),
                   minuteInterval: 5,

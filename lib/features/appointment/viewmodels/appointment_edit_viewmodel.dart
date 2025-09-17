@@ -34,6 +34,10 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
 
   AppointmentService get _appointmentService => ref.read(appointmentServiceProvider);
 
+  void setIsLoading(bool value) {
+    state = state.copyWith(isLoading: value);
+  }
+
   Future<void> fetch() async {
     final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(ref, id));
     state = state.copyWith(data: res, isDirty: false);
@@ -135,7 +139,8 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
       final result = await _appointmentService.updateAppointment(detail, ref);
       if (!result) return result;
 
-      ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(DateTime.now())).notifier).refresh();
+      final filter = DateTime.tryParse(detail.appointmentDateTimeFrom) ?? DateTime.now();
+      ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
 
       return result;
     } catch (e, st) {
@@ -148,10 +153,20 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
   }
 
   Future<bool> deleteAppointment() async {
+    final detail = state.data.value;
+    if (detail == null) return false;
+
     state = state.copyWith(isLoading: true);
 
     try {
-      return await _appointmentService.deleteAppointment(id, ref);
+      final result = await _appointmentService.deleteAppointment(id, ref);
+      if (!result) return result;
+
+      final filter = DateTime.tryParse(detail.appointmentDateTimeFrom) ?? DateTime.now();
+      ref.read(appointmentMarkDateProvider(DateTime(filter.year, filter.month, 1)).notifier).refresh();
+      ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
+
+      return result;
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));
     } finally {

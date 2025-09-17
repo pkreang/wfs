@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
@@ -24,23 +23,77 @@ class AppointmentViewModel extends StateNotifier<AppointmentState> {
 
   AppointmentService get _appointmentService => ref.read(appointmentServiceProvider);
 
-  Future<void> updateAppointmentStatus({required String appointmentID, required String appointmentStatusID, String? cancelNoted, required DateTime currentDate, VoidCallback? onSuccess}) async {
-    if (state.isLoading) return;
+  Future<bool> updateAppointmentStatus({required String appointmentID, required String appointmentStatusID, required VoidCallback onSuccess, String? cancelNoted}) async {
+    if (state.isLoading) return false;
 
     state = state.copyWith(isLoading: true);
 
     try {
       final result = await _appointmentService.updateAppointmentStatus(ref, appointmentID, appointmentStatusID, cancelNoted);
       if (result) {
-        ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(currentDate)).notifier).refresh();
-        onSuccess?.call();
+        onSuccess.call();
       }
+
+      return result;
     } catch (e) {
       print('updateAppointmentStatus catch: $e');
     } finally {
       state = state.copyWith(isLoading: false);
     }
+
+    return false;
   }
+}
+
+DateTime _startOfDay(DateTime d) => DateTime(d.year, d.month, d.day);
+
+class SelectedMonthViewModel extends Notifier<DateTime> {
+  @override
+  DateTime build() {
+    return _startOfDay(DateTime.now());
+  }
+
+  void setMonth(DateTime d) => state = _startOfDay(d);
+  void nextMonth() => state = _startOfDay(DateTime(state.year, state.month + 1, 1));
+  void prevMonth() => state = _startOfDay(DateTime(state.year, state.month - 1, 1));
+}
+
+class SelectedDateViewModel extends Notifier<DateTime> {
+  @override
+  DateTime build() {
+    return _startOfDay(DateTime.now());
+  }
+
+  void setDate(DateTime d) => state = _startOfDay(d);
+}
+
+class AppointmentMarkDateViewModel extends StateNotifier<AsyncValue<Map<String, bool>>> {
+  AppointmentMarkDateViewModel(this.ref, this.date) : super(const AsyncValue.loading()) {
+    fetch();
+  }
+
+  final Ref ref;
+  final DateTime date;
+
+  AppointmentService get _appointmentService => ref.read(appointmentServiceProvider);
+
+  Future<void> fetch() async {
+    state = const AsyncValue.loading();
+
+    try {
+      final datasAsync = await _appointmentService.fetchAppointmentByMonthYear(ref, date.month.toString(), date.year.toString());
+      Map<String, bool> map = {};
+      for (var appointmentDate in datasAsync) {
+        map[appointmentDate] = true;
+      }
+
+      state = AsyncData(map);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> refresh() => fetch();
 }
 
 class AppointmentsByDateViewModel extends StateNotifier<AsyncValue<List<Appointment>>> {
@@ -54,7 +107,6 @@ class AppointmentsByDateViewModel extends StateNotifier<AsyncValue<List<Appointm
   AppointmentService get _appointmentService => ref.read(appointmentServiceProvider);
 
   Future<void> fetch() async {
-    print('AppointmentsByDateViewModel feych');
     state = const AsyncValue.loading();
     final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentsByDate(ref, date));
     state = res;

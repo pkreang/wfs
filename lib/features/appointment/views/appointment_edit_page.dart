@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
+import 'package:wfs/features/appointment/models/appointment_status.dart';
 import 'package:wfs/features/appointment/models/product.dart';
 import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
 import 'package:wfs/features/appointment/widgets/app_sheet.dart';
@@ -10,6 +11,7 @@ import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
 import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
+import 'package:wfs/features/appointment/widgets/cancel_appointment_dialog.dart';
 import 'package:wfs/lib/widgets/form_address.dart';
 import 'package:wfs/lib/widgets/form_datetime_picker.dart';
 import 'package:wfs/lib/widgets/form_info_tile.dart';
@@ -135,9 +137,6 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
     final result = await ref.read(appointmentEditProvider(widget.appointmentID).notifier).deleteAppointment();
     if (!result) return;
 
-    // final currentDate = ref.read(currentDateProvider);
-    // ref.read(appointmentsByDateProvider(currentDate).notifier).refresh()
-
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
@@ -147,6 +146,20 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
 
     if (!mounted) return;
     Navigator.pop(context, result);
+  }
+
+  void handleAppointmentStatusChange(AppointmentDetail appointmentDetail, AppointmentStatus value) async {
+    if (value.appointmentStatusName != 'Canceled') {
+      ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentStatus(value);
+      return;
+    }
+
+    ref.read(appointmentEditProvider(widget.appointmentID).notifier).setIsLoading(true);
+
+    final date = DateTime.tryParse(appointmentDetail.appointmentDateTimeFrom) ?? DateTime.now();
+    await showCancelAppointmentDialog(context: context, ref: ref, appointmentID: appointmentDetail.appointmentID, currentDate: date);
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override
@@ -249,7 +262,7 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                     onTap: () => AppSheet.openAppointmentStatusSheet(
                       context: context,
                       appointmentStatusID: appointmentDetail.appointmentStatusID,
-                      onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentStatus(value),
+                      onSelected: (value) => handleAppointmentStatusChange(appointmentDetail, value),
                     ),
                   ),
                   FormInfoTile(
@@ -273,10 +286,10 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                   ),
                 ],
               ),
-              if (isShowCancelNote)
-                Column(
-                  children: [FormInfoTile(label: 'canceled note', value: AppTextFormField(maxLines: 5), height: 126, isShowBorderBottom: true, isHideIcon: true)],
-                ),
+              // if (isShowCancelNote)
+              //   Column(
+              //     children: [FormInfoTile(label: 'canceled note', value: AppTextFormField(maxLines: 5), height: 126, isShowBorderBottom: true, isHideIcon: true)],
+              //   ),
               Column(
                 children: [
                   FormDatetimePicker(

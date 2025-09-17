@@ -6,100 +6,114 @@ import 'package:wfs/features/appointment/views/appointment_detail_page.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
+import 'package:wfs/features/appointment/widgets/cancel_appointment_dialog.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
 import 'package:wfs/widgets/app_text_form_field.dart';
 
-final currentDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
-final currentMonthProvider = StateProvider<DateTime>((ref) => DateTime.now());
-final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
-
 class AppointmentScreen extends ConsumerWidget {
   const AppointmentScreen({super.key});
 
-  void handleCancelAppointment(BuildContext context, WidgetRef ref, DateTime currentDate, String appointmentID) async {
-    if (appointmentID.isEmpty) {
-      return;
-    }
+  // void handleCancelAppointment(BuildContext context, WidgetRef ref, DateTime currentDate, String appointmentID) async {
+  //   if (appointmentID.isEmpty) {
+  //     return;
+  //   }
 
-    final TextEditingController notedController = TextEditingController();
+  //   final TextEditingController notedController = TextEditingController();
 
-    void handleConfirm() async {
-      if (Validator.required(notedController.text) != null) {
-        AppDialogs.error(context, message: "กรุณากรอก canceled note");
-        return;
-      }
+  //   void handleConfirm() async {
+  //     if (Validator.required(notedController.text) != null) {
+  //       AppDialogs.error(context, message: "กรุณากรอก canceled note");
+  //       return;
+  //     }
 
-      Navigator.pop(context);
+  //     Navigator.pop(context);
 
-      await ref
-          .read(appointmentProvider.notifier)
-          .updateAppointmentStatus(appointmentID: appointmentID, appointmentStatusID: "16CBDB62-30BB-4679-A1ED-CB935E11B7E2", currentDate: currentDate, cancelNoted: notedController.text);
-    }
+  //     await ref
+  //         .read(appointmentProvider.notifier)
+  //         .updateAppointmentStatus(
+  //           appointmentID: appointmentID,
+  //           appointmentStatusID: "16CBDB62-30BB-4679-A1ED-CB935E11B7E2",
+  //           onSuccess: () {
+  //             ref.read(selectedMonthProvider.notifier).setMonth(currentDate);
+  //             ref.read(selectedDateProvider.notifier).setDate(currentDate);
+  //           },
+  //           cancelNoted: notedController.text,
+  //         );
+  //   }
 
-    Widget dialogCancelAppointment() {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppText(label: 'Cancel Appointment', fontSize: 17, fontWeight: FontWeight.bold),
-            const SizedBox(height: 24),
-            AppText(label: 'canceled note'),
-            const SizedBox(height: 4),
-            AppTextFormField(controller: notedController, hintText: 'canceled note', isShowBorder: true),
-            const SizedBox(height: 24),
-            Row(
-              spacing: 24,
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                      decoration: BoxDecoration(color: AppUtility.colorRed, borderRadius: BorderRadius.circular(12)),
-                      child: AppText(label: 'Cancel', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.white),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => handleConfirm(),
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                      decoration: BoxDecoration(color: AppUtility.colorRed, borderRadius: BorderRadius.circular(12)),
-                      child: AppText(label: 'Confirm', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
+  //   Widget dialogCancelAppointment() {
+  //     return Padding(
+  //       padding: const EdgeInsets.symmetric(horizontal: 24),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           AppText(label: 'Cancel Appointment', fontSize: 17, fontWeight: FontWeight.bold),
+  //           const SizedBox(height: 24),
+  //           AppText(label: 'canceled note'),
+  //           const SizedBox(height: 4),
+  //           AppTextFormField(controller: notedController, hintText: 'canceled note', isShowBorder: true),
+  //           const SizedBox(height: 24),
+  //           Row(
+  //             spacing: 24,
+  //             children: [
+  //               Expanded(
+  //                 child: GestureDetector(
+  //                   onTap: () => Navigator.pop(context),
+  //                   child: Container(
+  //                     alignment: Alignment.center,
+  //                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+  //                     decoration: BoxDecoration(color: AppUtility.colorRed, borderRadius: BorderRadius.circular(12)),
+  //                     child: AppText(label: 'Cancel', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.white),
+  //                   ),
+  //                 ),
+  //               ),
+  //               Expanded(
+  //                 child: GestureDetector(
+  //                   onTap: () => handleConfirm(),
+  //                   child: Container(
+  //                     alignment: Alignment.center,
+  //                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+  //                     decoration: BoxDecoration(color: AppUtility.colorRed, borderRadius: BorderRadius.circular(12)),
+  //                     child: AppText(label: 'Confirm', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.white),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
 
-    AppDialogs.custom(context, widget: dialogCancelAppointment());
-  }
+  //   AppDialogs.custom(context, widget: dialogCancelAppointment());
+  // }
 
   void handleCompleteAppointment(WidgetRef ref, DateTime currentDate, String appointmentID) async {
     if (appointmentID.isEmpty) {
       return;
     }
 
-    await ref.read(appointmentProvider.notifier).updateAppointmentStatus(appointmentID: appointmentID, appointmentStatusID: "C9B78060-8F8C-46FA-92A6-65D932701EB7", currentDate: currentDate);
+    await ref
+        .read(appointmentProvider.notifier)
+        .updateAppointmentStatus(
+          appointmentID: appointmentID,
+          appointmentStatusID: "C9B78060-8F8C-46FA-92A6-65D932701EB7",
+          onSuccess: () {
+            ref.read(selectedMonthProvider.notifier).setMonth(currentDate);
+            ref.read(selectedDateProvider.notifier).setDate(currentDate);
+          },
+        );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentMonth = ref.watch(currentMonthProvider);
-    final currentDate = ref.watch(currentDateProvider);
+    final currentMonth = ref.watch(selectedMonthProvider);
+    final currentDate = ref.watch(selectedDateProvider);
 
-    final markPointsAsync = ref.watch(appointmentMarkDateProvider(currentMonth));
+    final markPointsAsync = ref.watch(appointmentMarkDateProvider(DateTime(currentMonth.year, currentMonth.month, 1)));
     final appointmentsAsync = ref.watch(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(currentDate)));
     final state = ref.watch(appointmentProvider);
 
@@ -171,7 +185,7 @@ class AppointmentScreen extends ConsumerWidget {
                         bool isCancel = appointment.appointmentStatusName == "Canceled";
                         bool isComplete = appointment.appointmentStatusName == "Completed";
 
-                        if (isComplete) isShowCompleteButton = false;
+                        if (isComplete || isCancel) isShowCompleteButton = false;
                         if (!isComplete && !isCancel) isShowCancelButton = true;
 
                         return GestureDetector(
@@ -254,7 +268,7 @@ class AppointmentScreen extends ConsumerWidget {
                                   children: [
                                     isShowCancelButton
                                         ? GestureDetector(
-                                            onTap: () => handleCancelAppointment(context, ref, currentDate, appointment.appointmentID ?? ''),
+                                            onTap: () => showCancelAppointmentDialog(context: context, ref: ref, appointmentID: appointment.appointmentID ?? '', currentDate: currentDate),
                                             child: Icon(Icons.delete_outline, color: AppUtility.colorGray, size: 24),
                                           )
                                         : const SizedBox.shrink(),
@@ -301,14 +315,14 @@ class AppointmentScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
                 onPressed: () {
-                  ref.read(currentMonthProvider.notifier).update((state) => DateTime(state.year, state.month - 1, 1));
+                  ref.read(selectedMonthProvider.notifier).prevMonth();
                 },
               ),
               AppText(label: DateFormat('MMMM yyyy').format(currentMonth), fontSize: 18, fontWeight: FontWeight.bold),
               IconButton(
                 icon: const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 20),
                 onPressed: () {
-                  ref.read(currentMonthProvider.notifier).update((state) => DateTime(state.year, state.month + 1, 1));
+                  ref.read(selectedMonthProvider.notifier).nextMonth();
                 },
               ),
             ],
@@ -357,7 +371,7 @@ class AppointmentScreen extends ConsumerWidget {
           onTap: () {
             ref.read(selectedDateProvider.notifier).state = day;
             // อัปเดต currentDateProvider เพื่อให้ข้อมูลด้านล่างรีเฟรช
-            ref.read(currentDateProvider.notifier).state = day;
+            ref.read(selectedDateProvider.notifier).setDate(day);
           },
           child: Stack(
             alignment: Alignment.center,

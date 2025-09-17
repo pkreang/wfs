@@ -15,7 +15,7 @@ class Client {
   final String clientStatusName;
   final String firstName;
   final String lastName;
-  final String noted;
+  final String? noted;
   final String phone;
   final String email;
   final String availableTimeStart;
@@ -30,7 +30,7 @@ class Client {
     required this.clientStatusName,
     required this.firstName,
     required this.lastName,
-    required this.noted,
+    this.noted,
     required this.phone,
     required this.email,
     required this.availableTimeStart,

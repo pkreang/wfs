@@ -9,6 +9,7 @@ import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/lib/widgets/form_address.dart';
 import 'package:wfs/lib/widgets/form_company_tile.dart';
 import 'package:wfs/lib/widgets/form_datetime_picker.dart';
+import 'package:wfs/lib/widgets/form_datetime_range_picker.dart';
 import 'package:wfs/lib/widgets/form_info_tile.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/utility/appdialogs.dart';
@@ -199,21 +200,13 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                   ),
                 ],
               ),
-              Column(
-                children: [
-                  FormDatetimePicker(
-                    label: 'Starts',
-                    datetime: appointment.appointmentDateTimeFrom,
-                    onDateSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentFromDate(value),
-                    onTimeSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentFromTime(value),
-                  ),
-                  FormDatetimePicker(
-                    label: 'Ends',
-                    datetime: appointment.appointmentDateTimeTo,
-                    onDateSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentToDate(value),
-                    onTimeSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentToTime(value),
-                  ),
-                ],
+              FormDatetimeRangePicker(
+                start: appointment.appointmentDateTimeFrom,
+                end: appointment.appointmentDateTimeTo,
+                onStartDateSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentFromDate(value),
+                onStartTimeSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentFromTime(value),
+                onEndDateSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentToDate(value),
+                onEndTimeSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentToTime(value),
               ),
               Column(
                 children: [

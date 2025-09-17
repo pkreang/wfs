@@ -45,19 +45,18 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     }
   }
 
-  void handelComplete() async {
+  void handelComplete(String appointmentDateTimeFrom) async {
     await ref
         .read(appointmentProvider.notifier)
         .updateAppointmentStatus(
           appointmentID: widget.appointmentID,
           appointmentStatusID: "C9B78060-8F8C-46FA-92A6-65D932701EB7",
-          currentDate: DateTime.now(),
-          onSuccess: () => ref.read(appointmentDetailProvider(widget.appointmentID).notifier).refresh(),
+          onSuccess: () {
+            final filter = DateTime.parse(appointmentDateTimeFrom);
+            ref.read(selectedMonthProvider.notifier).setMonth(filter);
+            ref.read(selectedDateProvider.notifier).setDate(filter);
+          },
         );
-    // await ref.read(appointmentDetailProvider(widget.appointmentID).notifier).updateAppointmentStatus(appointmentID: widget.appointmentID, appointmentStatusID: "C9B78060-8F8C-46FA-92A6-65D932701EB7");
-    // if (result == true && mounted) {
-    //   await ref.read(appointmentDetailProvider(widget.appointmentID).notifier).refresh();
-    // }
   }
 
   Future<void> openGoogleMap(double lat, double lng) async {
@@ -174,7 +173,7 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                   buildActionCard(icon: Icons.person, title: 'clients', onTap: () => print('client page')),
                   buildActionCard(icon: Icons.location_pin, title: 'map', onTap: () => openGoogleMap(latitude ?? 0, longitude ?? 0)),
                   if (isShowIconCheckIn) buildActionCard(icon: Icons.menu_book, title: visitTitle, onTap: () => callVisitPage()),
-                  if (isShowIconComplete) buildActionCard(icon: Icons.check_circle, title: 'complete', onTap: () => handelComplete()),
+                  if (isShowIconComplete) buildActionCard(icon: Icons.check_circle, title: 'complete', onTap: () => handelComplete(appointmentDetail.appointmentDateTimeFrom)),
                   buildActionCard(icon: Icons.history, title: 'history', onTap: () => print('history page')),
                 ],
               ),
