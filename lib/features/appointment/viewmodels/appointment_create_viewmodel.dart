@@ -171,6 +171,9 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
       ref.read(selectedMonthProvider.notifier).setMonth(filter);
       ref.read(selectedDateProvider.notifier).setDate(filter);
 
+      ref.read(appointmentMarkDateProvider(DateTime(filter.year, filter.month, 1)).notifier).refresh();
+      ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
+
       return result;
     } catch (e, st) {
       state = state.copyWith(appointment: AsyncError(e, st));

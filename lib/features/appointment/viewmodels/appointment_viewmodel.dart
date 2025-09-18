@@ -109,7 +109,24 @@ class AppointmentsByDateViewModel extends StateNotifier<AsyncValue<List<Appointm
   Future<void> fetch() async {
     state = const AsyncValue.loading();
     final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentsByDate(ref, date));
-    state = res;
+
+    const statusOrder = <String, int>{'Scheduled': 0, 'Completed': 1, 'Canceled': 2};
+
+    state = res.whenData((list) {
+      final sorted = [...list];
+      sorted.sort((a, b) {
+        final ra = statusOrder[(a.appointmentStatusName ?? '').trim()] ?? 999;
+        final rb = statusOrder[(b.appointmentStatusName ?? '').trim()] ?? 999;
+        if (ra != rb) return ra - rb;
+
+        final sa = (a.appointmentTimeFrom ?? a.appointmentDateTimeFrom.toIso8601String()).trim();
+        final sb = (b.appointmentTimeFrom ?? b.appointmentDateTimeFrom.toIso8601String()).trim();
+
+        return sa.compareTo(sb);
+      });
+
+      return sorted;
+    });
   }
 
   Future<void> refresh() => fetch();

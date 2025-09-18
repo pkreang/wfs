@@ -2,111 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:wfs/core/base_provider.dart';
-import 'package:wfs/features/appointment/views/appointment_detail_page.dart';
+import 'package:wfs/features/appointment/widgets/app_appointment_info.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
-import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
-import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
-import 'package:wfs/features/appointment/widgets/cancel_appointment_dialog.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
-import 'package:wfs/utility/appdialogs.dart';
-import 'package:wfs/utility/validator.dart';
-import 'package:wfs/widgets/app_text_form_field.dart';
 
 class AppointmentScreen extends ConsumerWidget {
   const AppointmentScreen({super.key});
-
-  // void handleCancelAppointment(BuildContext context, WidgetRef ref, DateTime currentDate, String appointmentID) async {
-  //   if (appointmentID.isEmpty) {
-  //     return;
-  //   }
-
-  //   final TextEditingController notedController = TextEditingController();
-
-  //   void handleConfirm() async {
-  //     if (Validator.required(notedController.text) != null) {
-  //       AppDialogs.error(context, message: "กรุณากรอก canceled note");
-  //       return;
-  //     }
-
-  //     Navigator.pop(context);
-
-  //     await ref
-  //         .read(appointmentProvider.notifier)
-  //         .updateAppointmentStatus(
-  //           appointmentID: appointmentID,
-  //           appointmentStatusID: "16CBDB62-30BB-4679-A1ED-CB935E11B7E2",
-  //           onSuccess: () {
-  //             ref.read(selectedMonthProvider.notifier).setMonth(currentDate);
-  //             ref.read(selectedDateProvider.notifier).setDate(currentDate);
-  //           },
-  //           cancelNoted: notedController.text,
-  //         );
-  //   }
-
-  //   Widget dialogCancelAppointment() {
-  //     return Padding(
-  //       padding: const EdgeInsets.symmetric(horizontal: 24),
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           AppText(label: 'Cancel Appointment', fontSize: 17, fontWeight: FontWeight.bold),
-  //           const SizedBox(height: 24),
-  //           AppText(label: 'canceled note'),
-  //           const SizedBox(height: 4),
-  //           AppTextFormField(controller: notedController, hintText: 'canceled note', isShowBorder: true),
-  //           const SizedBox(height: 24),
-  //           Row(
-  //             spacing: 24,
-  //             children: [
-  //               Expanded(
-  //                 child: GestureDetector(
-  //                   onTap: () => Navigator.pop(context),
-  //                   child: Container(
-  //                     alignment: Alignment.center,
-  //                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-  //                     decoration: BoxDecoration(color: AppUtility.colorRed, borderRadius: BorderRadius.circular(12)),
-  //                     child: AppText(label: 'Cancel', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.white),
-  //                   ),
-  //                 ),
-  //               ),
-  //               Expanded(
-  //                 child: GestureDetector(
-  //                   onTap: () => handleConfirm(),
-  //                   child: Container(
-  //                     alignment: Alignment.center,
-  //                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-  //                     decoration: BoxDecoration(color: AppUtility.colorRed, borderRadius: BorderRadius.circular(12)),
-  //                     child: AppText(label: 'Confirm', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.white),
-  //                   ),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //   }
-
-  //   AppDialogs.custom(context, widget: dialogCancelAppointment());
-  // }
-
-  void handleCompleteAppointment(WidgetRef ref, DateTime currentDate, String appointmentID) async {
-    if (appointmentID.isEmpty) {
-      return;
-    }
-
-    await ref
-        .read(appointmentProvider.notifier)
-        .updateAppointmentStatus(
-          appointmentID: appointmentID,
-          appointmentStatusID: "C9B78060-8F8C-46FA-92A6-65D932701EB7",
-          onSuccess: () {
-            ref.read(selectedMonthProvider.notifier).setMonth(currentDate);
-            ref.read(selectedDateProvider.notifier).setDate(currentDate);
-          },
-        );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -143,7 +45,7 @@ class AppointmentScreen extends ConsumerWidget {
             title: Column(
               children: [
                 AppText(label: 'Appointments', fontSize: 17, fontWeight: FontWeight.w600),
-                AppText(label: '210 Entry', fontSize: 13),
+                AppText(label: 'Entry', fontSize: 13),
               ],
             ),
             shape: const Border(bottom: BorderSide(color: Color.fromRGBO(60, 60, 67, 0.36), width: 0.5)),
@@ -175,120 +77,7 @@ class AppointmentScreen extends ConsumerWidget {
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
                         final appointment = appointments[index];
-                        bool isShowCompleteButton = false;
-                        bool isShowCancelButton = false;
-
-                        bool isOnline = appointment.appointmentTypeName == "Online";
-                        bool isOnCall = appointment.appointmentTypeName == "On Call";
-                        if (isOnline || isOnCall) isShowCompleteButton = true;
-
-                        bool isCancel = appointment.appointmentStatusName == "Canceled";
-                        bool isComplete = appointment.appointmentStatusName == "Completed";
-
-                        if (isComplete || isCancel) isShowCompleteButton = false;
-                        if (!isComplete && !isCancel) isShowCancelButton = true;
-
-                        return GestureDetector(
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => AppointmentDetailPage(appointmentID: appointment.appointmentID ?? ''))),
-                          child: Container(
-                            height: 152,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(border: Border(bottom: AppUtility.borderSide)),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              spacing: 16,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    spacing: 6,
-                                    children: [
-                                      Row(
-                                        spacing: 6,
-                                        children: [
-                                          AppText(label: appointment.clientName ?? '', fontSize: 17),
-                                          AppointmentTypeCapsule(appointmentTypeName: appointment.appointmentTypeName ?? ''),
-                                          AppointmentStatusCapsule(appointmentStatusName: appointment.appointmentStatusName ?? ''),
-                                        ],
-                                      ),
-                                      Row(
-                                        spacing: 24,
-                                        children: [
-                                          Row(
-                                            spacing: 6,
-                                            children: [
-                                              Icon(Icons.access_time_outlined, color: AppUtility.textGray, size: 18),
-                                              AppText(label: '${appointment.appointmentTimeFrom}-${appointment.appointmentTimeTo.toString()}', fontSize: 14, textColor: AppUtility.textLight),
-                                            ],
-                                          ),
-                                          Expanded(
-                                            child: Row(
-                                              spacing: 6,
-                                              children: [
-                                                Icon(Icons.business_center_outlined, color: AppUtility.textGray, size: 18),
-                                                Expanded(
-                                                  child: AppText(label: appointment.companyName ?? '', fontSize: 14, textColor: AppUtility.textLight),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: 48,
-                                        child: Row(
-                                          spacing: 6,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 2),
-                                              child: Icon(Icons.location_on, color: AppUtility.textGray, size: 18),
-                                            ),
-                                            Expanded(
-                                              child: AppText(label: appointment.address ?? '', fontSize: 14, textColor: AppUtility.textLight, maxLines: 2),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Row(
-                                        spacing: 6,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Icon(Icons.favorite, color: AppUtility.textGray, size: 18),
-                                          Expanded(
-                                            child: AppText(label: '', fontSize: 14, textColor: AppUtility.textLight),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    isShowCancelButton
-                                        ? GestureDetector(
-                                            onTap: () => showCancelAppointmentDialog(context: context, ref: ref, appointmentID: appointment.appointmentID ?? '', currentDate: currentDate),
-                                            child: Icon(Icons.delete_outline, color: AppUtility.colorGray, size: 24),
-                                          )
-                                        : const SizedBox.shrink(),
-                                    Icon(Icons.chevron_right, color: AppUtility.colorGray, size: 24),
-                                    isShowCompleteButton
-                                        ? GestureDetector(
-                                            onTap: () => handleCompleteAppointment(ref, currentDate, appointment.appointmentID ?? ''),
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                                              decoration: BoxDecoration(color: AppUtility.colorRed, borderRadius: BorderRadius.circular(12)),
-                                              child: AppText(label: 'Complete', fontSize: 14, textColor: Colors.white),
-                                            ),
-                                          )
-                                        : const SizedBox.shrink(),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
+                        return AppointmentInfo(appointment: appointment, currentDate: currentDate);
                       },
                       itemCount: appointments.length,
                     );
@@ -369,8 +158,6 @@ class AppointmentScreen extends ConsumerWidget {
       dayWidgets.add(
         GestureDetector(
           onTap: () {
-            ref.read(selectedDateProvider.notifier).state = day;
-            // อัปเดต currentDateProvider เพื่อให้ข้อมูลด้านล่างรีเฟรช
             ref.read(selectedDateProvider.notifier).setDate(day);
           },
           child: Stack(
@@ -378,13 +165,13 @@ class AppointmentScreen extends ConsumerWidget {
             clipBehavior: Clip.none,
             children: [
               Container(
-                height: 32,
-                margin: const EdgeInsets.all(4),
+                // height: 18,
+                margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(color: isSelected ? Color.fromRGBO(0, 0, 0, 0.12) : Colors.transparent, shape: BoxShape.circle),
                 alignment: Alignment.center,
                 child: AppText(label: '$i', textColor: Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
               ),
-              if (isHasAppointment) Positioned(top: 44, child: Icon(Icons.circle, size: 8, color: AppUtility.colorPrimary)),
+              if (isHasAppointment) Positioned(top: 31, child: Icon(Icons.circle, size: 8, color: AppUtility.colorPrimary)),
             ],
           ),
         ),
@@ -397,7 +184,7 @@ class AppointmentScreen extends ConsumerWidget {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1.2),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1.6),
           itemCount: dayWidgets.length,
           itemBuilder: (context, index) {
             return dayWidgets[index];

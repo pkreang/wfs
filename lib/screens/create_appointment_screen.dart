@@ -246,7 +246,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
               AppointmentService appointmentService = new AppointmentService();
 
               try {
-                appointmentService.Add(accessToken.toString(), appointment);
+                // appointmentService.Add(accessToken.toString(), appointment);
                 // ignore: unused_result
                 // ref.refresh(appointmentsProvider);
                 AppDialogs.success(context);

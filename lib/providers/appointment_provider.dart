@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:intl/intl.dart';
-import '../models/appointment_model.dart';
+import 'package:wfs/features/appointment/models/appointment.dart';
 import '../services/appointment_service.dart';
-import 'auth_provider.dart'; 
+import 'auth_provider.dart';
 import '../models/appointment_summary_model.dart';
 
 final appointmentServiceProvider = Provider<AppointmentService>((ref) {
@@ -11,7 +11,6 @@ final appointmentServiceProvider = Provider<AppointmentService>((ref) {
 });
 
 final appointmentsProvider = FutureProvider.autoDispose.family<List<Appointment>, DateTime>((ref, date) async {
- 
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
   final formattedDate = DateFormat('yyyy-MM-dd').format(date);
@@ -20,43 +19,39 @@ final appointmentsProvider = FutureProvider.autoDispose.family<List<Appointment>
     throw Exception('User is not authenticated.');
   }
 
-  final appointmentService = ref.read(appointmentServiceProvider); 
-
+  final appointmentService = ref.read(appointmentServiceProvider);
 
   return appointmentService.fetchAppointments(accessToken, authState.userID!, formattedDate);
 });
 
+// final appointmentGetByIdProvider = FutureProvider.autoDispose.family<Appointment, String>((ref, guid) async {
+//   final authState = ref.watch(authProvider);
+//   final accessToken = authState.accessToken;
 
+//   if (accessToken == null || accessToken.isEmpty) {
+//     throw Exception('User is not authenticated.');
+//   }
 
-final appointmentGetByIdProvider = FutureProvider.autoDispose.family<Appointment, String>((ref,guid,) async {
+//   final appointmentService = ref.watch(appointmentServiceProvider);
 
-  final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+//   return appointmentService.GetById(accessToken, guid);
+// });
 
-  if (accessToken == null || accessToken.isEmpty) {
-    throw Exception('User is not authenticated.');
-  }
+// final appointmentGetByDateProvider = FutureProvider.autoDispose.family<List<Appointment>, DateTime>((ref, date) async {
+//   final authState = ref.watch(authProvider);
+//   final accessToken = authState.accessToken;
+//   final formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
-  final appointmentService = ref.watch(appointmentServiceProvider);
+//   if (accessToken == null || accessToken.isEmpty) {
+//     throw Exception('User is not authenticated.');
+//   }
 
-  return appointmentService.GetById(accessToken, guid);
-});
+//   final appointmentService = ref.watch(appointmentServiceProvider);
 
-final appointmentGetByDateProvider = FutureProvider.autoDispose.family<List<Appointment>, DateTime>((ref, date) async {
-      final authState = ref.watch(authProvider);
-      final accessToken = authState.accessToken;
-      final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+//   return appointmentService.GetByDate(accessToken, formattedDate);
+// });
 
-      if (accessToken == null || accessToken.isEmpty) {
-        throw Exception('User is not authenticated.');
-      }
-
-      final appointmentService = ref.watch(appointmentServiceProvider);
-
-      return appointmentService.GetByDate(accessToken, formattedDate);
-    });
-
-  final appointmentSummaryProvider = FutureProvider.autoDispose.family<AppointmentSummary, DateTime>((ref, date) async {
+final appointmentSummaryProvider = FutureProvider.autoDispose.family<AppointmentSummary, DateTime>((ref, date) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 
@@ -68,47 +63,38 @@ final appointmentGetByDateProvider = FutureProvider.autoDispose.family<List<Appo
   if (accessToken == null || accessToken.isEmpty) {
     throw Exception('User is not authenticated.');
   }
-  
+
   final summaryAppointmentService = ref.read(appointmentServiceProvider); // เปลี่ยนเป็น read
-  
 
-  return summaryAppointmentService.fetchAppointmentSummary(accessToken, authState.userID!,formattedDate);
+  return summaryAppointmentService.fetchAppointmentSummary(accessToken, authState.userID!, formattedDate);
 });
 
+// // currentDateProvider ยังคงเหมือนเดิม
+// final currentDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
-// currentDateProvider ยังคงเหมือนเดิม
-final currentDateProvider = StateProvider <DateTime>((ref) => DateTime.now()); 
+// final appointmentEditProvider = FutureProvider.autoDispose.family<Appointment, ({String guid, Appointment appointment})>((ref, params) async {
+//   final authState = ref.watch(authProvider);
+//   final accessToken = authState.accessToken;
 
+//   if (accessToken == null || accessToken.isEmpty) {
+//     throw Exception('User is not authenticated.');
+//   }
 
-final appointmentEditProvider =
-    FutureProvider.autoDispose.family<Appointment,({String guid, Appointment appointment})>((ref, params) async {
-      final authState = ref.watch(authProvider);
-      final accessToken = authState.accessToken;
+//   final appointmentService = ref.watch(appointmentServiceProvider);
 
-      if (accessToken == null || accessToken.isEmpty) {
-        throw Exception('User is not authenticated.');
-      }
+//   return appointmentService.Edit(accessToken, params.guid, params.appointment);
+//   //final result = ref.watch(myProvider((guid: 5, appointment: 'active')));วิธีเรียกใช้ที่ ui
+// });
 
-      final appointmentService = ref.watch(appointmentServiceProvider);
+// final appointmentDeleteProvider = FutureProvider.family<String, String>((ref, guid) async {
+//   final authState = ref.watch(authProvider);
+//   final accessToken = authState.accessToken;
 
-      return appointmentService.Edit(
-        accessToken,
-        params.guid,
-        params.appointment,
-      );
-      //final result = ref.watch(myProvider((guid: 5, appointment: 'active')));วิธีเรียกใช้ที่ ui
-    });
+//   if (accessToken == null || accessToken.isEmpty) {
+//     throw Exception('User is not authenticated.');
+//   }
 
-final appointmentDeleteProvider = FutureProvider.family<String, String>((ref,guid,
-) async {
-  final authState = ref.watch(authProvider);
-  final accessToken = authState.accessToken;
+//   final appointmentService = ref.watch(appointmentServiceProvider);
 
-  if (accessToken == null || accessToken.isEmpty) {
-    throw Exception('User is not authenticated.');
-  }
-
-  final appointmentService = ref.watch(appointmentServiceProvider);
-
-  return appointmentService.Delete(accessToken, guid);
-});
+//   return appointmentService.Delete(accessToken, guid);
+// });

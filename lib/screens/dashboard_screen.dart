@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:intl/intl.dart';
+import 'package:wfs/features/appointment/widgets/app_appointment_info.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/models/appointment_summary_model.dart';
-import '../models/appointment_model.dart';
 import '../providers/appointment_provider.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
 
@@ -18,7 +18,7 @@ class DashboardScreen extends ConsumerWidget {
     final currentDate = ref.watch(currentDateProvider);
 
     final appointmentsAsyncValue = ref.watch(appointmentsProvider(currentDate));
-    final summaryAsyncValue = ref.watch(appointmentSummaryProvider(currentDate));  
+    final summaryAsyncValue = ref.watch(appointmentSummaryProvider(currentDate));
 
     return Scaffold(
       body: SafeArea(
@@ -29,15 +29,21 @@ class DashboardScreen extends ConsumerWidget {
             return ref.refresh(appointmentSummaryProvider(currentDate).future);
           },
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             children: [
-              // ส่ง ref และ currentDate ไปให้ Header
-              _buildHeader(context, ref, currentDate),
-              const SizedBox(height: 24),
-              _buildSummarySection(context, summaryAsyncValue),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, "Today's Appointments"),
-              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  children: [
+                    // ส่ง ref และ currentDate ไปให้ Header
+                    _buildHeader(context, ref, currentDate),
+                    const SizedBox(height: 24),
+                    _buildSummarySection(context, summaryAsyncValue),
+                    const SizedBox(height: 24),
+                    _buildSectionHeader(context, "Today's Appointments"),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
 
               appointmentsAsyncValue.when(
                 loading: () => const Center(heightFactor: 5, child: CircularProgressIndicator()),
@@ -47,10 +53,15 @@ class DashboardScreen extends ConsumerWidget {
                     return const Center(heightFactor: 5, child: AppText(label: 'No appointments found.'));
                   }
 
-                  return Column(
-                    children: appointments.map((appointment) {
-                      return _buildAppointmentItem(appointment: appointment, showHeader: false);
-                    }).toList(),
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final appointment = appointments[index];
+
+                      return AppointmentInfo(appointment: appointment, currentDate: currentDate);
+                    },
+                    itemCount: appointments.length,
                   );
                 },
               ),
@@ -65,49 +76,15 @@ class DashboardScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // ปุ่มย้อนกลับ (ลดวัน)
 
           // แสดงวันที่ปัจจุบัน
           AppText(label: DateFormat('MMMM d').format(currentDate), fontSize: 18, fontWeight: FontWeight.bold),
-          // ปุ่มถัดไป (เพิ่มวัน)
-          IconButton(
-            icon: const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 20),
-            onPressed: () {
-              // อ่าน notifier และอัปเดต state (เพิ่ม 1 วัน)
-              ref.read(currentDateProvider.notifier).update((state) => state.add(const Duration(days: 1)));
-            },
-          ),
         ],
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return const Color(0xFFE8F5E9);
-      case 'scheduled':
-        return const Color(0xFFFFF3E0);
-      case 'postpone':
-        return const Color(0xFFFBE9E7);
-      default:
-        return const Color(0xFFE0E0E0);
-    }
-  }
-
-  Color _getTypeColor(String type) {
-    switch (type.toLowerCase()) {
-      case 'visit':
-        return const Color(0xFFE3F2FD);
-      case 'online':
-        return const Color(0xFFE0F7FA);
-      case 'on call':
-        return const Color(0xFFF1E6FF);
-      default:
-        return const Color(0xFFE0E0E0);
-    }
   }
 
   Widget _buildSummarySection(BuildContext context, AsyncValue<AppointmentSummary> summaryAsyncValue) {
@@ -245,94 +222,6 @@ class DashboardScreen extends ConsumerWidget {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildAppointmentItem({required Appointment appointment, required bool showHeader}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (showHeader)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
-            child: AppText(label: '${appointment.appointmentTimeFrom} ${appointment.appointmentTimeto}', fontWeight: FontWeight.w500, textColor: Colors.grey),
-          ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: AppText(label: appointment.clientName, fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(color: _getTypeColor(appointment.appointmentTypeName), borderRadius: BorderRadius.circular(16)),
-                          child: AppText(label: appointment.appointmentTypeName, fontSize: 13, fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(color: _getStatusColor(appointment.appointmentStatusName), borderRadius: BorderRadius.circular(16)),
-                          child: AppText(label: appointment.appointmentStatusName, fontSize: 13, fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.access_time_outlined, color: Colors.grey.shade600, size: 18),
-                        const SizedBox(width: 4),
-                        AppText(label: '${appointment.appointmentTimeFrom}-${appointment.appointmentTimeto.toString()}', fontSize: 14, fontWeight: FontWeight.w500),
-                        const SizedBox(width: 12),
-                        Icon(Icons.business_center_outlined, color: Colors.grey.shade600, size: 18),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: AppText(label: appointment.companyName, fontSize: 14, textColor: Colors.grey.shade700),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.location_on_outlined, color: Colors.grey.shade600, size: 18),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: AppText(label: appointment.customerAddress, fontSize: 14, textColor: Colors.grey.shade700, maxLines: 2),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.favorite_border, color: Colors.grey.shade600, size: 18),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: AppText(label: appointment.product, fontSize: 14, textColor: Colors.grey.shade700, maxLines: 2),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-            ],
-          ),
-        ),
-        const Divider(height: 32),
       ],
     );
   }
