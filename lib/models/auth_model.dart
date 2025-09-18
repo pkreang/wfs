@@ -25,5 +25,5 @@ class AuthState {
     );
   }
 
-  bool get isSuperAdmin => userRoleID == "D9ACA4E5-7CC6-466E-B192-776037AD1A80";
+  bool get isSuperAdmin => userRoleID == "D9ACA4E5-7CC6-466E-B192-776037AD1A80" || userRoleID == "91FA9057-F815-456C-8D7E-C8CCCBC2A805";
 }

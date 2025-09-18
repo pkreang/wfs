@@ -182,15 +182,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
 
-                          Align(
-                            alignment: Alignment.center,
-                            child: TextButton(
-                              onPressed: () {
-                                // TODO: Implement forgot password
-                              },
-                              child: const Text('Forgot password?'),
-                            ),
-                          ),
+                          // Align(
+                          //   alignment: Alignment.center,
+                          //   child: TextButton(
+                          //     onPressed: () {
+                          //       // TODO: Implement forgot password
+                          //     },
+                          //     child: const Text('Forgot password?'),
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),
@@ -211,9 +211,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // email = "systemadmin@mail.com";
     // password = "abcd1234";
 
-    email = "Sup01@mail.com";
-    // email = "sale01@mail.com";
-    password = "abcd1234";
+    // email = "Sup01@mail.com";
+    // // email = "sale01@mail.com";
+    // password = "abcd1234";
 
     //email = "john@mail.com";
     //password = "abcd1234";
