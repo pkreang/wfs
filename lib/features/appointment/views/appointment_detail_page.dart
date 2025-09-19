@@ -12,6 +12,8 @@ import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/client_status.dart';
 import 'package:wfs/features/appointment/widgets/level_status.dart';
+import 'package:wfs/widgets/app_action_tile.dart';
+import 'package:wfs/widgets/app_detail_section_card.dart';
 
 class AppointmentDetailPage extends ConsumerStatefulWidget {
   final String appointmentID;
@@ -170,17 +172,17 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 8,
                 children: [
-                  buildActionCard(icon: Icons.person, title: 'clients', onTap: () => print('client page')),
-                  buildActionCard(icon: Icons.location_pin, title: 'map', onTap: () => openGoogleMap(latitude ?? 0, longitude ?? 0)),
-                  if (isShowIconCheckIn) buildActionCard(icon: Icons.menu_book, title: visitTitle, onTap: () => callVisitPage()),
-                  if (isShowIconComplete) buildActionCard(icon: Icons.check_circle, title: 'complete', onTap: () => handelComplete(appointmentDetail.appointmentDateTimeFrom)),
-                  buildActionCard(icon: Icons.history, title: 'history', onTap: () => print('history page')),
+                  AppActionTile(icon: Icons.person, title: 'clients', onTap: () => print('client page')),
+                  AppActionTile(icon: Icons.location_pin, title: 'map', onTap: () => openGoogleMap(latitude ?? 0, longitude ?? 0)),
+                  if (isShowIconCheckIn) AppActionTile(icon: Icons.menu_book, title: visitTitle, onTap: () => callVisitPage()),
+                  if (isShowIconComplete) AppActionTile(icon: Icons.check_circle, title: 'complete', onTap: () => handelComplete(appointmentDetail.appointmentDateTimeFrom)),
+                  AppActionTile(icon: Icons.history, title: 'history', onTap: () => print('history page')),
                 ],
               ),
             ],
           ),
           AppMap(lat: latitude, lng: longitude),
-          buildContentCard(
+          AppDetailSectionCard(
             title: 'purpose',
             descWidget: AppText(label: appointmentDetail.purposeTypeName, textColor: colorPrimary),
             fullWidth: true,
@@ -189,40 +191,40 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
             spacing: 16,
             children: [
               Expanded(
-                child: buildContentCard(
+                child: AppDetailSectionCard(
                   title: 'time',
                   descWidget: AppText(label: '${appointmentDetail.appointmentDateTimeFrom.dateTimetoHHmm()} - ${appointmentDetail.appointmentDateTimeTo.dateTimetoHHmm()}'),
                 ),
               ),
               Expanded(
-                child: buildContentCard(
+                child: AppDetailSectionCard(
                   title: 'territory',
                   descWidget: AppText(label: salesTerritory?.salesTerritoryName ?? ''),
                 ),
               ),
             ],
           ),
-          buildContentCard(
+          AppDetailSectionCard(
             title: 'address',
             descWidget: AppText(label: address.fullAddress, maxLines: 2),
             fullWidth: true,
           ),
-          buildContentCard(
+          AppDetailSectionCard(
             title: 'mobile',
             descWidget: AppText(label: appointmentDetail.phone),
             fullWidth: true,
           ),
-          buildContentCard(
+          AppDetailSectionCard(
             title: 'email',
             descWidget: AppText(label: appointmentDetail.email),
             fullWidth: true,
           ),
-          buildContentCard(
+          AppDetailSectionCard(
             title: 'company',
             descWidget: AppText(label: appointmentDetail.companyName),
             fullWidth: true,
           ),
-          // buildContentCard(
+          // AppDetailSectionCard(
           //   title: 'products',
           //   descWidget: ListView.separated(
           //     padding: EdgeInsets.zero,
@@ -240,51 +242,11 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
           //   ),
           //   fullWidth: true,
           // ),
-          buildContentCard(
+          AppDetailSectionCard(
             title: 'note',
             descWidget: AppText(label: appointmentDetail.noted, maxLines: null),
             fullWidth: true,
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildActionCard({required IconData icon, required String title, required VoidCallback onTap}) {
-    return Material(
-      color: const Color(0xFFFFFFFF),
-      borderRadius: BorderRadius.circular(11),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(11),
-        onTap: onTap,
-        splashColor: const Color(0x33007AFF),
-        highlightColor: Colors.transparent,
-        child: Container(
-          width: 70,
-          height: 58,
-          padding: EdgeInsets.all(6),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: colorPrimary, size: 24),
-              AppText(label: title, textColor: colorPrimary, fontSize: 12, lineHeight: 16),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildContentCard({required String title, required Widget descWidget, bool fullWidth = false}) {
-    return Container(
-      width: fullWidth ? double.infinity : null,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-      decoration: BoxDecoration(color: const Color(0xFFFFFFFF), borderRadius: BorderRadius.circular(11)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(label: title, fontSize: 12),
-          descWidget,
         ],
       ),
     );

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wfs/features/appointment/widgets/capsule_widget.dart';
+import 'package:wfs/widgets/capsule_widget.dart';
 
 class AppointmentType extends StatelessWidget {
   final String appointmentTypeName;
