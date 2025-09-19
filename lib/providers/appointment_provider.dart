@@ -6,7 +6,7 @@ import '../services/appointment_service.dart';
 import 'auth_provider.dart';
 import '../models/appointment_summary_model.dart';
 
-final appointmentServiceProvider = Provider<AppointmentService>((ref) {
+final appointmentServiceProvider2 = Provider<AppointmentService>((ref) {
   return AppointmentService();
 });
 
@@ -19,9 +19,24 @@ final appointmentsProvider = FutureProvider.autoDispose.family<List<Appointment>
     throw Exception('User is not authenticated.');
   }
 
-  final appointmentService = ref.read(appointmentServiceProvider);
+  final appointmentService = ref.read(appointmentServiceProvider2);
 
-  return appointmentService.fetchAppointments(accessToken, authState.userID!, formattedDate);
+  const statusOrder = <String, int>{'Scheduled': 0, 'Completed': 1, 'Canceled': 2};
+
+  final appointments = await appointmentService.fetchAppointments(accessToken, authState.userID!, formattedDate);
+  final sorted = [...appointments];
+  sorted.sort((a, b) {
+    final ra = statusOrder[(a.appointmentStatusName ?? '').trim()] ?? 999;
+    final rb = statusOrder[(b.appointmentStatusName ?? '').trim()] ?? 999;
+    if (ra != rb) return ra - rb;
+
+    final sa = (a.appointmentTimeFrom ?? a.appointmentDateTimeFrom.toIso8601String()).trim();
+    final sb = (b.appointmentTimeFrom ?? b.appointmentDateTimeFrom.toIso8601String()).trim();
+
+    return sa.compareTo(sb);
+  });
+
+  return sorted;
 });
 
 // final appointmentGetByIdProvider = FutureProvider.autoDispose.family<Appointment, String>((ref, guid) async {
@@ -64,7 +79,7 @@ final appointmentSummaryProvider = FutureProvider.autoDispose.family<Appointment
     throw Exception('User is not authenticated.');
   }
 
-  final summaryAppointmentService = ref.read(appointmentServiceProvider); // เปลี่ยนเป็น read
+  final summaryAppointmentService = ref.read(appointmentServiceProvider2); // เปลี่ยนเป็น read
 
   return summaryAppointmentService.fetchAppointmentSummary(accessToken, authState.userID!, formattedDate);
 });

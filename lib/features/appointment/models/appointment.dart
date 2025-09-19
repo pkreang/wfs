@@ -164,6 +164,7 @@ class Appointment {
     bool? isActive,
     String? createdBy,
     String? modifiedBy,
+    bool isClearPurposeOther = false,
     bool isRemoveCompany = false,
     bool isRemoveAddress = false,
   }) {
@@ -188,7 +189,7 @@ class Appointment {
       assignedBy: assignedBy ?? this.assignedBy,
       phone: phone ?? this.phone,
       email: email ?? this.email,
-      purposeOther: purposeOther ?? this.purposeOther,
+      purposeOther: isClearPurposeOther ? null : purposeOther ?? this.purposeOther,
       appointmentAddress: isRemoveAddress ? null : appointmentAddress ?? this.appointmentAddress,
       // appointmentProducts: appointmentProducts ?? this.appointmentProducts,
       isActive: isActive ?? this.isActive,

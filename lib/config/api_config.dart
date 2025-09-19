@@ -4,12 +4,10 @@ class ApiConfig {
   static const String userRoleUrl = '$baseUrl/user/role';
   static const String appointmentUrl = '$baseUrl/appointment';
   static const String userIdUrl = '$baseUrl/user';
-  static const String appointmentType =
-      '$baseUrl/appointment/type/?IsActive=true';
-  static const String appointmentStatus =
-      '$baseUrl/appointment/status/?IsActive=true';
+  static const String appointmentType = '$baseUrl/appointment/type/?IsActive=true';
+  static const String appointmentStatus = '$baseUrl/appointment/status/?IsActive=true';
   static const String companyUrl = '$baseUrl/company';
-  static const String clientUrl = '$baseUrl/client';
+  static const String clientUrl = '$baseUrl/client/?IsActive=true';
   static const String addAppointmentUrl = '$baseUrl/appointment/';
   static const String userProfileUrl = '$baseUrl/user/profile';
   static const String getListUserUrl = '$baseUrl/user/?IsActive=true';
@@ -17,45 +15,30 @@ class ApiConfig {
   static const String getUserRoleUrl = '$baseUrl/user/role';
   static const String addCompanyUrl = '$baseUrl/company/';
   static const String getByIdApointmentUrl = '$baseUrl/appointment/id/';
-  static const String getByDateApointmentUrl =
-      '$baseUrl/appointment/bydate/?AppointmentDate=';
-  static const String getSummaryApointmentUrl =
-      '$baseUrl/appointment/summary/?AppointmentDate=';
+  static const String getByDateApointmentUrl = '$baseUrl/appointment/bydate/?AppointmentDate=';
+  static const String getSummaryApointmentUrl = '$baseUrl/appointment/summary/?AppointmentDate=';
   static const String getByIdClientUrl = '$baseUrl/client/id/';
-  static const String getPurposeTypeUrl =
-      '$baseUrl/purpose_type/?IsActive=true';
-  static const String getSaleTerritorieUrl =
-      '$baseUrl/sale/territory/?IsActive=true';
+  static const String getPurposeTypeUrl = '$baseUrl/purpose_type/?IsActive=true';
+  static const String getSaleTerritorieUrl = '$baseUrl/sale/territory/?IsActive=true';
   static const String editAppointmentUrl = '$baseUrl/appointment/';
   static const String deleteAppointmentUrl = '$baseUrl/appointment/';
-  static const String getListAppointmentTypeUrl =
-      '$baseUrl/appointment/type/?IsActive=true';
-  static const String getListAppointmentStatusUrl =
-      '$baseUrl/appointment/status/?IsActive=true';
-  static const String getPurposeTypeGroupUrl =
-      '$baseUrl/purpose_type/group/?IsActive=true';
+  static const String getListAppointmentTypeUrl = '$baseUrl/appointment/type/?IsActive=true';
+  static const String getListAppointmentStatusUrl = '$baseUrl/appointment/status/?IsActive=true';
+  static const String getPurposeTypeGroupUrl = '$baseUrl/purpose_type/group/?IsActive=true';
   static const String getListProductUrl = '$baseUrl/product/?IsActive=true';
   static const String addProductUrl = '$baseUrl/product/';
   static const String addProductTypeUrl = '$baseUrl/product/type';
-  static const String getListProductCategoryUrl =
-      '$baseUrl/product/category/?IsActive=true';
+  static const String getListProductCategoryUrl = '$baseUrl/product/category/?IsActive=true';
   static const String addProductCategoryUrl = '$baseUrl/product/category';
-  static const String getListCountryUrl =
-      '$baseUrl/address/country/?IsActive=true';
-  static const String getListProvinceUrl =
-      '$baseUrl/address/province/?IsActive=true';
-  static const String getListDistrictUrl =
-      '$baseUrl/address/district/?IsActive=true';
-  static const String getListSubDistrictUrl =
-      '$baseUrl/address/subdistrict/?IsActive=true';
+  static const String getListCountryUrl = '$baseUrl/address/country/?IsActive=true';
+  static const String getListProvinceUrl = '$baseUrl/address/province/?IsActive=true';
+  static const String getListDistrictUrl = '$baseUrl/address/district/?IsActive=true';
+  static const String getListSubDistrictUrl = '$baseUrl/address/subdistrict/?IsActive=true';
   static const String addClientUrl = '$baseUrl/client/';
-  static const String getListClientLevelUrl =
-      '$baseUrl/client/level/?IsActive=true';
-  static const String getListClientStatusUrl =
-      '$baseUrl/client/status/?IsActive=true';
+  static const String getListClientLevelUrl = '$baseUrl/client/level/?IsActive=true';
+  static const String getListClientStatusUrl = '$baseUrl/client/status/?IsActive=true';
   static const String editClientUrl = '$baseUrl/client/';
   static const String getByIdCompanyUrl = '$baseUrl/company/?CompanyID=';
-  static const String getByIdSubdistrictUrl =
-      '$baseUrl/address/subdistrict/?SearchName=&IsActive=true&SubDistrictID=';
+  static const String getByIdSubdistrictUrl = '$baseUrl/address/subdistrict/?SearchName=&IsActive=true&SubDistrictID=';
   static const String editCompanyUrl = '$baseUrl/company/';
 }

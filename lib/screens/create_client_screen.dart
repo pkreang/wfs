@@ -33,6 +33,7 @@ import 'package:wfs/utility/validator.dart';
 import 'package:wfs/widgets/app_cupertino_option.dart';
 import 'package:wfs/widgets/app_text.dart';
 import 'package:wfs/widgets/app_text_form_field.dart';
+import 'package:wfs/widgets/app_companies_field.dart';
 
 class Item {
   final String id;
@@ -373,7 +374,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
               Container(color: Color(0xFFEEEEEE), height: 30),
               addressWidget(),
               Container(color: Color(0xFFEEEEEE), height: 30),
-              companyTile(companys: companys),
+              AppCompaniesField(
+                companies: companys,
+                onAdd: () => openCompanySheet(context: context, companyID: "", companys: companys),
+                onEdit: (c) => openCompanySheet(context: context, companyID: c.companyID ?? "", isUpdate: true, companys: companys),
+                onRemove: (c) => removeCompany(c, companys),
+              ),
               Container(color: Color(0xFFEEEEEE), height: 30),
               productTile(products: products),
             ],
@@ -546,100 +552,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     );
   }
 
-  Widget companyTile({required List<Company> companys, bool isShowBorderBottom = false}) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: borderSide, bottom: borderSide),
-      ),
-      child: Stack(
-        children: [
-          const Positioned(
-            left: 16 + 100,
-            top: 0,
-            bottom: 0,
-            child: SizedBox(
-              width: borderWidth,
-              child: ColoredBox(color: colorGrey),
-            ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(width: 16),
-              const SizedBox(
-                width: 100,
-                child: Center(
-                  child: AppText(label: 'companys', textColor: Color(0xFF007AFF)),
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ListView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: companys.length,
-                      itemBuilder: (_, index) {
-                        final company = companys[index];
-
-                        return Container(
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: colorGrey, width: borderWidth),
-                            ),
-                          ),
-                          height: 44,
-                          child: Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () => removeCompany(company, companys),
-                                child: const Padding(
-                                  padding: EdgeInsets.only(left: 16),
-                                  child: Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 24),
-                                ),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => openCompanySheet(context: context, companyID: company.companyID ?? "", isUpdate: true, companys: companys),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 16),
-                                    child: AppText(label: company.companyName ?? ""),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    if (companys.isEmpty)
-                      GestureDetector(
-                        onTap: () => openCompanySheet(context: context, companyID: "", companys: companys),
-                        child: const SizedBox(
-                          height: 44,
-                          child: Row(
-                            children: [
-                              SizedBox(width: 16),
-                              Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
-                              SizedBox(width: 16),
-                              AppText(label: 'add company'),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  
 
   Widget productTile({required List<Product> products, bool isShowBorderBottom = false}) {
     return Container(

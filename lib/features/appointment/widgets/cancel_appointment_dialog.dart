@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
+import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -45,6 +46,14 @@ Future<bool> showCancelAppointmentDialog({
               // ref.invalidate(appointmentMarkDateProvider(currentDate));
               // ref.invalidate(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(currentDate)));
 
+              final now = DateTime.now();
+              final bool isSameDate = currentDate.year == now.year && currentDate.month == now.month && currentDate.day == now.day;
+
+              if (isSameDate) {
+                ref.invalidate(appointmentsProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
+                ref.invalidate(appointmentSummaryProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
+              }
+
               ref.read(appointmentMarkDateProvider(DateTime(currentDate.year, currentDate.month, 1)).notifier).refresh();
               ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(currentDate)).notifier).refresh();
             },
@@ -80,8 +89,8 @@ Future<bool> showCancelAppointmentDialog({
                   child: Container(
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    decoration: BoxDecoration(color: AppUtility.colorRed, borderRadius: BorderRadius.circular(12)),
-                    child: AppText(label: 'Cancel', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.white),
+                    decoration: BoxDecoration(color: const Color.fromARGB(255, 231, 231, 235), borderRadius: BorderRadius.circular(12)),
+                    child: AppText(label: 'Cancel', fontSize: 14, fontWeight: FontWeight.bold, textColor: AppUtility.textLight),
                   ),
                 ),
               ),

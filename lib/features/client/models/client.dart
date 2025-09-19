@@ -1,4 +1,6 @@
 import 'package:wfs/features/appointment/models/sales_territory.dart';
+import 'package:wfs/features/client/models/client_company.dart';
+import 'package:wfs/models/clientcompanies_model.dart';
 
 extension TimeFormat on String {
   String toHHmm() {
@@ -21,6 +23,9 @@ class Client {
   final String availableTimeStart;
   final String availableTimeEnd;
   final SalesTerritory? salesTerritory;
+  final String? salesTerritoryID;
+  final String? salesTerritoryName;
+  final List<ClientCompany> companies;
 
   Client({
     required this.clientID,
@@ -36,6 +41,9 @@ class Client {
     required this.availableTimeStart,
     required this.availableTimeEnd,
     required this.salesTerritory,
+    this.salesTerritoryID,
+    this.salesTerritoryName,
+    required this.companies,
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
@@ -53,6 +61,9 @@ class Client {
       availableTimeStart: (json['AvailableTimeStart'] ?? "").toString().toHHmm(),
       availableTimeEnd: (json['AvailableTimeEnd'] ?? "").toString().toHHmm(),
       salesTerritory: (json['SalesTerritory'] != null) ? SalesTerritory.fromJson(json['SalesTerritory'] as Map<String, dynamic>) : null,
+      salesTerritoryID: json['SalesTerritoryID'],
+      salesTerritoryName: json['SalesTerritoryName'],
+      companies: ClientCompany.listFromJson(json['companies'] ?? []),
     );
   }
 
@@ -71,6 +82,7 @@ class Client {
       'AvailableTimeStart': availableTimeStart,
       'AvailableTimeEnd': availableTimeEnd,
       'SalesTerritory': salesTerritory?.toJson(),
+      'SalesTerritoryName': salesTerritoryName,
     };
   }
 
@@ -88,6 +100,8 @@ class Client {
     String? availableTimeStart,
     String? availableTimeEnd,
     SalesTerritory? salesTerritory,
+    String? salesTerritoryName,
+    List<ClientCompany>? companies,
   }) {
     return Client(
       clientID: clientID ?? this.clientID,
@@ -103,6 +117,8 @@ class Client {
       availableTimeStart: availableTimeStart ?? this.availableTimeStart,
       availableTimeEnd: availableTimeEnd ?? this.availableTimeEnd,
       salesTerritory: salesTerritory ?? this.salesTerritory,
+      salesTerritoryName: salesTerritoryName ?? this.salesTerritoryName,
+      companies: companies ?? this.companies,
     );
   }
 

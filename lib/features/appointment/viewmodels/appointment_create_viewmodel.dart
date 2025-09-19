@@ -9,6 +9,7 @@ import 'package:wfs/features/appointment/models/appointment_type.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
 import 'package:wfs/models/company_model.dart';
+import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/services/client_service.dart';
 
@@ -86,9 +87,15 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
 
   void setPurpose(Purpose status) {
     state = state.copyWith(
-      appointment: state.appointment.whenData((value) => value.copyWith(purposeTypeID: status.purposeTypeID, purposeTypeName: status.purposeTypeName)),
+      appointment: state.appointment.whenData(
+        (value) => value.copyWith(purposeTypeID: status.purposeTypeID, purposeTypeName: status.purposeTypeName, isClearPurposeOther: status.purposeTypeName == 'Other'),
+      ),
       isDirty: true,
     );
+  }
+
+  void setPurposeOther(String purposeOther) {
+    state = state.copyWith(appointment: state.appointment.whenData((value) => value.copyWith(purposeOther: purposeOther)), isDirty: true);
   }
 
   void setAppointmentFromDate(DateTime newDateTime) {
@@ -123,6 +130,14 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
     state = state.copyWith(appointment: state.appointment.whenData((v) => v.copyWith(appointmentDateTimeTo: updated)), isDirty: true);
   }
 
+  void setMobile(String mobile) {
+    state = state.copyWith(appointment: state.appointment.whenData((value) => value.copyWith(phone: mobile)), isDirty: true);
+  }
+
+  void setEmail(String email) {
+    state = state.copyWith(appointment: state.appointment.whenData((value) => value.copyWith(email: email)), isDirty: true);
+  }
+
   void setCompany(Company company) {
     state = state.copyWith(
       appointment: state.appointment.whenData((value) => value.copyWith(companyID: company.companyID, companyName: company.companyName)),
@@ -131,6 +146,7 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
 
     final companyAddress = (company.CompanyAddresses ?? []).isNotEmpty ? company.CompanyAddresses?.first : null;
     if (companyAddress != null) {
+      print('companyAddress.address: ${companyAddress.address}');
       setAddress(
         address: Address(
           address: companyAddress.address,
@@ -155,6 +171,10 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
     state = state.copyWith(appointment: state.appointment.whenData((value) => value.copyWith(appointmentAddress: address)), isDirty: true);
   }
 
+  void setNoted(String noted) {
+    state = state.copyWith(appointment: state.appointment.whenData((value) => value.copyWith(noted: noted)), isDirty: true);
+  }
+
   Future<bool> saveAppointment() async {
     final authState = ref.read(authProvider);
 
@@ -173,6 +193,14 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
 
       ref.read(appointmentMarkDateProvider(DateTime(filter.year, filter.month, 1)).notifier).refresh();
       ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
+
+      final now = DateTime.now();
+      final bool isSameDate = filter.year == now.year && filter.month == now.month && filter.day == now.day;
+
+      if (isSameDate) {
+        ref.invalidate(appointmentsProvider(DateTime(filter.year, filter.month, filter.day)));
+        ref.invalidate(appointmentSummaryProvider(DateTime(filter.year, filter.month, filter.day)));
+      }
 
       return result;
     } catch (e, st) {

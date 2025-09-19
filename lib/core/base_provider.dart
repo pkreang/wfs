@@ -13,7 +13,10 @@ import 'package:wfs/features/appointment/viewmodels/appointment_detail_viewmodel
 import 'package:wfs/features/appointment/viewmodels/appointment_edit_viewmodel.dart';
 import 'package:wfs/features/appointment/viewmodels/appointment_viewmodel.dart';
 import 'package:wfs/features/appointment/viewmodels/appointment_visit_viewmodel.dart';
-import 'package:wfs/services/client_service.dart';
+import 'package:wfs/features/client/models/client.dart';
+import 'package:wfs/features/client/services/client_service.dart';
+import 'package:wfs/features/client/viewmodels/client_detail_viewmodel.dart';
+import 'package:wfs/features/client/viewmodels/client_edit_viewmodel.dart';
 
 final appointmentServiceProvider = Provider<AppointmentService>((ref) => AppointmentService());
 final appointmentProvider = StateNotifierProvider.autoDispose<AppointmentViewModel, AppointmentState>((ref) => AppointmentViewModel(ref));
@@ -85,6 +88,14 @@ final outcomeProvider = FutureProvider.autoDispose<List<Outcome>>((ref) async {
 
 //* Client
 final clientServiceProvider = Provider<ClientService>((ref) => ClientService());
+
+final clientDetailProvider = StateNotifierProvider.autoDispose.family<ClientDetailViewModel, AsyncValue<Client>, String>((ref, id) {
+  return ClientDetailViewModel(ref, id);
+});
+
+final clientEditProvider = StateNotifierProvider.autoDispose.family<ClientEditViewModel, ClientEditState, String>((ref, id) {
+  return ClientEditViewModel(ref, id);
+});
 
 // final clientGetByIdProvider = FutureProvider.autoDispose.family<Client, String>((ref, clientId) async {
 //   return await ref.read(clientServiceProvider).getById(ref, clientId);

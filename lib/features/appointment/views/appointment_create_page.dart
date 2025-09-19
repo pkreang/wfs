@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
+import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/widgets/app_sheet.dart';
+import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
 import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/lib/widgets/form_address.dart';
 import 'package:wfs/lib/widgets/form_company_tile.dart';
-import 'package:wfs/lib/widgets/form_datetime_picker.dart';
 import 'package:wfs/lib/widgets/form_datetime_range_picker.dart';
 import 'package:wfs/lib/widgets/form_info_tile.dart';
 import 'package:wfs/utility/app_utility.dart';
@@ -25,7 +26,18 @@ class CreateAppointmentScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScreen> {
-  final TextEditingController txtAddress = TextEditingController();
+  bool isInit = false;
+  final TextEditingController purposeOtherController = TextEditingController();
+  final TextEditingController mobileController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController notedController = TextEditingController();
+  bool isShowPurposeOtherTextField = false;
+
+  void handlePurposeChange(Purpose value) {
+    ref.read(appointmentCreateProvider(widget.clientId).notifier).setPurpose(value);
+    isShowPurposeOtherTextField = value.purposeTypeName.toLowerCase() == "other";
+  }
 
   void handleSave() async {
     final asyncAppointment = ref.read(appointmentCreateProvider(widget.clientId)).appointment;
@@ -53,12 +65,27 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
       return;
     }
 
+    if (isShowPurposeOtherTextField && Validator.required(purposeOtherController.text) != null) {
+      AppDialogs.error(context, message: "กรุณากรอกข้อมูล Purpose Other");
+      return;
+    }
+
+    if (Validator.required(mobileController.text) != null) {
+      AppDialogs.error(context, message: "กรุณากรอกข้อมูล Mobile");
+      return;
+    }
+
+    if (Validator.required(emailController.text) != null) {
+      AppDialogs.error(context, message: "กรุณากรอกข้อมูล Email");
+      return;
+    }
+
     if (Validator.required(appointment.companyID) != null) {
       AppDialogs.error(context, message: "กรุณาเลือก Company");
       return;
     }
 
-    if (Validator.required(txtAddress.text) != null) {
+    if (Validator.required(addressController.text) != null) {
       AppDialogs.error(context, message: "กรุณากรอกข้อมูล Address");
       return;
     }
@@ -83,10 +110,25 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
       return;
     }
 
+    if (Validator.required(notedController.text) != null) {
+      AppDialogs.error(context, message: "ไม่มีข้อมูล note");
+      return;
+    }
+
     final result = await ref.read(appointmentCreateProvider(widget.clientId).notifier).saveAppointment();
     if (!result) return;
 
     AppDialogs.success(context, btnOkOnPress: () => Navigator.of(context).popUntil((route) => route.isFirst));
+  }
+
+  @override
+  void dispose() {
+    purposeOtherController.dispose();
+    mobileController.dispose();
+    emailController.dispose();
+    addressController.dispose();
+    notedController.dispose();
+    super.dispose();
   }
 
   @override
@@ -143,7 +185,14 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
 
   Widget buildContent(Appointment appointment) {
     final appointmentAddress = appointment.appointmentAddress ?? Address();
-    txtAddress.text = appointmentAddress.address ?? '';
+
+    if (!isInit) {
+      isInit = true;
+
+      mobileController.text = appointment.phone ?? '';
+      emailController.text = appointment.email ?? '';
+      addressController.text = appointmentAddress.address ?? '';
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -175,21 +224,13 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                   FormInfoTile(
                     label: 'status',
                     value: AppointmentStatusCapsule(appointmentStatusName: appointment.appointmentStatusName ?? ''),
-                    onTap: () => AppSheet.openAppointmentStatusSheet(
-                      context: context,
-                      appointmentStatusID: appointment.appointmentStatusID ?? '',
-                      onSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentStatus(value),
-                    ),
                     isShowBorderBottom: true,
+                    isHideIcon: true,
                   ),
                   FormInfoTile(
                     label: 'purpose',
                     value: AppText(label: appointment.purposeTypeName ?? ''),
-                    onTap: () => AppSheet.openPurposeSheet(
-                      context: context,
-                      purposeTypeID: appointment.purposeTypeID ?? '',
-                      onSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setPurpose(value),
-                    ),
+                    onTap: () => AppSheet.openPurposeSheet(context: context, purposeTypeID: appointment.purposeTypeID ?? '', onSelected: (value) => handlePurposeChange(value)),
                     isShowBorderBottom: true,
                   ),
                   FormInfoTile(
@@ -200,6 +241,22 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                   ),
                 ],
               ),
+              if (isShowPurposeOtherTextField)
+                Column(
+                  children: [
+                    FormInfoTile(
+                      label: 'purpose other',
+                      value: AppTextFormField(
+                        controller: purposeOtherController,
+                        onChanged: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setPurposeOther(value),
+                        maxLines: 5,
+                      ),
+                      height: 126,
+                      isShowBorderBottom: true,
+                      isHideIcon: true,
+                    ),
+                  ],
+                ),
               FormDatetimeRangePicker(
                 start: appointment.appointmentDateTimeFrom,
                 end: appointment.appointmentDateTimeTo,
@@ -212,13 +269,13 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                 children: [
                   FormInfoTile(
                     label: 'mobile',
-                    value: AppText(label: appointment.phone ?? ''),
+                    value: AppTextFormField(controller: mobileController, onChanged: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setMobile(value)),
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
                   FormInfoTile(
                     label: 'email',
-                    value: AppText(label: appointment.email ?? ''),
+                    value: AppTextFormField(controller: emailController, onChanged: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setEmail(value)),
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
@@ -230,13 +287,19 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                   ),
                 ],
               ),
-              // addressWidget(),
               FormAddress(
-                addressContoller: txtAddress,
+                addressContoller: addressController,
                 address: appointmentAddress,
                 onSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAddress(address: value),
               ),
             ],
+          ),
+          FormInfoTile(
+            label: 'note',
+            value: AppTextFormField(controller: notedController, onChanged: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setNoted(value), maxLines: 5),
+            height: 126,
+            isShowBorderBottom: true,
+            isHideIcon: true,
           ),
         ],
       ),

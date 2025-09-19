@@ -5,7 +5,7 @@ import 'package:http/http.dart' as apiClient;
 import 'package:wfs/config/api_config.dart';
 import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/models/client_model.dart';
-import 'package:wfs/features/appointment/models/client.dart' as client_model;
+import 'package:wfs/features/client/models/client.dart' as client_model;
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/utility/json_helper.dart';
 

@@ -31,7 +31,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Login Failed: ${next.error}'),
+            content: Text('Login Failed: ไม่สามารถดำเนินการได้ กรุณาติดต่อผู้ดูแลระบบ'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
             action: SnackBarAction(
@@ -208,8 +208,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    // email = "systemadmin@mail.com";
-    // password = "abcd1234";
+    email = "systemadmin@mail.com";
+    password = "abcd1234";
 
     // email = "Sup01@mail.com";
     // // email = "sale01@mail.com";

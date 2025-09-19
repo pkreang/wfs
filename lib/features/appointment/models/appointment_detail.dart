@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:wfs/features/appointment/models/address.dart';
-import 'package:wfs/features/appointment/models/client.dart';
+import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/appointment/models/product.dart';
 import 'package:wfs/features/appointment/models/visit_activities.dart';
 
@@ -19,10 +19,10 @@ class AppointmentDetail {
   final String purposeTypeID;
   final String purposeTypeName;
   final String? companyID;
-  final String companyName;
+  final String? companyName;
   final String appointmentDateTimeFrom;
   final String appointmentDateTimeTo;
-  final String purposeOther;
+  final String? purposeOther;
   final Address address;
   final String phone;
   final String email;
@@ -51,7 +51,7 @@ class AppointmentDetail {
     required this.companyName,
     required this.appointmentDateTimeFrom,
     required this.appointmentDateTimeTo,
-    required this.purposeOther,
+    this.purposeOther,
     required this.address,
     required this.phone,
     required this.email,
@@ -77,7 +77,7 @@ class AppointmentDetail {
     appointmentID: json["AppointmentID"],
     purposeTypeID: json["PurposeTypeID"],
     purposeTypeName: json['PurposeTypeName'] ?? '',
-    companyID: json["CompanyID"],
+    companyID: json["CompanyID"] ?? '',
     companyName: json["CompanyName"] ?? '',
     appointmentDateTimeFrom: json["AppointmentDateTimeFrom"],
     appointmentDateTimeTo: json["AppointmentDateTimeTo"],
@@ -171,6 +171,7 @@ class AppointmentDetail {
     String? appointmentID,
     String? purposeTypeID,
     String? purposeTypeName,
+    String? purposeOther,
     String? companyID,
     String? companyName,
     String? appointmentDateTimeFrom,
@@ -184,6 +185,9 @@ class AppointmentDetail {
     String? modifiedBy,
     String? createdBy,
     bool? isActive,
+    bool isClearPurposeOther = false,
+    bool isRemoveCompany = false,
+    bool isRemoveAddress = false,
   }) {
     return AppointmentDetail(
       userID: userID ?? this.userID,
@@ -199,17 +203,18 @@ class AppointmentDetail {
       appointmentID: appointmentID ?? this.appointmentID,
       purposeTypeID: purposeTypeID ?? this.purposeTypeID,
       purposeTypeName: purposeTypeName ?? this.purposeTypeName,
-      companyID: companyID ?? this.companyID,
-      companyName: companyName ?? this.companyName,
+      companyID: isRemoveCompany ? null : companyID ?? this.companyID,
+      companyName: isRemoveCompany ? null : companyName ?? this.companyName,
       appointmentDateTimeFrom: appointmentDateTimeFrom ?? this.appointmentDateTimeFrom,
       appointmentDateTimeTo: appointmentDateTimeTo ?? this.appointmentDateTimeTo,
-      address: address ?? this.address,
+      // address: address ?? this.address,
+      address: isRemoveAddress ? Address() : address ?? this.address,
       phone: phone ?? this.phone,
       email: email ?? this.email,
       products: products ?? this.products,
       visitActivities: visitActivities ?? this.visitActivities,
       client: client ?? this.client,
-      purposeOther: purposeOther,
+      purposeOther: isClearPurposeOther ? null : purposeOther ?? this.purposeOther,
       modifiedBy: modifiedBy ?? this.modifiedBy,
       createdBy: createdBy ?? this.createdBy,
       isActive: isActive ?? this.isActive,
@@ -220,6 +225,10 @@ class AppointmentDetail {
 extension Status on String {
   bool get isCompleted => this == 'Completed' || this == 'C9B78060-8F8C-46FA-92A6-65D932701EB7';
   bool get isCanceled => this == 'Canceled' || this == '16CBDB62-30BB-4679-A1ED-CB935E11B7E2';
+}
+
+extension PurposeType on String {
+  bool get isOther => this == 'Other' || this == '43F70CB5-60A5-4E6D-9754-52A42D0EFBBB';
 }
 
 extension TimeFormat on String {

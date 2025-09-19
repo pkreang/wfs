@@ -5,6 +5,7 @@ import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
 import 'package:wfs/features/appointment/models/appointment_status.dart';
 import 'package:wfs/features/appointment/models/product.dart';
+import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
 import 'package:wfs/features/appointment/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
@@ -13,8 +14,11 @@ import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/cancel_appointment_dialog.dart';
 import 'package:wfs/lib/widgets/form_address.dart';
+import 'package:wfs/lib/widgets/form_company_tile.dart';
 import 'package:wfs/lib/widgets/form_datetime_picker.dart';
 import 'package:wfs/lib/widgets/form_info_tile.dart';
+import 'package:wfs/utility/appdialogs.dart';
+import 'package:wfs/utility/validator.dart';
 
 class AppointmentEditPage extends ConsumerStatefulWidget {
   final String appointmentID;
@@ -30,9 +34,18 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
   static const borderWidth = 0.33;
   static const borderSide = BorderSide(color: colorGrey, width: borderWidth);
 
+  final TextEditingController purposeOtherController = TextEditingController();
+  final TextEditingController mobileController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController notedController = TextEditingController();
-  bool _noteInitialized = false;
+  bool isInit = false;
+  bool isShowPurposeOtherTextField = false;
+
+  void handlePurposeChange(Purpose value) {
+    ref.read(appointmentEditProvider(widget.appointmentID).notifier).setPurpose(value);
+    isShowPurposeOtherTextField = value.purposeTypeID.isOther;
+  }
 
   Future<void> openProdctSheet({required BuildContext context, required String productID, bool isUpdate = false}) async {
     final selected = await CupertinoOptionsPicker.show<Product>(
@@ -141,6 +154,56 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
   }
 
   void handleSave() async {
+    final asyncAppointment = ref.read(appointmentEditProvider(widget.appointmentID)).data;
+    final appointment = asyncAppointment.value;
+
+    if (appointment == null) {
+      AppDialogs.error(context, message: "ไม่พบข้อมูล Appointment");
+      return;
+    }
+
+    final appointmentAddress = appointment.address;
+
+    if (isShowPurposeOtherTextField && Validator.required(purposeOtherController.text) != null) {
+      AppDialogs.error(context, message: "กรุณากรอกข้อมูล Purpose Other");
+      return;
+    }
+
+    if (Validator.required(appointment.companyID) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก Company");
+      return;
+    }
+
+    if (Validator.required(addressController.text) != null) {
+      AppDialogs.error(context, message: "กรุณากรอกข้อมูล Address");
+      return;
+    }
+
+    if (Validator.required((appointmentAddress.provinceID ?? '').toString()) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก Province");
+      return;
+    }
+
+    if (Validator.required((appointmentAddress.districtID ?? '').toString()) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก District");
+      return;
+    }
+
+    if (Validator.required((appointmentAddress.subDistrictID ?? '').toString()) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก SubDistrict");
+      return;
+    }
+
+    if (Validator.required(appointmentAddress.postCode) != null) {
+      AppDialogs.error(context, message: "ไม่มีข้อมูล PostCode");
+      return;
+    }
+
+    if (Validator.required(notedController.text) != null) {
+      AppDialogs.error(context, message: "ไม่มีข้อมูล note");
+      return;
+    }
+
     final result = await ref.read(appointmentEditProvider(widget.appointmentID).notifier).updateAppointment(noted: notedController.text);
     if (!result) return;
 
@@ -164,6 +227,9 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
 
   @override
   void dispose() {
+    purposeOtherController.dispose();
+    mobileController.dispose();
+    emailController.dispose();
     addressController.dispose();
     notedController.dispose();
     super.dispose();
@@ -230,9 +296,13 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
 
     bool isShowCancelNote = appointmentDetail.appointmentStatusName == 'Canceled';
 
-    if (!_noteInitialized) {
+    if (!isInit) {
+      isShowPurposeOtherTextField = appointmentDetail.purposeTypeID.isOther;
+      purposeOtherController.text = appointmentDetail.purposeOther ?? '';
+      mobileController.text = appointmentDetail.phone;
+      emailController.text = appointmentDetail.email;
       notedController.text = appointmentDetail.noted;
-      _noteInitialized = true;
+      isInit = true;
     }
 
     return SingleChildScrollView(
@@ -259,33 +329,37 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                   FormInfoTile(
                     label: 'status',
                     value: AppointmentStatusCapsule(appointmentStatusName: appointmentDetail.appointmentStatusName),
-                    onTap: () => AppSheet.openAppointmentStatusSheet(
-                      context: context,
-                      appointmentStatusID: appointmentDetail.appointmentStatusID,
-                      onSelected: (value) => handleAppointmentStatusChange(appointmentDetail, value),
-                    ),
+                    isHideIcon: true,
                   ),
                   FormInfoTile(
                     label: 'purpose',
                     value: AppText(label: appointmentDetail.purposeTypeName),
-                    onTap: () => AppSheet.openPurposeSheet(
-                      context: context,
-                      purposeTypeID: appointmentDetail.purposeTypeID,
-                      onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setPurpose(value),
-                    ),
+                    onTap: () => AppSheet.openPurposeSheet(context: context, purposeTypeID: appointmentDetail.purposeTypeID, onSelected: (value) => handlePurposeChange(value)),
                   ),
                   FormInfoTile(
                     label: 'territory',
                     value: AppText(label: salesTerritory?.salesTerritoryName ?? ''),
-                    onTap: () => AppSheet.openTerritorySheet(
-                      context: context,
-                      territoryID: salesTerritory?.salesTerritoryID ?? '',
-                      onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setTerritory(value),
-                    ),
                     isShowBorderBottom: true,
+                    isHideIcon: true,
                   ),
                 ],
               ),
+              if (isShowPurposeOtherTextField)
+                Column(
+                  children: [
+                    FormInfoTile(
+                      label: 'purpose other',
+                      value: AppTextFormField(
+                        controller: purposeOtherController,
+                        onChanged: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setPurposeOther(value),
+                        maxLines: 5,
+                      ),
+                      height: 126,
+                      isShowBorderBottom: true,
+                      isHideIcon: true,
+                    ),
+                  ],
+                ),
               // if (isShowCancelNote)
               //   Column(
               //     children: [FormInfoTile(label: 'canceled note', value: AppTextFormField(maxLines: 5), height: 126, isShowBorderBottom: true, isHideIcon: true)],
@@ -310,24 +384,29 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                 children: [
                   FormInfoTile(
                     label: 'mobile',
-                    value: AppText(label: appointmentDetail.phone),
+                    value: AppTextFormField(controller: mobileController, onChanged: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setMobile(value)),
+                    isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
                   FormInfoTile(
                     label: 'email',
-                    value: AppText(label: appointmentDetail.email),
+                    value: AppTextFormField(controller: emailController, onChanged: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setEmail(value)),
+                    isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
-                  FormInfoTile(
-                    label: 'company',
-                    value: AppText(label: appointmentDetail.companyName),
-                    isHideIcon: true,
-                    isShowBorderBottom: true,
+                  FormCompanyTile(
+                    companyID: appointmentDetail.companyID ?? '',
+                    companyName: appointmentDetail.companyName ?? '',
+                    onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setCompany(value),
+                    onRemove: (_) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).removeCompany(),
                   ),
                 ],
               ),
-              FormAddress(addressContoller: addressController, address: address, onSelected: (value) {}),
-              // productTile(products: products),
+              FormAddress(
+                addressContoller: addressController,
+                address: address,
+                onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAddress(address: value),
+              ),
               FormInfoTile(
                 label: 'note',
                 value: AppTextFormField(controller: notedController, onChanged: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setNoted(value), maxLines: 5),

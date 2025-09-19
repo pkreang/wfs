@@ -5,10 +5,14 @@ import 'package:intl/intl.dart';
 import 'package:wfs/features/appointment/widgets/app_appointment_info.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/models/appointment_summary_model.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import '../providers/appointment_provider.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
 
-final currentDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
+final currentDateProvider = StateProvider<DateTime>((ref) {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day);
+});
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -37,7 +41,7 @@ class DashboardScreen extends ConsumerWidget {
                     // ส่ง ref และ currentDate ไปให้ Header
                     _buildHeader(context, ref, currentDate),
                     const SizedBox(height: 24),
-                    _buildSummarySection(context, summaryAsyncValue),
+                    _buildSummarySection(context, ref, summaryAsyncValue),
                     const SizedBox(height: 24),
                     _buildSectionHeader(context, "Today's Appointments"),
                     const SizedBox(height: 16),
@@ -79,7 +83,6 @@ class DashboardScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // ปุ่มย้อนกลับ (ลดวัน)
-
           // แสดงวันที่ปัจจุบัน
           AppText(label: DateFormat('MMMM d').format(currentDate), fontSize: 18, fontWeight: FontWeight.bold),
         ],
@@ -87,11 +90,26 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummarySection(BuildContext context, AsyncValue<AppointmentSummary> summaryAsyncValue) {
+  Widget _buildSummarySection(BuildContext context, WidgetRef ref, AsyncValue<AppointmentSummary> summaryAsyncValue) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppText(label: "Today's Summary", fontSize: 18, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AppText(label: "Today's Summary", fontSize: 18, fontWeight: FontWeight.bold),
+            GestureDetector(
+              onTap: () {
+                ref.read(authProvider.notifier).logout();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                decoration: BoxDecoration(border: Border.all(color: Colors.red, width: 1)),
+                child: AppText(label: 'Logout', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.red),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         Row(
           children: [

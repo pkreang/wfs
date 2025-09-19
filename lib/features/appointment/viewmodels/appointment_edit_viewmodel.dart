@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
+import 'package:wfs/features/appointment/models/address.dart';
+import 'package:wfs/models/company_model.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
 import 'package:wfs/features/appointment/models/appointment_status.dart';
@@ -11,6 +12,7 @@ import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/models/sales_territory.dart';
 import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
+import 'package:wfs/providers/appointment_provider.dart';
 
 @immutable
 class AppointmentEditState {
@@ -59,7 +61,9 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
 
   void setPurpose(Purpose status) {
     state = state.copyWith(
-      data: state.data.whenData((v) => v.copyWith(purposeTypeID: status.purposeTypeID, purposeTypeName: status.purposeTypeName)),
+      data: state.data.whenData((v) {
+        return v.copyWith(purposeTypeID: status.purposeTypeID, purposeTypeName: status.purposeTypeName, isClearPurposeOther: status.purposeTypeName == 'Other');
+      }),
       isDirty: true,
     );
   }
@@ -71,6 +75,10 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
       data: state.data.whenData((v) => v.copyWith(client: v.client.copyWith(salesTerritory: newSalesTerritory))),
       isDirty: true,
     );
+  }
+
+  void setPurposeOther(String purposeOther) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(purposeOther: purposeOther)), isDirty: true);
   }
 
   void setAppointmentFromDate(DateTime newDateTime) {
@@ -113,6 +121,46 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
     state = state.copyWith(data: state.data.whenData((v) => v.copyWith(appointmentDateTimeTo: updated.toIso8601String())), isDirty: true);
   }
 
+  void setMobile(String mobile) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(phone: mobile)), isDirty: true);
+  }
+
+  void setEmail(String email) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(email: email)), isDirty: true);
+  }
+
+  void setCompany(Company company) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(companyID: company.companyID, companyName: company.companyName)),
+      isDirty: true,
+    );
+
+    final companyAddress = (company.CompanyAddresses ?? []).isNotEmpty ? company.CompanyAddresses?.first : null;
+    if (companyAddress != null) {
+      setAddress(
+        address: Address(
+          address: companyAddress.address,
+          subDistrictID: companyAddress.subDistrictID,
+          subDistrictName: companyAddress.subDistrictName,
+          districtID: companyAddress.districtID,
+          districtName: companyAddress.districtName,
+          provinceID: companyAddress.provinceID,
+          provinceName: companyAddress.provinceName,
+          postCode: companyAddress.postCode,
+          countryID: 1,
+        ),
+      );
+    }
+  }
+
+  void removeCompany() {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(isRemoveCompany: true, isRemoveAddress: true)), isDirty: true);
+  }
+
+  void setAddress({required Address address}) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(address: address)), isDirty: true);
+  }
+
   void setNoted(String noted) {
     state = state.copyWith(data: state.data.whenData((v) => v.copyWith(noted: noted)), isDirty: true);
   }
@@ -140,6 +188,15 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
       if (!result) return result;
 
       final filter = DateTime.tryParse(detail.appointmentDateTimeFrom) ?? DateTime.now();
+
+      final now = DateTime.now();
+      final bool isSameDate = filter.year == now.year && filter.month == now.month && filter.day == now.day;
+
+      if (isSameDate) {
+        ref.invalidate(appointmentsProvider(DateTime(filter.year, filter.month, filter.day)));
+        ref.invalidate(appointmentSummaryProvider(DateTime(filter.year, filter.month, filter.day)));
+      }
+
       ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
 
       return result;
@@ -163,6 +220,15 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
       if (!result) return result;
 
       final filter = DateTime.tryParse(detail.appointmentDateTimeFrom) ?? DateTime.now();
+
+      final now = DateTime.now();
+      final bool isSameDate = filter.year == now.year && filter.month == now.month && filter.day == now.day;
+
+      if (isSameDate) {
+        ref.invalidate(appointmentsProvider(DateTime(filter.year, filter.month, filter.day)));
+        ref.invalidate(appointmentSummaryProvider(DateTime(filter.year, filter.month, filter.day)));
+      }
+
       ref.read(appointmentMarkDateProvider(DateTime(filter.year, filter.month, 1)).notifier).refresh();
       ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
+import 'package:wfs/features/client/views/client_detail_page.dart';
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/screens/create_client_screen.dart';
@@ -312,89 +313,92 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
   }
 
   Widget _buildClientItem(Client client) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        AppText(label: '${client.firstName ?? ''} ${client.lastName ?? ''}', fontSize: 17),
-                        const SizedBox(width: 8),
-                        _buildStatusTag(client.isActive ?? false), // Handle null with default false
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Phone
-                    if (client.phone != null && client.phone!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2.0),
-                              child: Icon(Icons.phone, color: Colors.grey.shade600, size: 20),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: AppText(label: client.phone.toString(), fontSize: 14, textColor: Colors.grey.shade600),
-                            ),
-                          ],
-                        ),
-                      ),
-                    // Address
-                    if (client.clientAddresses?.isNotEmpty == true && client.clientAddresses!.first.address != null && client.clientAddresses!.first.address!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2.0),
-                              child: Icon(Icons.location_on, color: Colors.grey.shade600, size: 20),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: AppText(label: client.clientAddresses!.first.address!, fontSize: 14, textColor: Colors.grey.shade600),
-                            ),
-                          ],
-                        ),
-                      ),
-                    // Product
-                    if (client.products?.isNotEmpty == true && client.products!.first.productName != null && client.products!.first.productName!.isNotEmpty)
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ClientDetailPage(clientID: client.clientID ?? ''))),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2.0),
-                            child: Icon(Icons.production_quantity_limits, color: Colors.grey.shade600, size: 20),
-                          ),
+                          AppText(label: '${client.firstName ?? ''} ${client.lastName ?? ''}', fontSize: 17),
                           const SizedBox(width: 8),
-                          Expanded(
-                            child: AppText(label: client.products!.first.productName!, fontSize: 14, textColor: Colors.grey.shade600),
-                          ),
+                          _buildStatusTag(client.isActive ?? false), // Handle null with default false
                         ],
                       ),
-                  ],
+                      const SizedBox(height: 8),
+                      // Phone
+                      if (client.phone != null && client.phone!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2.0),
+                                child: Icon(Icons.phone, color: Colors.grey.shade600, size: 20),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: AppText(label: client.phone.toString(), fontSize: 14, textColor: Colors.grey.shade600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      // Address
+                      if (client.clientAddresses?.isNotEmpty == true && client.clientAddresses!.first.address != null && client.clientAddresses!.first.address!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2.0),
+                                child: Icon(Icons.location_on, color: Colors.grey.shade600, size: 20),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: AppText(label: client.clientAddresses!.first.address!, fontSize: 14, textColor: Colors.grey.shade600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      // Product
+                      if (client.products?.isNotEmpty == true && client.products!.first.productName != null && client.products!.first.productName!.isNotEmpty)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2.0),
+                              child: Icon(Icons.production_quantity_limits, color: Colors.grey.shade600, size: 20),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: AppText(label: client.products!.first.productName!, fontSize: 14, textColor: Colors.grey.shade600),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade300),
-              ),
-            ],
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade300),
+                ),
+              ],
+            ),
           ),
-        ),
-        const Divider(height: 1, thickness: 1, indent: 16, color: Color(0xFFEFEFEF)),
-      ],
+          const Divider(height: 1, thickness: 1, indent: 16, color: Color(0xFFEFEFEF)),
+        ],
+      ),
     );
   }
 

@@ -8,6 +8,7 @@ import 'package:wfs/features/appointment/views/appointment_detail_page.dart';
 import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/cancel_appointment_dialog.dart';
+import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/widgets/app_text.dart';
 
@@ -17,7 +18,7 @@ class AppointmentInfo extends ConsumerWidget {
 
   const AppointmentInfo({required this.appointment, required this.currentDate, super.key});
 
-  Future<void> showCompleeteConfirmDialog({required BuildContext context, required WidgetRef ref, required DateTime currentDate, required String appointmentID}) async {
+  Future<void> showCompleteConfirmDialog({required BuildContext context, required WidgetRef ref, required DateTime currentDate, required String appointmentID}) async {
     return showCupertinoDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -56,6 +57,14 @@ class AppointmentInfo extends ConsumerWidget {
           appointmentID: appointmentID,
           appointmentStatusID: "C9B78060-8F8C-46FA-92A6-65D932701EB7",
           onSuccess: () {
+            final now = DateTime.now();
+            final bool isSameDate = currentDate.year == now.year && currentDate.month == now.month && currentDate.day == now.day;
+
+            if (isSameDate) {
+              ref.invalidate(appointmentsProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
+              ref.invalidate(appointmentSummaryProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
+            }
+
             ref.read(selectedMonthProvider.notifier).setMonth(currentDate);
             ref.read(selectedDateProvider.notifier).setDate(currentDate);
 
@@ -99,10 +108,10 @@ class AppointmentInfo extends ConsumerWidget {
                 children: [
                   Expanded(child: AppText(label: appointment.clientName ?? '', fontSize: 17)),
                   Row(
-                    spacing: 8,
+                    spacing: 6,
                     children: [
                       Row(
-                        spacing: 6,
+                        spacing: 4,
                         children: [
                           Icon(Icons.access_time_outlined, color: AppUtility.textGray, size: 18),
                           AppText(label: '${appointment.appointmentTimeFrom}-${appointment.appointmentTimeTo.toString()}', fontSize: 14, textColor: AppUtility.textLight),
@@ -120,7 +129,7 @@ class AppointmentInfo extends ConsumerWidget {
                     ],
                   ),
                   Row(
-                    spacing: 6,
+                    spacing: 4,
                     children: [
                       Icon(Icons.business_center_outlined, color: AppUtility.textGray, size: 18),
                       Expanded(
@@ -146,11 +155,12 @@ class AppointmentInfo extends ConsumerWidget {
                   // Icon(Icons.chevron_right, color: AppUtility.colorGray, size: 24),
                   isShowCompleteButton
                       ? GestureDetector(
-                          onTap: () => showCompleeteConfirmDialog(context: context, ref: ref, currentDate: currentDate, appointmentID: appointment.appointmentID ?? ''),
+                          onTap: () => showCompleteConfirmDialog(context: context, ref: ref, currentDate: currentDate, appointmentID: appointment.appointmentID ?? ''),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 14),
                             decoration: BoxDecoration(color: const Color(0xFFE3F2FD), borderRadius: BorderRadius.circular(12)),
-                            child: AppText(label: 'Complete', fontSize: 14, textColor: Colors.blue),
+                            height: 24,
+                            child: AppText(label: 'Complete', fontSize: 14, textColor: Colors.blue, lineHeight: 16),
                           ),
                         )
                       : const SizedBox.shrink(),

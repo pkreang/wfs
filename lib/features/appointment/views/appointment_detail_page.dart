@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/address.dart';
@@ -12,6 +14,7 @@ import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/client_status.dart';
 import 'package:wfs/features/appointment/widgets/level_status.dart';
+import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/widgets/app_action_tile.dart';
 import 'package:wfs/widgets/app_detail_section_card.dart';
 
@@ -47,16 +50,60 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     }
   }
 
-  void handelComplete(String appointmentDateTimeFrom) async {
+  Future<void> showCompleteConfirmDialog({required BuildContext context, required WidgetRef ref, required DateTime currentDate, required String appointmentID}) async {
+    return showCupertinoDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return CupertinoAlertDialog(
+          title: const Text("Complete Appointment", textScaler: TextScaler.noScaling),
+          content: const Text("Are you sure you want to complete this appointment?", textScaler: TextScaler.noScaling),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: AppText(label: 'Cancel', textColor: Color(0xFF007BFE)),
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () => confirmCompleteAppointment(context: dialogContext, ref: ref, currentDate: currentDate, appointmentID: appointmentID),
+              child: AppText(label: 'Complete', textColor: Color(0xFF007BFE)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void confirmCompleteAppointment({required BuildContext context, required WidgetRef ref, required DateTime currentDate, required String appointmentID}) async {
+    Navigator.pop(context);
+
+    if (appointmentID.isEmpty) {
+      return;
+    }
+
     await ref
         .read(appointmentProvider.notifier)
         .updateAppointmentStatus(
-          appointmentID: widget.appointmentID,
+          appointmentID: appointmentID,
           appointmentStatusID: "C9B78060-8F8C-46FA-92A6-65D932701EB7",
-          onSuccess: () {
-            final filter = DateTime.parse(appointmentDateTimeFrom);
-            ref.read(selectedMonthProvider.notifier).setMonth(filter);
-            ref.read(selectedDateProvider.notifier).setDate(filter);
+          onSuccess: () async {
+            final now = DateTime.now();
+            final bool isSameDate = currentDate.year == now.year && currentDate.month == now.month && currentDate.day == now.day;
+
+            if (isSameDate) {
+              ref.invalidate(appointmentsProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
+              ref.invalidate(appointmentSummaryProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
+            }
+
+            ref.read(appointmentDetailProvider(widget.appointmentID).notifier).refresh();
+
+            ref.read(selectedMonthProvider.notifier).setMonth(currentDate);
+            ref.read(selectedDateProvider.notifier).setDate(currentDate);
+
+            ref.read(appointmentMarkDateProvider(DateTime(currentDate.year, currentDate.month, 1)).notifier).refresh();
+            ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(currentDate)).notifier).refresh();
           },
         );
   }
@@ -130,18 +177,25 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     final address = appointmentDetail.address;
     final client = appointmentDetail.client;
     final salesTerritory = client.salesTerritory;
+    final clientCompany = client.companies.isNotEmpty ? client.companies.first : null;
+    final companyAddresses = (clientCompany?.company?.addresses ?? []);
+    final companyAddress = companyAddresses.isNotEmpty ? companyAddresses.first : null;
     // final products = appointmentDetail.products;
 
+    bool isVisit = appointmentDetail.appointmentTypeID == "7DEEC491-A5AE-4856-B981-7E91870179FF";
+    bool isComplete = appointmentDetail.appointmentStatusID.isCompleted;
+    bool isCanceled = appointmentDetail.appointmentStatusID.isCanceled;
+
     //* appointmentType = visit, appointmentStatus != complete
-    final isShowIconCheckIn = appointmentDetail.appointmentTypeID == "7DEEC491-A5AE-4856-B981-7E91870179FF" && appointmentDetail.appointmentStatusID != "C9B78060-8F8C-46FA-92A6-65D932701EB7";
+    final isShowIconCheckIn = isVisit && (!isComplete && !isCanceled);
     final isShowIconComplete = appointmentDetail.appointmentTypeID != "7DEEC491-A5AE-4856-B981-7E91870179FF" && !appointmentDetail.appointmentStatusID.isCompleted;
 
     final visitActivities = appointmentDetail.visitActivities;
     final isCheckIn = visitActivities.isEmpty;
     final visitTitle = isCheckIn ? 'check in' : 'check out';
 
-    final latitude = visitActivities.isNotEmpty ? visitActivities.first.checkInLatitude : 0.0;
-    final longitude = visitActivities.isNotEmpty ? visitActivities.first.checkInLongitude : 0.0;
+    final latitude = companyAddress?.latitude ?? 0;
+    final longitude = companyAddress?.longitude ?? 0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -175,7 +229,17 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                   AppActionTile(icon: Icons.person, title: 'clients', onTap: () => print('client page')),
                   AppActionTile(icon: Icons.location_pin, title: 'map', onTap: () => openGoogleMap(latitude ?? 0, longitude ?? 0)),
                   if (isShowIconCheckIn) AppActionTile(icon: Icons.menu_book, title: visitTitle, onTap: () => callVisitPage()),
-                  if (isShowIconComplete) AppActionTile(icon: Icons.check_circle, title: 'complete', onTap: () => handelComplete(appointmentDetail.appointmentDateTimeFrom)),
+                  if (isShowIconComplete)
+                    AppActionTile(
+                      icon: Icons.check_circle,
+                      title: 'complete',
+                      onTap: () => showCompleteConfirmDialog(
+                        context: context,
+                        ref: ref,
+                        currentDate: DateTime.tryParse(appointmentDetail.appointmentDateTimeFrom) ?? DateTime.now(),
+                        appointmentID: appointmentDetail.appointmentID,
+                      ),
+                    ),
                   AppActionTile(icon: Icons.history, title: 'history', onTap: () => print('history page')),
                 ],
               ),
@@ -221,7 +285,7 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
           ),
           AppDetailSectionCard(
             title: 'company',
-            descWidget: AppText(label: appointmentDetail.companyName),
+            descWidget: AppText(label: appointmentDetail.companyName ?? ''),
             fullWidth: true,
           ),
           // AppDetailSectionCard(

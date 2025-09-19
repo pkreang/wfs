@@ -20,7 +20,7 @@ class FormAddress extends StatelessWidget {
   void handleProvinceSelected(Province province) {
     onSelected(
       address.copyWith(
-        address: null,
+        address: address.address,
         provinceID: province.provinceID,
         provinceName: province.provinceName,
         districtID: null,
@@ -76,7 +76,14 @@ class FormAddress extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     addressField(
-                      child: AppTextFormField(controller: addressContoller, hintText: 'ที่อยู่'),
+                      child: AppTextFormField(
+                        controller: addressContoller,
+                        hintText: 'ที่อยู่',
+                        onChanged: (value) {
+                          addressContoller.text = value;
+                          onSelected(address.copyWith(address: value));
+                        },
+                      ),
                     ),
                     addressField(
                       hasRightBorder: true,
@@ -93,7 +100,7 @@ class FormAddress extends StatelessWidget {
                     addressField(
                       child: FormInfoTile(
                         label: address.districtName ?? '',
-                        value: address.districtName == null ? textHint(label: 'อําเภอ') : AppText(label: address.districtName ?? ''),
+                        value: address.districtName == null ? textHint(label: 'เขต/อําเภอ') : AppText(label: address.districtName ?? ''),
                         onTap: () => AppSheet.openDistrictSheet(
                           context: context,
                           provinceID: (address.provinceID ?? "").toString(),
@@ -111,7 +118,7 @@ class FormAddress extends StatelessWidget {
                       hasRightBorder: false,
                       child: FormInfoTile(
                         label: address.subDistrictName ?? '',
-                        value: address.subDistrictName == null ? textHint(label: 'ตำบล') : AppText(label: address.subDistrictName ?? ''),
+                        value: address.subDistrictName == null ? textHint(label: 'แขวง/ตำบล') : AppText(label: address.subDistrictName ?? ''),
                         onTap: () => AppSheet.openSubDistrictSheet(
                           context: context,
                           districtID: (address.districtID ?? "").toString(),
