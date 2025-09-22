@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:wfs/features/appointment/models/address.dart';
-import 'package:wfs/features/appointment/widgets/app_sheet.dart';
-import 'package:wfs/lib/widgets/form_info_tile.dart';
+import 'package:wfs/widgets/app_sheet.dart';
+import 'package:wfs/widgets/form_info_tile.dart';
 import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/widgets/app_text_form_field.dart';
 
-import '../../features/appointment/widgets/app_text.dart';
+import '../features/appointment/widgets/app_text.dart';
 
 class FormAddress extends StatelessWidget {
   final TextEditingController addressController;

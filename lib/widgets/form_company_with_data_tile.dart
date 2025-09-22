@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:wfs/features/appointment/widgets/app_sheet.dart';
+import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/company/models/company.dart';
-import 'package:wfs/lib/widgets/form_info_tile.dart';
+import 'package:wfs/widgets/form_info_tile.dart';
 import 'package:wfs/utility/app_text.dart';
 
 class FormCompanyWithDataTile extends StatelessWidget {

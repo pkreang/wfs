@@ -5,11 +5,13 @@ import 'package:wfs/features/appointment/models/appointment_type.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
-import 'package:wfs/models/company_model.dart';
+import 'package:wfs/features/client/models/client_level.dart';
+import 'package:wfs/features/client/models/client_status.dart';
+import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/features/company/models/company_status.dart';
 import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
-import 'package:wfs/providers/company_provider.dart';
 import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
@@ -75,11 +77,26 @@ class AppSheet {
     onSelected(selected);
   }
 
-  static Future<void> openCompanySheet({required BuildContext context, required String companyID, required void Function(Company) onSelected}) async {
-    final selected = await CupertinoOptionsPicker.show<Company>(
+  // static Future<void> openCompanySheet({required BuildContext context, required String companyID, required void Function(Company) onSelected}) async {
+  //   final selected = await CupertinoOptionsPicker.show<Company>(
+  //     context: context,
+  //     title: 'Company',
+  //     provider: companyGetListProvider,
+  //     label: (p) => p.companyName ?? "",
+  //     initialKey: (p) => p.companyID ?? "",
+  //     initialValue: companyID,
+  //   );
+
+  //   if (selected == null) return;
+
+  //   onSelected(selected);
+  // }
+
+  static Future<void> openCompanyWithDataSheet({required BuildContext context, required String companyID, required List<Company> companyies, required void Function(Company) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.showWithData<Company, String>(
       context: context,
       title: 'Company',
-      provider: companyGetListProvider,
+      items: companyies,
       label: (p) => p.companyName ?? "",
       initialKey: (p) => p.companyID ?? "",
       initialValue: companyID,
@@ -128,6 +145,54 @@ class AppSheet {
       label: (p) => p.subDistrictName.toString(),
       initialKey: (p) => p.subDistrictID.toString(),
       initialValue: subdistrictID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openClientStatusSheet({required BuildContext context, required String clientStatusID, required void Function(ClientStatus) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<ClientStatus>(
+      context: context,
+      title: 'Status',
+      provider: clientStatusProvider,
+      label: (p) => p.clientStatusName,
+      initialKey: (p) => p.clientStatusID,
+      initialValue: clientStatusID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openClientLevelSheet({required BuildContext context, required String clientLevelID, required void Function(ClientLevel) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<ClientLevel>(
+      context: context,
+      title: 'Level',
+      provider: clientLevelProvider,
+      label: (p) => p.clientLevelName,
+      initialKey: (p) => p.clientLevelID,
+      initialValue: clientLevelID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openCompanyStatusSheet({required BuildContext context, required bool isActive, required void Function(CompanyStatus) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.showWithData<CompanyStatus, bool>(
+      context: context,
+      title: 'Status',
+      items: [
+        CompanyStatus(isActive: true, statusName: "Active"),
+        CompanyStatus(isActive: false, statusName: "Inactive"),
+      ],
+      label: (p) => p.statusName,
+      initialKey: (p) => p.isActive,
+      initialValue: isActive,
     );
 
     if (selected == null) return;

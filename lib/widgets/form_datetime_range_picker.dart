@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:wfs/core/utils/date_picker_helper.dart';
 import 'package:wfs/core/utils/time_picker_helper.dart';
-import 'package:wfs/lib/widgets/form_info_tile.dart';
+import 'package:wfs/widgets/form_info_tile.dart';
 import 'package:wfs/widgets/app_text.dart';
 
 class FormDatetimeRangePicker extends StatelessWidget {
