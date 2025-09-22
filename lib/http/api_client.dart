@@ -9,6 +9,19 @@ class ApiClient {
 
   final String _baseUrl;
 
+  static ApiException _error({required String message, int? httpStatus, String? status, Object? body}) =>
+      ApiException(message: message, httpStatus: httpStatus, status: status, body: body);
+
+  String _extractErrorMessage(Object raw) {
+    if (raw is Map) {
+      final m = raw as Map;
+      final msg = m['error'] ?? m['message'] ?? m['msg'] ?? m['reason'] ?? m['detail'];
+      if (msg != null) return msg.toString();
+      if (m['errors'] != null) return m['errors'].toString();
+    }
+    return 'Request failed';
+  }
+
   Future<T> get<T>({
     required String path,
     required Decoder<T> decode,
@@ -26,14 +39,15 @@ class ApiClient {
     );
 
     if (res.statusCode != 200) {
-      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+      throw _error(message: 'HTTP ${res.statusCode}', httpStatus: res.statusCode, body: res.body);
     }
 
     if (res.body.isEmpty) throw Exception('Empty response body');
 
     final raw = jsonDecode(res.body);
     if (raw is Map && raw['status']?.toString().toLowerCase() != 'success') {
-      throw Exception("API returned status != success: ${raw['status']}");
+      final msg = _extractErrorMessage(raw);
+      throw _error(message: msg, status: raw['status']?.toString(), body: raw);
     }
 
     try {
@@ -57,7 +71,7 @@ class ApiClient {
     );
 
     if (res.statusCode != 200) {
-      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+      throw _error(message: 'HTTP ${res.statusCode}', httpStatus: res.statusCode, body: res.body);
     }
 
     if (res.body.isEmpty) {
@@ -66,7 +80,8 @@ class ApiClient {
 
     final raw = jsonDecode(res.body);
     if (raw is Map && raw['status']?.toString().toLowerCase() != 'success') {
-      throw Exception("API returned status != success: ${raw['status']}");
+      final msg = _extractErrorMessage(raw);
+      throw _error(message: msg, status: raw['status']?.toString(), body: raw);
     }
 
     try {
@@ -95,7 +110,7 @@ class ApiClient {
     );
 
     if (res.statusCode != 200) {
-      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+      throw _error(message: 'HTTP ${res.statusCode}', httpStatus: res.statusCode, body: res.body);
     }
 
     if (res.body.isEmpty) {
@@ -106,7 +121,8 @@ class ApiClient {
 
     final raw = jsonDecode(res.body);
     if (raw is Map && raw['status']?.toString().toLowerCase() != 'success') {
-      throw Exception("API returned status != success: ${raw['status']}");
+      final msg = _extractErrorMessage(raw);
+      throw _error(message: msg, status: raw['status']?.toString(), body: raw);
     }
 
     return true;
@@ -127,7 +143,7 @@ class ApiClient {
     );
 
     if (res.statusCode != 200) {
-      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+      throw _error(message: 'HTTP ${res.statusCode}', httpStatus: res.statusCode, body: res.body);
     }
 
     if (res.body.isEmpty) {
@@ -138,9 +154,20 @@ class ApiClient {
 
     final raw = jsonDecode(res.body);
     if (raw is Map && raw['status']?.toString().toLowerCase() != 'success') {
-      throw Exception("API returned status != success: ${raw['status']}");
+      final msg = _extractErrorMessage(raw);
+      throw _error(message: msg, status: raw['status']?.toString(), body: raw);
     }
 
     return true;
   }
+}
+
+class ApiException implements Exception {
+  final int? httpStatus;
+  final String? status;
+  final String message;
+  final Object? body;
+  ApiException({required this.message, this.httpStatus, this.status, this.body});
+  @override
+  String toString() => 'ApiException(${httpStatus ?? ''}, ${status ?? ''}): $message';
 }

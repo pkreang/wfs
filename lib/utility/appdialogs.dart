@@ -20,7 +20,7 @@ class AppDialogs {
     AwesomeDialog(
       context: context,
       dialogType: DialogType.noHeader,
-      customHeader: Icon(Icons.check_circle, color: Colors.green, size: 50),
+      customHeader: Icon(Icons.warning_amber, color: Colors.red, size: 50),
       animType: AnimType.bottomSlide,
       title: title ?? "",
       desc: message ?? "",
@@ -47,6 +47,7 @@ class AppDialogs {
       animType: AnimType.leftSlide,
       padding: const EdgeInsets.symmetric(vertical: 24),
       dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
       body: widget,
     ).show();
   }

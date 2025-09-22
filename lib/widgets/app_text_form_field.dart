@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wfs/widgets/app_text.dart';
+import 'package:flutter/services.dart';
 
 class AppTextFormField extends StatelessWidget {
   final FocusNode? focusNode;
@@ -14,6 +15,8 @@ class AppTextFormField extends StatelessWidget {
   final bool isDisabled;
   final String? hintText;
   final bool isShowBorder;
+  final bool isNumberOnly;
+  final bool allowDecimal;
 
   const AppTextFormField({
     super.key,
@@ -29,6 +32,8 @@ class AppTextFormField extends StatelessWidget {
     this.isDisabled = false,
     this.hintText,
     this.isShowBorder = false,
+    this.isNumberOnly = false,
+    this.allowDecimal = false,
   });
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -46,6 +51,8 @@ class AppTextFormField extends StatelessWidget {
       maxLines: maxLines,
       enabled: enabled,
       autovalidateMode: autovalidateMode,
+      keyboardType: isNumberOnly ? (allowDecimal ? const TextInputType.numberWithOptions(decimal: true, signed: false) : TextInputType.number) : TextInputType.text,
+      inputFormatters: isNumberOnly ? [allowDecimal ? _SingleDotDecimalTextInputFormatter() : FilteringTextInputFormatter.digitsOnly] : null,
       cursorColor: const Color(0xFF007AFF),
       decoration: InputDecoration(
         hint: AppText(label: hintText ?? '', textColor: Colors.grey.shade400),
@@ -65,4 +72,20 @@ class AppTextFormField extends StatelessWidget {
 class AlwaysDisabledFocusNode extends FocusNode {
   @override
   bool get hasFocus => false;
+}
+
+class _SingleDotDecimalTextInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = newValue.text;
+    if (text.isEmpty) return newValue;
+
+    if (!RegExp(r'^[0-9.]*$').hasMatch(text)) {
+      return oldValue;
+    }
+    if ('.'.allMatches(text).length > 1) {
+      return oldValue;
+    }
+    return newValue;
+  }
 }

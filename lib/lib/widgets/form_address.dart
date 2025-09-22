@@ -11,11 +11,11 @@ import 'package:wfs/widgets/app_text_form_field.dart';
 import '../../features/appointment/widgets/app_text.dart';
 
 class FormAddress extends StatelessWidget {
-  final TextEditingController addressContoller;
+  final TextEditingController addressController;
   final Address address;
   final void Function(Address) onSelected;
 
-  const FormAddress({required this.addressContoller, required this.address, required this.onSelected, super.key});
+  const FormAddress({required this.addressController, required this.address, required this.onSelected, super.key});
 
   void handleProvinceSelected(Province province) {
     onSelected(
@@ -42,7 +42,7 @@ class FormAddress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    addressContoller.text = address.address ?? '';
+    addressController.text = address.address ?? '';
 
     return Container(
       decoration: const BoxDecoration(
@@ -77,10 +77,10 @@ class FormAddress extends StatelessWidget {
                   children: [
                     addressField(
                       child: AppTextFormField(
-                        controller: addressContoller,
+                        controller: addressController,
                         hintText: 'ที่อยู่',
                         onChanged: (value) {
-                          addressContoller.text = value;
+                          addressController.text = value;
                           onSelected(address.copyWith(address: value));
                         },
                       ),
@@ -89,7 +89,7 @@ class FormAddress extends StatelessWidget {
                       hasRightBorder: true,
                       child: FormInfoTile(
                         label: address.provinceName ?? '',
-                        value: address.provinceName == null ? textHint(label: 'จังหวัด') : AppText(label: address.provinceName ?? ''),
+                        value: address.provinceName == null || address.provinceName == '' ? textHint(label: 'จังหวัด') : AppText(label: address.provinceName ?? ''),
                         onTap: () => AppSheet.openProvinceSheet(context: context, provinceID: (address.provinceID ?? "").toString(), onSelected: (province) => handleProvinceSelected(province)),
                         isHideLabel: true,
                         isHideBorderTop: true,
@@ -100,7 +100,7 @@ class FormAddress extends StatelessWidget {
                     addressField(
                       child: FormInfoTile(
                         label: address.districtName ?? '',
-                        value: address.districtName == null ? textHint(label: 'เขต/อําเภอ') : AppText(label: address.districtName ?? ''),
+                        value: address.districtName == null || address.districtName == '' ? textHint(label: 'เขต/อําเภอ') : AppText(label: address.districtName ?? ''),
                         onTap: () => AppSheet.openDistrictSheet(
                           context: context,
                           provinceID: (address.provinceID ?? "").toString(),
@@ -118,14 +118,13 @@ class FormAddress extends StatelessWidget {
                       hasRightBorder: false,
                       child: FormInfoTile(
                         label: address.subDistrictName ?? '',
-                        value: address.subDistrictName == null ? textHint(label: 'แขวง/ตำบล') : AppText(label: address.subDistrictName ?? ''),
+                        value: address.subDistrictName == null || address.subDistrictName == '' ? textHint(label: 'แขวง/ตำบล') : AppText(label: address.subDistrictName ?? ''),
                         onTap: () => AppSheet.openSubDistrictSheet(
                           context: context,
                           districtID: (address.districtID ?? "").toString(),
                           subdistrictID: (address.subDistrictID ?? "").toString(),
                           onSelected: (subDistrict) => handleSubDistrictSelected(subDistrict),
                         ),
-                        // onTap: () => openSubDistrictSheet(context, selectedSubdistrictName ?? ""),
                         isHideLabel: true,
                         isHideBorderTop: true,
                         isShowBorderMiddle: false,
@@ -134,7 +133,7 @@ class FormAddress extends StatelessWidget {
                       ),
                     ),
                     addressField(
-                      child: address.postCode == null ? textHint(label: 'รหัสไปรษณีย์') : AppText(label: address.postCode ?? ""),
+                      child: address.postCode == null || address.postCode == '' ? textHint(label: 'รหัสไปรษณีย์') : AppText(label: address.postCode ?? ""),
                       hasBottomBorder: false,
                     ),
                   ],

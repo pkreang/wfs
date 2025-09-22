@@ -11,6 +11,7 @@ class FormDatetimeRangePicker extends StatelessWidget {
   final String startLabel;
   final String endLabel;
   final bool isDateOnly;
+  final bool isTimeOnly;
   final bool isShowBorderBottom;
 
   final ValueChanged<DateTime>? onStartDateSelected;
@@ -27,12 +28,13 @@ class FormDatetimeRangePicker extends StatelessWidget {
     this.startLabel = 'Starts',
     this.endLabel = 'Ends',
     this.isDateOnly = false,
+    this.isTimeOnly = false,
     this.isShowBorderBottom = false,
     this.onStartDateSelected,
     this.onStartTimeSelected,
     this.onEndDateSelected,
     this.onEndTimeSelected,
-  });
+  }) : assert(!(isDateOnly && isTimeOnly), 'isDateOnly and isTimeOnly cannot both be true.');
 
   bool isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 
@@ -131,29 +133,33 @@ class FormDatetimeRangePicker extends StatelessWidget {
       children: [
         FormInfoTile(
           label: startLabel,
-          value: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            spacing: 4,
-            children: [
-              _datetimeField(value: startDateStr, onTap: () => _openStartDatePicker(context)),
-              if (!isDateOnly) _datetimeField(value: startTimeStr, onTap: () => _openStartTimePicker(context)),
-            ],
+          value: Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              spacing: 4,
+              children: [
+                if (!isTimeOnly) _datetimeField(value: startDateStr, onTap: () => _openStartDatePicker(context)),
+                if (!isDateOnly) _datetimeField(value: startTimeStr, onTap: () => _openStartTimePicker(context)),
+              ],
+            ),
           ),
           isShowBorderMiddle: false,
           isShowBorderBottom: false,
           isHideIcon: true,
         ),
-
-        // Ends row
         FormInfoTile(
           label: endLabel,
-          value: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            spacing: 4,
-            children: [
-              _datetimeField(value: endDateStr, onTap: () => _openEndDatePicker(context)),
-              if (!isDateOnly) _datetimeField(value: endTimeStr, onTap: () => _openEndTimePicker(context)),
-            ],
+          value: Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              spacing: 4,
+              children: [
+                if (!isTimeOnly) _datetimeField(value: endDateStr, onTap: () => _openEndDatePicker(context)),
+                if (!isDateOnly) _datetimeField(value: endTimeStr, onTap: () => _openEndTimePicker(context)),
+              ],
+            ),
           ),
           isShowBorderMiddle: false,
           isShowBorderBottom: isShowBorderBottom,

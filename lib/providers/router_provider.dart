@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wfs/screens/appointment_screen.dart';
 import 'package:wfs/screens/navigation_screen.dart'; // สมมติว่า MainScaffold อยู่ในไฟล์นี้
 import 'package:wfs/screens/client_screen.dart';
-import 'package:wfs/screens/company_screen.dart';
+import 'package:wfs/features/company/views/company_list_page.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
 import 'package:wfs/features/appointment/views/appointment_detail_page.dart';
@@ -18,14 +18,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           return MainScaffold(child: child);
         },
         routes: [
-          GoRoute(
-            path: '/dashboard',
-            builder: (context, state) => const DashboardScreen(),
-          ),
-          GoRoute(
-            path: '/Appointments',
-            builder: (context, state) => const AppointmentScreen(),
-          ),
+          GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
+          GoRoute(path: '/Appointments', builder: (context, state) => const AppointmentScreen()),
           GoRoute(
             path: '/appointmentDetail/:appointmentId', // กำหนด parameter สำหรับ appointmentId
             builder: (context, state) {
@@ -33,18 +27,9 @@ final routerProvider = Provider<GoRouter>((ref) {
               return AppointmentDetailPage(appointmentID: appointmentId);
             },
           ),
-          GoRoute(
-            path: '/clients',
-            builder: (context, state) => const ClientScreen(),
-          ),
-          GoRoute(
-            path: '/company',
-            builder: (context, state) => const CompanyScreen(),
-          ),
-          GoRoute(
-            path: '/test',
-            builder: (context, state) => const TestScreen(),
-          ),
+          GoRoute(path: '/clients', builder: (context, state) => const ClientScreen()),
+          GoRoute(path: '/company', builder: (context, state) => const CompanyScreen()),
+          GoRoute(path: '/test', builder: (context, state) => const TestScreen()),
         ],
       ),
     ],
@@ -69,17 +54,10 @@ class PlaceholderScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Coming Soon',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
+              const Text('Coming Soon', style: TextStyle(fontSize: 16, color: Colors.grey)),
             ],
           ),
         ),
