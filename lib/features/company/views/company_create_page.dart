@@ -116,139 +116,51 @@ class _CreateCompanyPageState extends ConsumerState<CreateCompanyPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(companyCreateProvider);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFEEEEEE),
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: const Color(0xFFEEEEEE),
-          leadingWidth: 100,
-          leading: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
-                  onPressed: null,
-                  style: ButtonStyle(iconColor: WidgetStateProperty.all(AppUtility.colorPrimary)),
+    return Stack(
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: Scaffold(
+            backgroundColor: const Color(0xFFEEEEEE),
+            appBar: AppBar(
+              centerTitle: true,
+              backgroundColor: const Color(0xFFEEEEEE),
+              leadingWidth: 100,
+              leading: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: null,
+                      style: ButtonStyle(iconColor: WidgetStateProperty.all(AppUtility.colorPrimary)),
+                    ),
+                    const AppText(label: 'Back', textColor: AppUtility.colorPrimary),
+                  ],
                 ),
-                const AppText(label: 'Back', textColor: AppUtility.colorPrimary),
+              ),
+              title: const AppText(label: 'Create Company', fontSize: 17, fontWeight: FontWeight.w600),
+              actions: [
+                TextButton(
+                  onPressed: () => handleSave(),
+                  style: TextButton.styleFrom(foregroundColor: AppUtility.colorPrimary),
+                  child: const AppText(label: 'Done', textColor: AppUtility.colorPrimary),
+                ),
               ],
             ),
-          ),
-          title: const AppText(label: 'Create Company', fontSize: 17, fontWeight: FontWeight.w600),
-          actions: [
-            TextButton(
-              onPressed: () => handleSave(),
-
-              // {
-              // String? error;
-              // error = Validator.required(txtCompanyName.text);
-              // if (error != null) {
-              //   AppDialogs.error(context, message: error + " Name");
-              //   return;
-              // }
-
-              // error = Validator.required(txtTaxID.text);
-              // if (error != null) {
-              //   AppDialogs.error(context, message: error + " Tax ID");
-              //   return;
-              // }
-
-              // error = Validator.required(selectSalesTerritorys);
-              // if (error != null) {
-              //   AppDialogs.error(context, message: "กรุณาเลือก Territory");
-              //   return;
-              // }
-
-              // error = Validator.required(txtAddress.text);
-              // if (error != null) {
-              //   AppDialogs.error(context, message: error + " Address");
-              //   return;
-              // }
-
-              // if (selectedProvince == null) {
-              //   AppDialogs.error(context, message: "กรุณาเลือก Province");
-              //   return;
-              // }
-
-              // if (selectedDistrict == null) {
-              //   AppDialogs.error(context, message: "กรุณาเลือก District");
-              //   return;
-              // }
-
-              // if (selectedSubdistrict == null) {
-              //   AppDialogs.error(context, message: "กรุณาเลือก SubDistrict");
-              //   return;
-              // }
-
-              // error = Validator.required(postCode);
-              // if (error != null) {
-              //   AppDialogs.error(context, message: error + "PostCode");
-              //   return;
-              // }
-              // final authState = ref.watch(authProvider);
-              // Company company = Company(
-              //   companyName: txtCompanyName.text,
-              //   taxID: txtTaxID.text,
-              //   salesTerritoryID: selectSalesTerritorys,
-              //   noted: "xxxxxxxxxxxxxxx",
-              //   isActive: isActive,
-              //   createdDate: DateTime.now().toIso8601String(),
-              //   modifiedDate: DateTime.now().toIso8601String(),
-              //   createdBy: authState.userID,
-              //   modifiedBy: authState.userID,
-              //   CompanyAddresses: [
-              //     CompanyAddress(
-              //       address: txtAddress.text, //"123 ABC Rd.",
-              //       provinceID: int.parse(selectedProvince!), //1,
-              //       districtID: int.parse(selectedDistrict!), // 13,
-              //       latitude: null,
-              //       isPrimary: true,
-              //       createdBy: authState.userID,
-              //       modifiedBy: authState.userID,
-              //       countryID: 1,
-              //       subDistrictID: int.parse(selectedSubdistrict!), // 2583
-              //       longitude: null,
-              //       isActive: true,
-              //     ),
-              //   ],
-              //   Clients: null,
-              // );
-              // CompanyService companyService = new CompanyService();
-              // final accessToken = authState.accessToken;
-              // try {
-              //   companyService.Add(accessToken.toString(), company);
-              //   // ignore: unused_result
-              //   ref.refresh(filteredCompaniesProvider);
-              //   // ignore: unused_result
-              //   ref.refresh(companiesProvider);
-              //   // ignore: unused_result
-              //   ref.refresh(companySectionsProvider);
-
-              //   AppDialogs.success(context);
-              //   Future.delayed(const Duration(seconds: 3), () {
-              //     Navigator.of(context).popUntil((route) => route.isFirst);
-              //   });
-              // } catch (ex) {
-              //   AppDialogs.error(context, message: ex.toString());
-              // }
-              // },
-              style: TextButton.styleFrom(foregroundColor: AppUtility.colorPrimary),
-              child: const AppText(label: 'Done', textColor: AppUtility.colorPrimary),
+            body: state.data.when(
+              loading: () => const Center(child: CircularProgressIndicator(color: AppUtility.colorPrimary)),
+              error: (e, _) => Center(
+                child: AppText(label: "Company Not Found", textColor: Colors.red),
+              ),
+              data: (company) => buildContent(company),
             ),
-          ],
-        ),
-        body: state.data.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: AppUtility.colorPrimary)),
-          error: (e, _) => Center(
-            child: AppText(label: "Client Not Found", textColor: Colors.red),
           ),
-          data: (company) => buildContent(company),
         ),
-      ),
+
+        if (state.isLoading) ...[const ModalBarrier(color: Color(0x66000000), dismissible: false), const Center(child: CircularProgressIndicator(color: AppUtility.colorPrimary))],
+      ],
     );
   }
 

@@ -80,10 +80,16 @@ class _CompanyEditPageState extends ConsumerState<CompanyEditPage> {
     }
 
     final result = await ref.read(companyEditProvider(widget.companyID).notifier).updateCompany();
-    if (!result) return;
+    if (!result) {
+      final errMsg = ref.read(companyCreateProvider).errorMessage;
+      if (errMsg != null && errMsg.isNotEmpty) {
+        AppDialogs.alert(context, title: 'ไม่สามารถดำเนินการได้', message: errMsg);
+      }
 
-    // // if (!mounted) return;
-    Navigator.pop(context, result);
+      return;
+    }
+
+    AppDialogs.success(context, btnOkOnPress: () => Navigator.pop(context));
   }
 
   @override

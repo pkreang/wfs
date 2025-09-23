@@ -12,6 +12,7 @@ class Company {
   final List<Client> clients;
   final List<CompanyAddress> addresses;
   final String? createdBy;
+  final String? modifiedBy;
 
   const Company({
     this.companyID,
@@ -24,11 +25,12 @@ class Company {
     this.clients = const [],
     this.addresses = const [],
     this.createdBy,
+    this.modifiedBy,
   });
 
   factory Company.fromJson(Map<String, dynamic> json) => Company(
-    companyID: json['CompanyID'] as String,
-    companyName: (json['CompanyName'] ?? '') as String,
+    companyID: json['CompanyID'] as String?,
+    companyName: (json['CompanyName'] ?? '') as String?,
     taxID: json['TaxID'] as String?,
     noted: json['Noted'] as String?,
     salesTerritoryID: json['SalesTerritoryID'] as String?,
@@ -37,6 +39,7 @@ class Company {
     clients: (json['clients'] as List<dynamic>?)?.map((e) => Client.fromJson(e as Map<String, dynamic>)).toList() ?? const [],
     addresses: (json['addresses'] as List<dynamic>?)?.map((e) => CompanyAddress.fromJson(e as Map<String, dynamic>)).toList() ?? const [],
     createdBy: json['CreatedBy'] as String?,
+    modifiedBy: json['ModifiedBy'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -50,6 +53,7 @@ class Company {
     'clients': clients.map((e) => e.toJson()).toList(),
     'addresses': addresses.map((e) => e.toJson()).toList(),
     'CreatedBy': createdBy,
+    'ModifiedBy': modifiedBy,
   };
 
   Map<String, dynamic> toJsonCreate(String createdBy, modifiedBy) => {
@@ -105,6 +109,7 @@ class Company {
     List<Client>? clients,
     List<CompanyAddress>? addresses,
     String? createdBy,
+    String? modifiedBy,
   }) {
     return Company(
       companyID: companyID ?? this.companyID,
@@ -117,6 +122,7 @@ class Company {
       clients: clients ?? this.clients,
       addresses: addresses ?? this.addresses,
       createdBy: createdBy ?? this.createdBy,
+      modifiedBy: modifiedBy ?? this.modifiedBy,
     );
   }
 }

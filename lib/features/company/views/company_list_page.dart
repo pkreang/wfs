@@ -230,6 +230,9 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
     if (_showSearchOptions) return SizedBox.shrink();
 
     final sectionKeys = sections.keys.toList()..sort();
+    if (sectionKeys.isEmpty) {
+      return const Center(child: AppText(label: 'No company found.'));
+    }
 
     return ListView.builder(
       padding: EdgeInsets.zero,

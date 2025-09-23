@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
+import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/company/models/company.dart';
@@ -13,11 +14,17 @@ class CompanyEditState {
   final List<Company> companies;
   final bool isDirty;
   final bool isLoading;
+  final String? errorMessage;
 
-  const CompanyEditState({required this.data, this.companies = const [], this.isDirty = false, this.isLoading = false});
+  const CompanyEditState({required this.data, this.companies = const [], this.isDirty = false, this.isLoading = false, this.errorMessage});
 
-  CompanyEditState copyWith({AsyncValue<Company>? data, List<Company>? companies, bool? isDirty, bool? isLoading}) =>
-      CompanyEditState(data: data ?? this.data, companies: companies ?? this.companies, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
+  CompanyEditState copyWith({AsyncValue<Company>? data, List<Company>? companies, bool? isDirty, bool? isLoading, String? errorMessage, bool clearErrorMessage = false}) => CompanyEditState(
+    data: data ?? this.data,
+    companies: companies ?? this.companies,
+    isDirty: isDirty ?? this.isDirty,
+    isLoading: isLoading ?? this.isLoading,
+    errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+  );
 }
 
 class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
@@ -38,34 +45,27 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
     final clientAsync = await AsyncValue.guard(() => _companyService.getById(ref, id));
     clientAsync.whenData((client) {
       final res = AsyncValue.data(client);
-      state = state.copyWith(data: res, isDirty: false);
-
-      // final List<Company> companies = client.companies
-      //     .map((cc) => cc.company)
-      //     .where((c) => (c?.companyID ?? '').isNotEmpty)
-      //     .map((c) => Company(companyID: c!.companyID, companyName: c.companyName))
-      //     .toList();
-
-      state = state.copyWith(data: res, isDirty: false);
+      state = state.copyWith(data: res, isDirty: false, clearErrorMessage: true);
     });
   }
 
   void setCompanyName(String companyName) {
-    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(companyName: companyName)), isDirty: true);
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(companyName: companyName)), isDirty: true, clearErrorMessage: true);
   }
 
   void setTaxID(String taxID) {
-    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(taxID: taxID)), isDirty: true);
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(taxID: taxID)), isDirty: true, clearErrorMessage: true);
   }
 
   void setIsActive(CompanyStatus value) {
-    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(isActive: value.isActive)), isDirty: true);
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(isActive: value.isActive)), isDirty: true, clearErrorMessage: true);
   }
 
   void setTerritory(Territory status) {
     state = state.copyWith(
       data: state.data.whenData((v) => v.copyWith(salesTerritoryID: status.salesTerritoryID, salesTerritoryName: status.salesTerritoryName)),
       isDirty: true,
+      clearErrorMessage: true,
     );
   }
 
@@ -79,6 +79,7 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
         return v.copyWith(addresses: updated);
       }),
       isDirty: true,
+      clearErrorMessage: true,
     );
   }
 
@@ -92,6 +93,7 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
         return v.copyWith(addresses: updated);
       }),
       isDirty: true,
+      clearErrorMessage: true,
     );
   }
 
@@ -99,8 +101,6 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
     state = state.copyWith(
       data: state.data.whenData((v) {
         if (v.addresses.isEmpty) return v;
-
-        print('address: ${address.toJson()}');
 
         final first = v.addresses.first.copyWith(
           address: address.address,
@@ -117,6 +117,7 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
         return v.copyWith(addresses: updated);
       }),
       isDirty: true,
+      clearErrorMessage: true,
     );
   }
 
@@ -131,13 +132,11 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
       if (!result) return result;
 
       ref.invalidate(companyDetailProvider(detail.companyID ?? ''));
-
-      // final filter = DateTime.tryParse(detail.appointmentDateTimeFrom) ?? DateTime.now();
-      // ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
+      ref.invalidate(companyListProvider);
 
       return result;
     } catch (e, st) {
-      state = state.copyWith(data: AsyncError(e, st));
+      state = state.copyWith(errorMessage: e is ApiException ? e.message : 'Request failed');
     } finally {
       state = state.copyWith(isLoading: false);
     }
