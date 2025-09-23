@@ -208,8 +208,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    email = "systemadmin@mail.com";
-    password = "abcd1234";
+    // email = "systemadmin@mail.com";
+    // password = "abcd1234";
 
     // email = "Sup01@mail.com";
     // // email = "sale01@mail.com";
