@@ -4,14 +4,15 @@ import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
-import 'package:wfs/features/appointment/widgets/app_sheet.dart';
+import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
 import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
-import 'package:wfs/lib/widgets/form_address.dart';
-import 'package:wfs/lib/widgets/form_company_tile.dart';
-import 'package:wfs/lib/widgets/form_datetime_range_picker.dart';
-import 'package:wfs/lib/widgets/form_info_tile.dart';
+import 'package:wfs/widgets/form_address.dart';
+import 'package:wfs/widgets/form_company_with_data_tile.dart';
+import 'package:wfs/widgets/form_datetime_range_picker.dart';
+import 'package:wfs/widgets/form_info_tile.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -173,7 +174,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
               error: (e, _) => Center(
                 child: AppText(label: "Client Not Found", textColor: Colors.red),
               ),
-              data: (appointment) => buildContent(appointment),
+              data: (appointment) => buildContent(appointment, state.companies),
             ),
           ),
         ),
@@ -183,7 +184,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
     );
   }
 
-  Widget buildContent(Appointment appointment) {
+  Widget buildContent(Appointment appointment, List<Company> companies) {
     final appointmentAddress = appointment.appointmentAddress ?? Address();
 
     if (!isInit) {
@@ -279,16 +280,17 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
-                  FormCompanyTile(
+                  FormCompanyWithDataTile(
                     companyID: appointment.companyID ?? '',
                     companyName: appointment.companyName ?? '',
+                    companies: companies,
                     onSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setCompany(value),
                     onRemove: (_) => ref.read(appointmentCreateProvider(widget.clientId).notifier).removeCompany(),
                   ),
                 ],
               ),
               FormAddress(
-                addressContoller: addressController,
+                addressController: addressController,
                 address: appointmentAddress,
                 onSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAddress(address: value),
               ),

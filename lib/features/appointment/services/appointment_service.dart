@@ -158,22 +158,22 @@ class AppointmentService {
     return outcomes;
   }
 
-  Future<List<Company>> fetchCompanies(Ref ref) async {
-    final authState = ref.watch(authProvider);
-    final accessToken = authState.accessToken;
-    final companies = await apiClient.get(
-      path: "/company/?IsActive=true",
-      decode: (json) {
-        final map = json as Map<String, dynamic>;
-        final list = map['companies'] as List? ?? const [];
+  // Future<List<Company>> fetchCompanies(Ref ref) async {
+  //   final authState = ref.watch(authProvider);
+  //   final accessToken = authState.accessToken;
+  //   final companies = await apiClient.get(
+  //     path: "/company/?IsActive=true",
+  //     decode: (json) {
+  //       final map = json as Map<String, dynamic>;
+  //       final list = map['companies'] as List? ?? const [];
 
-        return Company.listFromJson(list);
-      },
-      headers: {"Authorization": "Bearer $accessToken"},
-    );
+  //       return Company.listFromJson(list);
+  //     },
+  //     headers: {"Authorization": "Bearer $accessToken"},
+  //   );
 
-    return companies;
-  }
+  //   return companies;
+  // }
 
   Future<bool> createAppointment(Appointment appointment, Ref ref) async {
     final authState = ref.read(authProvider);

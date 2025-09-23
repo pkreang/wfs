@@ -1,8 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:wfs/features/appointment/models/address.dart';
-import 'package:wfs/models/company_model.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
 import 'package:wfs/features/appointment/models/appointment_status.dart';
@@ -12,18 +13,20 @@ import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/models/sales_territory.dart';
 import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
+import 'package:wfs/features/company/models/company.dart';
 import 'package:wfs/providers/appointment_provider.dart';
 
 @immutable
 class AppointmentEditState {
   final AsyncValue<AppointmentDetail> data;
+  final List<Company> companies;
   final bool isDirty;
   final bool isLoading;
 
-  const AppointmentEditState({required this.data, this.isDirty = false, this.isLoading = false});
+  const AppointmentEditState({required this.data, this.companies = const [], this.isDirty = false, this.isLoading = false});
 
-  AppointmentEditState copyWith({AsyncValue<AppointmentDetail>? data, bool? isDirty, bool? isLoading}) =>
-      AppointmentEditState(data: data ?? this.data, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
+  AppointmentEditState copyWith({AsyncValue<AppointmentDetail>? data, List<Company>? companies, bool? isDirty, bool? isLoading}) =>
+      AppointmentEditState(data: data ?? this.data, companies: companies ?? this.companies, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
 }
 
 class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
@@ -42,7 +45,14 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
 
   Future<void> fetch() async {
     final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(ref, id));
-    state = state.copyWith(data: res, isDirty: false);
+    res.whenData((appointment) {
+      List<Company> companies = (appointment.client.companies)
+          .map((cc) => cc.company)
+          .where((c) => (c?.companyID ?? '').isNotEmpty)
+          .map((c) => Company(companyID: c!.companyID, companyName: c.companyName, addresses: c.addresses))
+          .toList();
+      state = state.copyWith(data: res, companies: companies, isDirty: false);
+    });
   }
 
   void setAppointmentType(AppointmentType status) {
@@ -135,7 +145,9 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
       isDirty: true,
     );
 
-    final companyAddress = (company.CompanyAddresses ?? []).isNotEmpty ? company.CompanyAddresses?.first : null;
+    print('company: ${jsonEncode(company.toJson())}');
+
+    final companyAddress = company.addresses.isNotEmpty ? company.addresses.first : null;
     if (companyAddress != null) {
       setAddress(
         address: Address(

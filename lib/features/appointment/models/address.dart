@@ -42,6 +42,8 @@ class Address {
     countryName: json["CountryName"] ?? '',
   );
 
+  static List<Address> listFromJson(List<dynamic> jsonList) => jsonList.map((e) => Address.fromJson(e as Map<String, dynamic>)).toList();
+
   Map<String, dynamic> toJson() => {
     "Latitude": latitude,
     "Longitude": longitude,

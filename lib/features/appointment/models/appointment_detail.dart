@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:wfs/features/appointment/models/address.dart';
-import 'package:wfs/features/client/models/client.dart';
+import 'package:wfs/features/appointment/models/client.dart';
 import 'package:wfs/features/appointment/models/product.dart';
 import 'package:wfs/features/appointment/models/visit_activities.dart';
 

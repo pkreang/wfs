@@ -8,7 +8,7 @@ import 'package:wfs/features/appointment/models/appointment_status.dart';
 import 'package:wfs/features/appointment/models/appointment_type.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
-import 'package:wfs/models/company_model.dart';
+import 'package:wfs/features/company/models/company.dart';
 import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/services/client_service.dart';
@@ -23,13 +23,14 @@ DateTime get roundedNow {
 @immutable
 class AppointmentCreateState {
   final AsyncValue<Appointment> appointment;
+  final List<Company> companies;
   final bool isDirty;
   final bool isLoading;
 
-  const AppointmentCreateState({required this.appointment, this.isDirty = false, this.isLoading = false});
+  const AppointmentCreateState({required this.appointment, this.companies = const [], this.isDirty = false, this.isLoading = false});
 
-  AppointmentCreateState copyWith({AsyncValue<Appointment>? appointment, bool? isDirty, bool? isLoading}) =>
-      AppointmentCreateState(appointment: appointment ?? this.appointment, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
+  AppointmentCreateState copyWith({AsyncValue<Appointment>? appointment, List<Company>? companies, bool? isDirty, bool? isLoading}) =>
+      AppointmentCreateState(appointment: appointment ?? this.appointment, companies: companies ?? this.companies, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
 }
 
 class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
@@ -49,6 +50,12 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
       final salesTerritory = client.salesTerritory;
       final now = roundedNow;
 
+      List<Company> companies = (client.companies ?? [])
+          .map((cc) => cc.company)
+          .where((c) => (c?.companyID ?? '').isNotEmpty)
+          .map((c) => Company(companyID: c!.companyID, companyName: c.companyName, addresses: c.addresses))
+          .toList();
+
       state = state.copyWith(
         appointment: AsyncValue.data(
           Appointment(
@@ -67,6 +74,7 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
           ),
         ),
         isDirty: false,
+        companies: companies,
       );
     });
   }
@@ -144,9 +152,8 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
       isDirty: true,
     );
 
-    final companyAddress = (company.CompanyAddresses ?? []).isNotEmpty ? company.CompanyAddresses?.first : null;
+    final companyAddress = company.addresses.isNotEmpty ? company.addresses.first : null;
     if (companyAddress != null) {
-      print('companyAddress.address: ${companyAddress.address}');
       setAddress(
         address: Address(
           address: companyAddress.address,

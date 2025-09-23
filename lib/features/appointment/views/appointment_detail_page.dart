@@ -14,6 +14,7 @@ import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/client_status.dart';
 import 'package:wfs/features/appointment/widgets/level_status.dart';
+import 'package:wfs/features/client/views/client_detail_page.dart';
 import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/widgets/app_action_tile.dart';
 import 'package:wfs/widgets/app_detail_section_card.dart';
@@ -226,8 +227,12 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 8,
                 children: [
-                  AppActionTile(icon: Icons.person, title: 'clients', onTap: () => print('client page')),
-                  AppActionTile(icon: Icons.location_pin, title: 'map', onTap: () => openGoogleMap(latitude ?? 0, longitude ?? 0)),
+                  AppActionTile(
+                    icon: Icons.person,
+                    title: 'clients',
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ClientDetailPage(clientID: client.clientID))),
+                  ),
+                  AppActionTile(icon: Icons.location_pin, title: 'map', onTap: () => openGoogleMap(latitude, longitude)),
                   if (isShowIconCheckIn) AppActionTile(icon: Icons.menu_book, title: visitTitle, onTap: () => callVisitPage()),
                   if (isShowIconComplete)
                     AppActionTile(
@@ -240,7 +245,7 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                         appointmentID: appointmentDetail.appointmentID,
                       ),
                     ),
-                  AppActionTile(icon: Icons.history, title: 'history', onTap: () => print('history page')),
+                  // AppActionTile(icon: Icons.history, title: 'history', onTap: () => print('history page')),
                 ],
               ),
             ],
