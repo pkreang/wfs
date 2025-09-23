@@ -1,6 +1,8 @@
+import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/sales_territory.dart';
 import 'package:wfs/features/client/models/client_company.dart';
-import 'package:wfs/models/clientcompanies_model.dart';
+import 'package:wfs/features/client/models/client_level.dart';
+import 'package:wfs/features/client/models/client_status.dart';
 
 extension TimeFormat on String {
   String toHHmm() {
@@ -10,49 +12,53 @@ extension TimeFormat on String {
 }
 
 class Client {
-  final String clientID;
-  final String clientLevelID;
-  final String clientLevelName;
-  final String clientStatusID;
-  final String clientStatusName;
-  final String firstName;
-  final String lastName;
+  final String? clientID;
+  final String? clientLevelID;
+  final ClientLevel? clientLevel;
+  final String? clientStatusID;
+  final ClientStatus? clientStatus;
+  final String? firstName;
+  final String? lastName;
   final String? noted;
-  final String phone;
-  final String email;
-  final String availableTimeStart;
-  final String availableTimeEnd;
+  final String? phone;
+  final String? email;
+  final String? availableTimeStart;
+  final String? availableTimeEnd;
   final SalesTerritory? salesTerritory;
   final String? salesTerritoryID;
   final String? salesTerritoryName;
-  final List<ClientCompany> companies;
+  final List<Address>? addresses;
+  final List<ClientCompany>? companies;
+  final String? createdBy;
 
   Client({
-    required this.clientID,
-    required this.clientLevelID,
-    required this.clientLevelName,
-    required this.clientStatusID,
-    required this.clientStatusName,
-    required this.firstName,
-    required this.lastName,
+    this.clientID,
+    this.clientLevelID,
+    this.clientLevel,
+    this.clientStatusID,
+    this.clientStatus,
+    this.firstName,
+    this.lastName,
     this.noted,
-    required this.phone,
-    required this.email,
-    required this.availableTimeStart,
-    required this.availableTimeEnd,
-    required this.salesTerritory,
+    this.phone,
+    this.email,
+    this.availableTimeStart,
+    this.availableTimeEnd,
+    this.salesTerritory,
     this.salesTerritoryID,
     this.salesTerritoryName,
-    required this.companies,
+    this.addresses,
+    this.companies,
+    this.createdBy,
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
       clientID: json['ClientID'],
       clientLevelID: json['ClientLevelID'],
-      clientLevelName: json['ClientLevelName'] ?? '',
+      clientLevel: ClientLevel.fromJson(json['ClientLevel'] as Map<String, dynamic>),
       clientStatusID: json['ClientStatusID'],
-      clientStatusName: json['ClientStatusName'] ?? '',
+      clientStatus: ClientStatus.fromJson(json['ClientStatus'] as Map<String, dynamic>),
       firstName: json['FirstName'],
       lastName: json['LastName'],
       noted: json['Noted'],
@@ -63,35 +69,74 @@ class Client {
       salesTerritory: (json['SalesTerritory'] != null) ? SalesTerritory.fromJson(json['SalesTerritory'] as Map<String, dynamic>) : null,
       salesTerritoryID: json['SalesTerritoryID'],
       salesTerritoryName: json['SalesTerritoryName'],
+      addresses: Address.listFromJson(json['addresses'] ?? []),
       companies: ClientCompany.listFromJson(json['companies'] ?? []),
+      createdBy: json['CreatedBy'],
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJsonCreate(String userID) {
+    if ((companies ?? []).isEmpty) return {};
+
+    String address = "";
+
+    for (var clientCompany in companies!) {
+      if ((clientCompany.company?.addresses ?? []).isEmpty) return {};
+
+      for (var companyAddress in clientCompany.company!.addresses) {
+        address = companyAddress.address ?? '';
+      }
+    }
+
     return {
-      'ClientID': clientID,
-      'ClientLevelID': clientLevelID,
-      'ClientLevelName': clientLevelName,
-      'ClientStatusID': clientStatusID,
-      'ClientStatusName': clientStatusName,
-      'FirstName': firstName,
-      'LastName': lastName,
-      'Noted': noted,
-      'Phone': phone,
-      'Email': email,
-      'AvailableTimeStart': availableTimeStart,
-      'AvailableTimeEnd': availableTimeEnd,
-      'SalesTerritory': salesTerritory?.toJson(),
-      'SalesTerritoryName': salesTerritoryName,
+      "FirstName": firstName,
+      "LastName": lastName,
+      "Address": address,
+      "Phone": phone,
+      "Email": email,
+      "SalesTerritoryID": salesTerritoryID,
+      "ClientStatusID": clientStatusID,
+      "ClientLevelID": clientLevelID,
+      "Noted": "",
+      "AvailableTimeStart": availableTimeStart ?? '',
+      "AvailableTimeEnd": availableTimeEnd ?? '',
+      "IsActive": true,
+      "CreatedBy": userID,
+      "ModifiedBy": userID,
+      "ClientAddresses": null,
+      "ClientProducts": null,
+      "ClientCompanies": (companies ?? []).map((v) => v.toJson()).toList(),
+    };
+  }
+
+  Map<String, dynamic> toJsonUpdate(String modifiedBy) {
+    return {
+      "FirstName": firstName,
+      "LastName": lastName,
+      // "Address": "123 Bangkok",
+      "Phone": phone,
+      "Email": email,
+      "SalesTerritoryID": salesTerritoryID,
+      "ClientStatusID": clientStatusID,
+      "ClientLevelID": clientLevelID,
+      "Noted": noted,
+      "AvailableTimeStart": availableTimeStart,
+      "AvailableTimeEnd": availableTimeEnd,
+      "IsActive": true,
+      "CreatedBy": createdBy,
+      "ModifiedBy": modifiedBy,
+      "ClientAddresses": null,
+      "ClientProducts": null,
+      "ClientCompanies": (companies ?? []).map((v) => v.toJson()).toList(),
     };
   }
 
   Client copyWith({
     String? clientID,
     String? clientLevelID,
-    String? clientLevelName,
+    ClientLevel? clientLevel,
     String? clientStatusID,
-    String? clientStatusName,
+    ClientStatus? clientStatus,
     String? firstName,
     String? lastName,
     String? noted,
@@ -100,15 +145,18 @@ class Client {
     String? availableTimeStart,
     String? availableTimeEnd,
     SalesTerritory? salesTerritory,
+    String? salesTerritoryID,
     String? salesTerritoryName,
+    List<Address>? addresses,
     List<ClientCompany>? companies,
+    String? createdBy,
   }) {
     return Client(
       clientID: clientID ?? this.clientID,
       clientLevelID: clientLevelID ?? this.clientLevelID,
-      clientLevelName: clientLevelName ?? this.clientLevelName,
+      clientLevel: clientLevel ?? this.clientLevel,
       clientStatusID: clientStatusID ?? this.clientStatusID,
-      clientStatusName: clientStatusName ?? this.clientStatusName,
+      clientStatus: clientStatus ?? this.clientStatus,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       noted: noted ?? this.noted,
@@ -117,8 +165,11 @@ class Client {
       availableTimeStart: availableTimeStart ?? this.availableTimeStart,
       availableTimeEnd: availableTimeEnd ?? this.availableTimeEnd,
       salesTerritory: salesTerritory ?? this.salesTerritory,
+      salesTerritoryID: salesTerritoryID ?? this.salesTerritoryID,
       salesTerritoryName: salesTerritoryName ?? this.salesTerritoryName,
+      addresses: addresses ?? this.addresses,
       companies: companies ?? this.companies,
+      createdBy: createdBy ?? this.createdBy,
     );
   }
 

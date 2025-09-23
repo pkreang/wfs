@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -12,17 +14,24 @@ import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/features/client/services/client_service.dart';
 import 'package:wfs/features/company/models/company.dart';
 
+DateTime get roundedNow {
+  final now = DateTime.now();
+  final minute = ((now.minute + 4) ~/ 5) * 5;
+
+  return DateTime(now.year, now.month, now.day, now.hour, minute >= 60 ? 55 : minute);
+}
+
 @immutable
-class ClientEditState {
+class ClientCreateState {
   final AsyncValue<Client> data;
   final List<Company> companies;
   final bool isDirty;
   final bool isLoading;
   final String? errorMessage;
 
-  const ClientEditState({required this.data, this.companies = const [], this.isDirty = false, this.isLoading = false, this.errorMessage});
+  const ClientCreateState({required this.data, this.companies = const [], this.isDirty = false, this.isLoading = false, this.errorMessage});
 
-  ClientEditState copyWith({AsyncValue<Client>? data, List<Company>? companies, bool? isDirty, bool? isLoading, String? errorMessage, bool clearErrorMessage = false}) => ClientEditState(
+  ClientCreateState copyWith({AsyncValue<Client>? data, List<Company>? companies, bool? isDirty, bool? isLoading, String? errorMessage, bool clearErrorMessage = false}) => ClientCreateState(
     data: data ?? this.data,
     companies: companies ?? this.companies,
     isDirty: isDirty ?? this.isDirty,
@@ -31,35 +40,33 @@ class ClientEditState {
   );
 }
 
-class ClientEditViewModel extends StateNotifier<ClientEditState> {
-  ClientEditViewModel(this.ref, this.id) : super(const ClientEditState(data: AsyncValue.loading())) {
-    fetch();
+class ClientCreateViewModel extends StateNotifier<ClientCreateState> {
+  ClientCreateViewModel(this.ref) : super(const ClientCreateState(data: AsyncValue.loading())) {
+    state = state.copyWith(
+      data: AsyncValue.data(Client(availableTimeStart: DateFormat('HH:mm').format(roundedNow), availableTimeEnd: DateFormat('HH:mm').format(roundedNow))),
+      isDirty: false,
+    );
   }
 
   final Ref ref;
-  final String id;
 
   ClientService get _clientService => ref.read(clientServiceProvider);
 
-  void setIsLoading(bool value) {
-    state = state.copyWith(isLoading: value);
-  }
+  // Future<void> fetch() async {
+  //   final clientAsync = await AsyncValue.guard(() => _clientService.getById(ref, id));
+  //   clientAsync.whenData((client) {
+  //     final res = AsyncValue.data(client);
+  //     state = state.copyWith(data: res, isDirty: false);
 
-  Future<void> fetch() async {
-    final clientAsync = await AsyncValue.guard(() => _clientService.getById(ref, id));
-    clientAsync.whenData((client) {
-      final res = AsyncValue.data(client);
-      state = state.copyWith(data: res, isDirty: false);
+  //     final List<Company> companies = client.companies
+  //         .map((cc) => cc.company)
+  //         .where((c) => (c?.companyID ?? '').isNotEmpty)
+  //         .map((c) => Company(companyID: c!.companyID, companyName: c.companyName))
+  //         .toList();
 
-      final List<Company> companies = (client.companies ?? [])
-          .map((cc) => cc.company)
-          .where((c) => (c?.companyID ?? '').isNotEmpty)
-          .map((c) => Company(companyID: c!.companyID, companyName: c.companyName))
-          .toList();
-
-      state = state.copyWith(data: res, companies: companies, isDirty: false);
-    });
-  }
+  //     state = state.copyWith(data: res, companies: companies, isDirty: false);
+  //   });
+  // }
 
   void setFirstName(String firstName) {
     state = state.copyWith(data: state.data.whenData((v) => v.copyWith(firstName: firstName)), isDirty: true, clearErrorMessage: true);
@@ -81,7 +88,6 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
     state = state.copyWith(
       data: state.data.whenData((v) => v.copyWith(clientStatusID: status.clientStatusID, clientStatus: status)),
       isDirty: true,
-      clearErrorMessage: true,
     );
   }
 
@@ -89,7 +95,6 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
     state = state.copyWith(
       data: state.data.whenData((v) => v.copyWith(clientLevelID: status.clientLevelID, clientLevel: status)),
       isDirty: true,
-      clearErrorMessage: true,
     );
   }
 
@@ -99,7 +104,6 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
     state = state.copyWith(
       data: state.data.whenData((v) => v.copyWith(salesTerritoryID: status.salesTerritoryID, salesTerritoryName: status.salesTerritoryName, salesTerritory: newSalesTerritory)),
       isDirty: true,
-      clearErrorMessage: true,
     );
   }
 
@@ -120,39 +124,33 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
   void setCompany(Company company) {
     state = state.copyWith(
       data: state.data.whenData((v) {
-        print('company: ${company.toJson()}');
-        // final filterCompany = state.companies.where((v) => v.companyID == company.companyID).firstOrNull;
         return v.copyWith(
-          companies: [ClientCompany(companyID: company.companyID ?? '', company: company)],
+          companies: [ClientCompany(companyID: company.companyID ?? '', createdBy: company.createdBy, modifiedBy: company.modifiedBy, company: company)],
         );
       }),
       isDirty: true,
-      clearErrorMessage: true,
     );
   }
 
   void removeCompany(String companyID) {
     state = state.copyWith(
       data: state.data.whenData((v) {
-        final companies = (v.companies ?? []).where((v) => v.companyID != companyID).toList();
-        return v.copyWith(companies: companies);
+        return v.copyWith(companies: []);
       }),
       isDirty: true,
-      clearErrorMessage: true,
     );
   }
 
-  Future<bool> updateClient() async {
+  Future<bool> createClient() async {
     final detail = state.data.value;
     if (!state.isDirty || detail == null) return false;
 
     state = state.copyWith(isLoading: true);
 
     try {
-      final result = await _clientService.updateClient(detail, ref);
+      final result = await _clientService.createClient(detail, ref);
       if (!result) return result;
 
-      ref.invalidate(clientDetailProvider);
       ref.invalidate(clientListProvider);
 
       return result;

@@ -8,14 +8,7 @@ class ClientLevelCapsule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const capsuleStyles = <String, CapsuleStyle>{
-      'Online': CapsuleStyle(Color(0xFF2F80ED), Color.fromRGBO(47, 128, 237, 0.2)),
-      'Visit': CapsuleStyle(Color(0xFF2F80ED), Color.fromRGBO(47, 128, 237, 0.2)),
-      'On Call': CapsuleStyle(Color(0xFF2F80ED), Color.fromRGBO(47, 128, 237, 0.2)),
-    };
-
-    if (capsuleStyles[clientLevelName] == null) return SizedBox.shrink();
-    final capsuleStyle = capsuleStyles[clientLevelName] ?? CapsuleStyle(Color(0xFFFFFFFF), Color(0xFFFFFFFF));
+    final capsuleStyle = clientLevelName == "" ? CapsuleStyle(Color(0xFFFFFFFF), Color(0xFFFFFFFF)) : CapsuleStyle(Color(0xFF0689FF), Color.fromRGBO(47, 128, 237, 0.2));
 
     return CapsuleWidget(label: clientLevelName, capsuleStyle: capsuleStyle);
   }

@@ -9,10 +9,9 @@ class ClientStatusCapsule extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const capsuleStyles = <String, CapsuleStyle>{
-      'Scheduled': CapsuleStyle(Color.fromRGBO(255, 153, 26, 0.72), Color.fromRGBO(255, 153, 26, 0.2)),
-      'Postpone': CapsuleStyle(Color.fromRGBO(27, 31, 38, 0.72), Color.fromRGBO(142, 142, 147, 0.2)),
-      'Canceled': CapsuleStyle(Color.fromRGBO(255, 106, 84, 0.72), Color.fromRGBO(255, 106, 84, 0.2)),
-      'Completed': CapsuleStyle(Color(0xFF219653), Color.fromRGBO(36, 151, 86, 0.2)),
+      'Active': CapsuleStyle(Color(0xFF219653), Color.fromRGBO(36, 151, 86, 0.2)),
+      'Inactive': CapsuleStyle(Color.fromRGBO(27, 31, 38, 0.72), Color.fromRGBO(142, 142, 147, 0.2)),
+      'Lead': CapsuleStyle(Color.fromRGBO(255, 153, 26, 0.72), Color.fromRGBO(255, 153, 26, 0.2)),
     };
 
     if (capsuleStyles[clientStatusName] == null) return SizedBox.shrink();

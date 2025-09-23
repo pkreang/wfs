@@ -1,10 +1,30 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/features/client/models/client.dart';
+import 'package:wfs/features/client/models/client_level.dart';
+import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class ClientService {
   final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
+
+  Future<List<Client>> fetchClients(Ref ref) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    final clients = await apiClient.get(
+      path: "/client/?IsActive=true",
+      decode: (json) {
+        final map = json as Map<String, dynamic>;
+        final list = map['clients'] as List? ?? const [];
+
+        return list.map((e) => Client.fromJson(e as Map<String, dynamic>)).toList();
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+
+    return clients;
+  }
 
   Future<Client> getById(Ref ref, String clientId) async {
     final authState = ref.read(authProvider);
@@ -21,5 +41,72 @@ class ClientService {
     );
 
     return client;
+  }
+
+  Future<List<ClientStatus>> fetchClientStatus(Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+
+    final clientStatus = await apiClient.get(
+      path: "/client/status/?IsActive=true",
+      decode: (json) {
+        final map = json as Map<String, dynamic>;
+        final list = map['client_status'] as List? ?? const [];
+
+        return ClientStatus.listFromJson(list);
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+
+    return clientStatus;
+  }
+
+  Future<List<ClientLevel>> fetchClientLevel(Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+
+    final clientLevel = await apiClient.get(
+      path: "/client/level/?IsActive=true",
+      decode: (json) {
+        final map = json as Map<String, dynamic>;
+        final list = map['client_level'] as List? ?? const [];
+
+        return ClientLevel.listFromJson(list);
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+
+    return clientLevel;
+  }
+
+  Future<bool> createClient(Client client, Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+    final userID = authState.userID ?? '';
+
+    return await apiClient.post(
+      path: "/client/",
+      body: client.toJsonCreate(userID),
+      decode: (json) {
+        final map = json as Map<String, dynamic>;
+        return (map['status'] as String?)?.toLowerCase() == "success";
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+  }
+
+  Future<bool> updateClient(Client client, Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+    final userID = authState.userID ?? '';
+
+    return await apiClient.put(path: "/client/${client.clientID}", body: client.toJsonUpdate(userID), headers: {"Authorization": "Bearer $accessToken"});
+  }
+
+  Future<bool> deleteClient(String clientID, Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+
+    return await apiClient.delete(path: "/client/${clientID.toString()}", headers: {"Authorization": "Bearer $accessToken"});
   }
 }

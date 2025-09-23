@@ -1,31 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
-import 'package:wfs/widgets/app_sheet.dart';
-import 'package:wfs/features/appointment/widgets/app_text.dart';
-import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
 import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/widgets/client_level_capsule.dart';
 import 'package:wfs/features/client/widgets/client_status_capsule.dart';
-import 'package:wfs/features/company/models/company.dart';
-import 'package:wfs/widgets/form_company_tile.dart';
-import 'package:wfs/widgets/form_company_with_data_tile.dart';
-import 'package:wfs/widgets/form_datetime_range_picker.dart';
-import 'package:wfs/widgets/form_info_tile.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
+import 'package:wfs/widgets/app_sheet.dart';
+import 'package:wfs/widgets/form_company_tile.dart';
+import 'package:wfs/widgets/form_datetime_range_picker.dart';
+import 'package:wfs/widgets/app_text.dart';
+import 'package:wfs/widgets/app_text_form_field.dart';
+import 'package:wfs/widgets/form_info_tile.dart';
 
-class ClientEditPage extends ConsumerStatefulWidget {
-  final String clientID;
-  const ClientEditPage({required this.clientID, super.key});
+class Item {
+  final String id;
+  final String name;
 
-  @override
-  ConsumerState<ClientEditPage> createState() => _ClientEditPageState();
+  Item({required this.id, required this.name});
 }
 
-class _ClientEditPageState extends ConsumerState<ClientEditPage> {
-  bool isInit = false;
+class CreateClientScreen extends ConsumerStatefulWidget {
+  const CreateClientScreen({super.key});
+
+  @override
+  ConsumerState<CreateClientScreen> createState() => _CreateClientScreenState();
+}
+
+class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
@@ -43,7 +46,7 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
   }
 
   void handleSave() async {
-    final asyncClient = ref.read(clientEditProvider(widget.clientID)).data;
+    final asyncClient = ref.read(clientCreateProvider).data;
     final client = asyncClient.value;
 
     if (client == null) {
@@ -63,6 +66,21 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
       return;
     }
 
+    if (Validator.required(client.clientStatusID) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก Status");
+      return;
+    }
+
+    if (Validator.required(client.clientLevelID) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก Level");
+      return;
+    }
+
+    if (Validator.required(client.salesTerritoryID) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก Territory");
+      return;
+    }
+
     if (Validator.required(mobileController.text) != null) {
       AppDialogs.error(context, message: "กรุณากรอก Mobile");
       return;
@@ -78,9 +96,9 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
       return;
     }
 
-    final result = await ref.read(clientEditProvider(widget.clientID).notifier).updateClient();
+    final result = await ref.read(clientCreateProvider.notifier).createClient();
     if (!result) {
-      final errMsg = ref.read(clientEditProvider(widget.clientID)).errorMessage;
+      final errMsg = ref.read(clientCreateProvider).errorMessage;
       if (errMsg != null && errMsg.isNotEmpty) {
         AppDialogs.alert(context, title: 'ไม่สามารถดำเนินการได้', message: errMsg);
       }
@@ -102,8 +120,7 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(clientEditProvider(widget.clientID));
-    final isDisabled = (state.isDirty && !state.isLoading);
+    final state = ref.watch(clientCreateProvider);
 
     return Stack(
       children: [
@@ -129,12 +146,12 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                   ],
                 ),
               ),
-              title: AppText(label: 'Edit Client', fontSize: 17, fontWeight: FontWeight.w600),
+              title: const AppText(label: 'Create Client', fontSize: 17, fontWeight: FontWeight.w600),
               actions: [
                 TextButton(
-                  onPressed: isDisabled ? () => handleSave() : null,
-                  style: TextButton.styleFrom(foregroundColor: isDisabled ? AppUtility.colorPrimary : Colors.grey),
-                  child: AppText(label: 'Done', textColor: isDisabled ? AppUtility.colorPrimary : Colors.grey),
+                  onPressed: () => handleSave(),
+                  style: TextButton.styleFrom(foregroundColor: AppUtility.colorPrimary),
+                  child: AppText(label: 'Done', textColor: AppUtility.colorPrimary),
                 ),
               ],
             ),
@@ -143,7 +160,7 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
               error: (e, _) => Center(
                 child: AppText(label: "Client Not Found", textColor: Colors.red),
               ),
-              data: (client) => buildContent(client, state.companies),
+              data: (client) => buildContent(client),
             ),
           ),
         ),
@@ -153,24 +170,14 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
     );
   }
 
-  Widget buildContent(Client client, List<Company> companies) {
-    if (!isInit) {
-      firstNameController.text = client.firstName ?? '';
-      lastNameController.text = client.lastName ?? '';
-      mobileController.text = client.phone ?? '';
-      emailController.text = client.email ?? '';
-
-      isInit = true;
-    }
-
+  Widget buildContent(Client client) {
     String companyID = '';
     String companyName = '';
     if ((client.companies ?? []).isNotEmpty) {
       final company = (client.companies ?? []).first.company;
-      if (company != null) {
-        companyID = company.companyID ?? '';
-        companyName = company.companyName ?? '';
-      }
+
+      companyID = company?.companyID ?? '';
+      companyName = company?.companyName ?? '';
     }
 
     return SingleChildScrollView(
@@ -186,12 +193,12 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                 children: [
                   FormInfoTile(
                     label: 'First Name',
-                    value: AppTextFormField(controller: firstNameController, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setFirstName(value)),
+                    value: AppTextFormField(controller: firstNameController, onChanged: (value) => ref.read(clientCreateProvider.notifier).setFirstName(value)),
                     isHideIcon: true,
                   ),
                   FormInfoTile(
                     label: 'Last Name',
-                    value: AppTextFormField(controller: lastNameController, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setLastName(value)),
+                    value: AppTextFormField(controller: lastNameController, onChanged: (value) => ref.read(clientCreateProvider.notifier).setLastName(value)),
                     isHideIcon: true,
                   ),
                   FormInfoTile(
@@ -200,7 +207,7 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                     onTap: () => AppSheet.openClientStatusSheet(
                       context: context,
                       clientStatusID: client.clientStatusID ?? '',
-                      onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setClientStatus(value),
+                      onSelected: (value) => ref.read(clientCreateProvider.notifier).setClientStatus(value),
                     ),
                   ),
                   FormInfoTile(
@@ -209,17 +216,14 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                     onTap: () => AppSheet.openClientLevelSheet(
                       context: context,
                       clientLevelID: client.clientLevelID ?? '',
-                      onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setClientLevel(value),
+                      onSelected: (value) => ref.read(clientCreateProvider.notifier).setClientLevel(value),
                     ),
                   ),
                   FormInfoTile(
                     label: 'territory',
                     value: AppText(label: client.salesTerritoryName ?? ''),
-                    onTap: () => AppSheet.openTerritorySheet(
-                      context: context,
-                      territoryID: client.salesTerritoryID ?? '',
-                      onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setTerritory(value),
-                    ),
+                    onTap: () =>
+                        AppSheet.openTerritorySheet(context: context, territoryID: client.salesTerritoryID ?? '', onSelected: (value) => ref.read(clientCreateProvider.notifier).setTerritory(value)),
                     isShowBorderBottom: true,
                   ),
                 ],
@@ -228,19 +232,20 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                 start: _todayWithTime(client.availableTimeStart ?? ''),
                 end: _todayWithTime(client.availableTimeEnd ?? ''),
                 isTimeOnly: true,
-                onStartTimeSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setAvailableTimeStart(value),
-                onEndTimeSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setAvailableTimeEnd(value),
+                onStartTimeSelected: (value) => ref.read(clientCreateProvider.notifier).setAvailableTimeStart(value),
+                onEndTimeSelected: (value) => ref.read(clientCreateProvider.notifier).setAvailableTimeEnd(value),
               ),
+
               Column(
                 children: [
                   FormInfoTile(
                     label: 'mobile',
-                    value: AppTextFormField(controller: mobileController, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setMobile(value)),
+                    value: AppTextFormField(controller: mobileController, onChanged: (value) => ref.read(clientCreateProvider.notifier).setMobile(value)),
                     isHideIcon: true,
                   ),
                   FormInfoTile(
                     label: 'email',
-                    value: AppTextFormField(controller: emailController, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setEmail(value)),
+                    value: AppTextFormField(controller: emailController, onChanged: (value) => ref.read(clientCreateProvider.notifier).setEmail(value)),
                     isHideIcon: true,
                   ),
                 ],
@@ -248,16 +253,9 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
               FormCompanyTile(
                 companyID: companyID,
                 companyName: companyName,
-                onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setCompany(value),
-                onRemove: (companyID) => ref.read(clientEditProvider(widget.clientID).notifier).removeCompany(companyID),
+                onSelected: (value) => ref.read(clientCreateProvider.notifier).setCompany(value),
+                onRemove: (companyID) => ref.read(clientCreateProvider.notifier).removeCompany(companyID),
               ),
-              // FormCompanyWithDataTile(
-              //   companyID: companyID,
-              //   companyName: companyName,
-              //   companies: companies,
-              //   onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setCompany(value),
-              //   onRemove: (companyID) => ref.read(clientEditProvider(widget.clientID).notifier).removeCompany(companyID),
-              // ),
             ],
           ),
         ],
