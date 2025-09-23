@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/screens/client_screen.dart';
+import 'package:wfs/features/client/views/client_list_page.dart';
 import 'package:wfs/screens/test_screen.dart';
 import 'appointment_screen.dart';
 import 'dashboard_screen.dart';
-import 'company_screen.dart';
-import '../providers/company_provider.dart';
+import '../features/company/views/company_list_page.dart';
 
 class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  ConsumerState<MainNavigationScreen> createState() =>
-      _MainNavigationScreenState();
+  ConsumerState<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
@@ -33,26 +31,11 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            label: 'Appointments',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people_outline),
-            label: 'Clients',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.business_center_outlined),
-            label: 'Company',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.business_center_outlined),
-            label: 'Test',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), label: 'Appointments'),
+          BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Clients'),
+          BottomNavigationBarItem(icon: Icon(Icons.business_center_outlined), label: 'Company'),
+          BottomNavigationBarItem(icon: Icon(Icons.business_center_outlined), label: 'Test'),
         ],
         currentIndex: _currentIndex,
         selectedItemColor: Colors.blue,
@@ -60,7 +43,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         showUnselectedLabels: true,
         onTap: (index) {
           if (index == 3) {
-            loadCompanies(ref);
+            // loadCompanies(ref);
           }
 
           setState(() {
@@ -90,17 +73,10 @@ class PlaceholderScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Coming Soon',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
+              const Text('Coming Soon', style: TextStyle(fontSize: 16, color: Colors.grey)),
             ],
           ),
         ),

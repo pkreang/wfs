@@ -14,12 +14,13 @@ import 'package:wfs/features/appointment/viewmodels/appointment_edit_viewmodel.d
 import 'package:wfs/features/appointment/viewmodels/appointment_viewmodel.dart';
 import 'package:wfs/features/appointment/viewmodels/appointment_visit_viewmodel.dart';
 import 'package:wfs/features/client/models/client.dart';
-import 'package:wfs/features/client/models/client_company.dart';
 import 'package:wfs/features/client/models/client_level.dart';
 import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/features/client/services/client_service.dart';
+import 'package:wfs/features/client/viewmodels/client_create_viewmodel.dart';
 import 'package:wfs/features/client/viewmodels/client_detail_viewmodel.dart';
 import 'package:wfs/features/client/viewmodels/client_edit_viewmodel.dart';
+import 'package:wfs/features/client/viewmodels/client_list_viewmodel.dart';
 import 'package:wfs/features/company/models/company.dart';
 import 'package:wfs/features/company/services/company_service.dart';
 import 'package:wfs/features/company/viewmodels/company_create_viewmodel.dart';
@@ -98,8 +99,20 @@ final outcomeProvider = FutureProvider.autoDispose<List<Outcome>>((ref) async {
   return await ref.read(appointmentServiceProvider).fetchOutcomes();
 });
 
+final companyProvider = FutureProvider.autoDispose<List<Company>>((ref) async {
+  return await ref.read(companyServiceProvider).fetchCompanies(ref);
+});
+
 //* Client
 final clientServiceProvider = Provider<ClientService>((ref) => ClientService());
+
+final clientListProvider = StateNotifierProvider.autoDispose<ClientListViewModel, ClientListState>((ref) {
+  return ClientListViewModel(ref);
+});
+
+final clientCreateProvider = StateNotifierProvider.autoDispose<ClientCreateViewModel, ClientCreateState>((ref) {
+  return ClientCreateViewModel(ref);
+});
 
 final clientDetailProvider = StateNotifierProvider.autoDispose.family<ClientDetailViewModel, AsyncValue<Client>, String>((ref, id) {
   return ClientDetailViewModel(ref, id);
@@ -119,12 +132,15 @@ final clientLevelProvider = FutureProvider.autoDispose<List<ClientLevel>>((ref) 
 
 //* Company
 final companyServiceProvider = Provider<CompanyService>((ref) => CompanyService());
+
 final companyListProvider = StateNotifierProvider.autoDispose<CompanyListViewModel, CompanyListState>((ref) {
   return CompanyListViewModel(ref);
 });
+
 final companyCreateProvider = StateNotifierProvider.autoDispose<CompanyCreateViewModel, CompanyCreateState>((ref) {
   return CompanyCreateViewModel(ref);
 });
+
 final companyDetailProvider = StateNotifierProvider.autoDispose.family<CompanyDetailViewModel, AsyncValue<Company>, String>((ref, id) {
   return CompanyDetailViewModel(ref, id);
 });

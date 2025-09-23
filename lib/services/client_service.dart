@@ -83,6 +83,7 @@ class ClientService {
       throw Exception('Authentication token is not available.');
     }
     try {
+      print('json.encode(client): ${json.encode(client)}');
       final response = await http.post(
         Uri.parse(ApiConfig.addClientUrl),
         headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer $accessToken'},

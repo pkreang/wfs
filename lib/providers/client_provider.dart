@@ -13,11 +13,9 @@ import 'auth_provider.dart';
 final clientServiceProvider = Provider<ClientService>((ref) {
   return ClientService();
 });
-final clientLoadTriggerProvider = StateProvider <bool>((ref) => false);
+final clientLoadTriggerProvider = StateProvider<bool>((ref) => false);
 
-final clientDataProvider = StateProvider<AsyncValue<List<Client>>>(
-  (ref) => const AsyncValue.loading(),
-);
+final clientDataProvider = StateProvider<AsyncValue<List<Client>>>((ref) => const AsyncValue.loading());
 
 final clientProvider = FutureProvider<List<Client>>((ref) async {
   final authState = ref.watch(authProvider);
@@ -43,9 +41,7 @@ final clientSectionsProvider = Provider<Map<String, List<Client>>>((ref) {
       final sections = <String, List<Client>>{};
 
       for (final client in companies) {
-        final firstLetter = client.firstName.toString().isNotEmpty
-            ? client.firstName.toString().toUpperCase()
-            : '#';
+        final firstLetter = client.firstName.toString().isNotEmpty ? client.firstName.toString().toUpperCase() : '#';
 
         if (!sections.containsKey(firstLetter)) {
           sections[firstLetter] = [];
@@ -53,9 +49,7 @@ final clientSectionsProvider = Provider<Map<String, List<Client>>>((ref) {
         sections[firstLetter]!.add(client);
       }
 
-      final sortedSections = Map.fromEntries(
-        sections.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
-      );
+      final sortedSections = Map.fromEntries(sections.entries.toList()..sort((a, b) => a.key.compareTo(b.key)));
 
       return sortedSections;
     },
@@ -86,10 +80,7 @@ final clientCompaniesProvider = Provider<AsyncValue<List<Client>>>((ref) {
   );
 });
 
-final clientGetByIdProvider = FutureProvider.family<Client, String>((
-  ref,
-  guid,
-) async {
+final clientGetByIdProvider = FutureProvider.family<Client, String>((ref, guid) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 
@@ -102,10 +93,7 @@ final clientGetByIdProvider = FutureProvider.family<Client, String>((
   return clientService.GetById(accessToken, guid);
 });
 
-final clienAddProvider = FutureProvider.family<Client, Client>((
-  ref,
-  client,
-) async {
+final clienAddProvider = FutureProvider.family<Client, Client>((ref, client) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 
@@ -118,10 +106,9 @@ final clienAddProvider = FutureProvider.family<Client, Client>((
   return clientService.Add(accessToken, client);
 });
 
-final clientEditProvider = StateNotifierProvider.autoDispose
-    .family<ClientEditViewModel, ClientEditState, String>((ref, id) {
-      return ClientEditViewModel(ref, id);
-    });
+final clientEditProvider = StateNotifierProvider.autoDispose.family<ClientEditViewModel, ClientEditState, String>((ref, id) {
+  return ClientEditViewModel(ref, id);
+});
 
 @immutable
 class ClientEditState {
@@ -129,26 +116,14 @@ class ClientEditState {
   final bool isDirty;
   final bool isLoading;
 
-  const ClientEditState({
-    required this.data,
-    this.isDirty = false,
-    this.isLoading = false,
-  });
+  const ClientEditState({required this.data, this.isDirty = false, this.isLoading = false});
 
-  ClientEditState copyWith({
-    AsyncValue<Client>? data,
-    bool? isDirty,
-    bool? isLoading,
-  }) => ClientEditState(
-    data: data ?? this.data,
-    isDirty: isDirty ?? this.isDirty,
-    isLoading: isLoading ?? this.isLoading,
-  );
+  ClientEditState copyWith({AsyncValue<Client>? data, bool? isDirty, bool? isLoading}) =>
+      ClientEditState(data: data ?? this.data, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
 }
 
 class ClientEditViewModel extends StateNotifier<ClientEditState> {
-  ClientEditViewModel(this.ref, this.id)
-    : super(const ClientEditState(data: AsyncValue.loading())) {
+  ClientEditViewModel(this.ref, this.id) : super(const ClientEditState(data: AsyncValue.loading())) {
     fetch();
   }
 
@@ -159,111 +134,57 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
 
   Future<void> fetch() async {
     final authState = ref.watch(authProvider);
-    final res = await AsyncValue.guard(
-      () => _ClientService.GetById(authState.accessToken.toString(), id),
-    );
+    final res = await AsyncValue.guard(() => _ClientService.GetById(authState.accessToken.toString(), id));
     state = state.copyWith(data: res, isDirty: false);
   }
 
   void setFirstName(String firstName) {
-    state = state.copyWith(
-      data: state.data.whenData((v) => v.copyWith(firstName: firstName)),
-      isDirty: true,
-    );
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(firstName: firstName)), isDirty: true);
   }
 
   void setLastName(String lastName) {
-    state = state.copyWith(
-      data: state.data.whenData((v) => v.copyWith(lastName: lastName)),
-      isDirty: true,
-    );
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(lastName: lastName)), isDirty: true);
   }
 
   void setStatus(ClientStatus clientStatus) {
     state = state.copyWith(
-      data: state.data.whenData(
-        (v) => v.copyWith(
-          clientStatus: clientStatus,
-          clientStatusID: clientStatus.clientStatusID,
-        ),
-      ),
+      data: state.data.whenData((v) => v.copyWith(clientStatus: clientStatus, clientStatusID: clientStatus.clientStatusID)),
       isDirty: true,
     );
   }
 
   void setLevel(ClientLevel clientLevel) {
     state = state.copyWith(
-      data: state.data.whenData(
-        (v) => v.copyWith(
-          clientLevel: clientLevel,
-          clientLevelID: clientLevel.clientLevelID,
-        ),
-      ),
+      data: state.data.whenData((v) => v.copyWith(clientLevel: clientLevel, clientLevelID: clientLevel.clientLevelID)),
       isDirty: true,
     );
   }
 
   void setEmail(String email) {
-    state = state.copyWith(
-      data: state.data.whenData((v) => v.copyWith(email: email)),
-      isDirty: true,
-    );
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(email: email)), isDirty: true);
   }
 
   void setPhone(String phone) {
-    state = state.copyWith(
-      data: state.data.whenData((v) => v.copyWith(phone: phone)),
-      isDirty: true,
-    );
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(phone: phone)), isDirty: true);
   }
 
   void setTerritory(SalesTerritory territory) {
     state = state.copyWith(
-      data: state.data.whenData(
-        (v) => v.copyWith(
-          salesTerritory: territory,
-          salesTerritoryID: territory.salesTerritoryID,
-        ),
-      ),
+      data: state.data.whenData((v) => v.copyWith(salesTerritory: territory, salesTerritoryID: territory.salesTerritoryID)),
       isDirty: true,
     );
   }
 
   void setClientAddress(List<ClientAddresses>? listClientAddresses) {
-    state = state.copyWith(
-      data: state.data.whenData(
-        (v) => v.copyWith(clientAddresses: listClientAddresses),
-      ),
-      isDirty: true,
-    );
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(clientAddresses: listClientAddresses)), isDirty: true);
   }
 
   void setavailableTimeStart(TimeOfDay? availableTimeStart) {
-    state = state.copyWith(
-      data: state.data.whenData(
-        (v) => v.copyWith(
-          availableTimeStart:
-              availableTimeStart!.hour.toString() +
-              ":" +
-              availableTimeStart.minute.toString(),
-        ),
-      ),
-      isDirty: true,
-    );
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(availableTimeStart: availableTimeStart!.hour.toString() + ":" + availableTimeStart.minute.toString())), isDirty: true);
   }
 
   void setavailableTimeEnd(TimeOfDay? availableTimeEnd) {
-    state = state.copyWith(
-      data: state.data.whenData(
-        (v) => v.copyWith(
-          availableTimeEnd:
-              availableTimeEnd!.hour.toString() +
-              ":" +
-              availableTimeEnd.minute.toString(),
-        ),
-      ),
-      isDirty: true,
-    );
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(availableTimeEnd: availableTimeEnd!.hour.toString() + ":" + availableTimeEnd.minute.toString())), isDirty: true);
   }
 
   Future<bool> editClient() async {
@@ -275,11 +196,7 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
     try {
       final authState = ref.watch(authProvider);
       ClientService clientService = ClientService();
-      await clientService.Edit(
-        authState.accessToken.toString(),
-        client.clientID.toString(),
-        client,
-      );
+      await clientService.Edit(authState.accessToken.toString(), client.clientID.toString(), client);
       return true;
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));
@@ -333,14 +250,7 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
   // }
 
   void addCompany(ClientCompanies clientCompanies) {
-    state = state.copyWith(
-      data: state.data.whenData(
-        (v) => v.copyWith(
-          clientCompanies: [...v.clientCompanies!, clientCompanies],
-        ),
-      ),
-      isDirty: true,
-    );
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(clientCompanies: [...v.clientCompanies!, clientCompanies])), isDirty: true);
   }
 
   // void updateClient(Client Client) {
@@ -361,12 +271,8 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
   void removeCompany(String companyID) {
     state = state.copyWith(
       data: state.data.whenData((v) {
-        List<ClientCompanies> listClientCompanies = List.from(
-          v.clientCompanies ?? [],
-        );
-        listClientCompanies.removeWhere(
-          (p) => p.company?.companyID == companyID,
-        );
+        List<ClientCompanies> listClientCompanies = List.from(v.clientCompanies ?? []);
+        listClientCompanies.removeWhere((p) => p.company?.companyID == companyID);
         return v.copyWith(clientCompanies: listClientCompanies);
       }),
       isDirty: true,

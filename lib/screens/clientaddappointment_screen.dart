@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
+import 'package:wfs/features/company/models/company.dart';
 import 'package:wfs/main.dart'; // ตรวจสอบว่า selectedItemProvider อยู่ใน main.dart หรือไม่
 import 'package:wfs/models/client_model.dart';
 import 'package:wfs/providers/client_provider.dart';
@@ -308,6 +310,15 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
           onTap: () {
             // เมื่อเลือก client ให้ส่ง clientID ไปยัง selectedItemProvider
             ref.read(selectedItemProvider.notifier).state = client.clientID;
+
+            // List<Company> companies = [];
+            // if ((client.clientAddresses ?? []).isNotEmpty) {
+            //   for (var company in client.clientAddresses!) {
+            //     companies.add(Company.fromJson(company.toJson()));
+            //   }
+            // }
+
+            // ref.read(companiesOfClentProvider.notifier).state = companies;
             Navigator.push(context, MaterialPageRoute(builder: (context) => CreateAppointmentScreen(clientId: client.clientID ?? '')));
           },
           child: Padding(

@@ -45,7 +45,12 @@ class AppointmentScreen extends ConsumerWidget {
             title: Column(
               children: [
                 AppText(label: 'Appointments', fontSize: 17, fontWeight: FontWeight.w600),
-                AppText(label: 'Entry', fontSize: 13),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final countText = appointmentsAsync.when(data: (appointments) => '${appointments.length} Entry', loading: () => 'Loading...', error: (err, stack) => 'Error');
+                    return AppText(label: countText, fontSize: 12, textColor: Colors.grey);
+                  },
+                ),
               ],
             ),
             shape: const Border(bottom: BorderSide(color: Color.fromRGBO(60, 60, 67, 0.36), width: 0.5)),

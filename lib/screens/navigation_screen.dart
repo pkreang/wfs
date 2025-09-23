@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/screens/appointment_screen.dart';
-import 'package:wfs/screens/client_screen.dart';
-import 'package:wfs/screens/company_screen.dart';
+import 'package:wfs/features/client/views/client_list_page.dart';
+import 'package:wfs/features/company/views/company_list_page.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
 

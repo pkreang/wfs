@@ -50,6 +50,7 @@ class FormCompanyWithDataTile extends StatelessWidget {
               ],
             ),
       isShowBorderBottom: true,
+      isHideIcon: true,
     );
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wfs/screens/appointment_screen.dart';
 import 'package:wfs/screens/navigation_screen.dart'; // สมมติว่า MainScaffold อยู่ในไฟล์นี้
-import 'package:wfs/screens/client_screen.dart';
+import 'package:wfs/features/client/views/client_list_page.dart';
 import 'package:wfs/features/company/views/company_list_page.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
