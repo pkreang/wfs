@@ -1,118 +1,102 @@
 import 'dart:async';
-
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/providers/appointment_provider.dart';
-import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
 import 'package:wfs/widgets/app_text_form_field.dart';
 
-Future<bool> showCancelAppointmentDialog({
-  required BuildContext context,
-  required WidgetRef ref,
-  required String appointmentID,
-  required DateTime currentDate,
-  // String canceledStatusID = "16CBDB62-30BB-4679-A1ED-CB935E11B7E2",
-  // String title = 'Cancel Appointment',
-  // String noteLabel = 'Canceled note',
-  // String confirmText = 'Confirm',
-  // String closeText = 'Close',
-  // String? initialNote,
-}) async {
+Future<bool> showCancelAppointmentDialog({required BuildContext context, required WidgetRef ref, required String appointmentID, required DateTime currentDate}) async {
   if (appointmentID.isEmpty) return false;
 
-  final completer = Completer<bool>();
-  final TextEditingController notedController = TextEditingController();
+  var noteValue = '';
+  var completed = false;
+  String? validationError;
 
-  void handleConfirm() async {
-    if (Validator.required(notedController.text) != null) {
-      AppDialogs.error(context, message: "กรุณากรอก canceled note");
-      return;
-    }
-
-    Navigator.pop(context);
-
-    try {
-      final result = await ref
-          .read(appointmentProvider.notifier)
-          .updateAppointmentStatus(
-            appointmentID: appointmentID,
-            appointmentStatusID: "16CBDB62-30BB-4679-A1ED-CB935E11B7E2",
-            onSuccess: () {
-              // ref.invalidate(appointmentMarkDateProvider(currentDate));
-              // ref.invalidate(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(currentDate)));
-
-              final now = DateTime.now();
-              final bool isSameDate = currentDate.year == now.year && currentDate.month == now.month && currentDate.day == now.day;
-
-              if (isSameDate) {
-                ref.invalidate(appointmentsProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
-                ref.invalidate(appointmentSummaryProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
-              }
-
-              ref.read(appointmentMarkDateProvider(DateTime(currentDate.year, currentDate.month, 1)).notifier).refresh();
-              ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(currentDate)).notifier).refresh();
-            },
-            cancelNoted: notedController.text,
-          );
-
-      if (!completer.isCompleted) completer.complete(result);
-    } catch (_) {
-      if (!completer.isCompleted) completer.complete(false);
-    } finally {
-      notedController.dispose();
-    }
-  }
-
-  Widget dialogCancelAppointment() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(label: 'Cancel Appointment', fontSize: 17, fontWeight: FontWeight.bold),
-          const SizedBox(height: 24),
-          AppText(label: 'canceled note'),
-          const SizedBox(height: 4),
-          AppTextFormField(controller: notedController, hintText: 'canceled note', isShowBorder: true),
-          const SizedBox(height: 24),
-          Row(
-            spacing: 24,
+  await showCupertinoDialog<void>(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return StatefulBuilder(
+        builder: (context, setState) => CupertinoAlertDialog(
+          title: const Text("Cancel Appointment", textScaler: TextScaler.noScaling),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    decoration: BoxDecoration(color: const Color.fromARGB(255, 231, 231, 235), borderRadius: BorderRadius.circular(12)),
-                    child: AppText(label: 'Cancel', fontSize: 14, fontWeight: FontWeight.bold, textColor: AppUtility.textLight),
-                  ),
+              const Text("Are you sure you want to cancel this appointment?", textScaler: TextScaler.noScaling),
+              const SizedBox(height: 12),
+              Material(
+                color: Colors.transparent,
+                child: AppTextFormField(
+                  controller: null,
+                  hintText: 'Canceled note',
+                  isShowBorder: true,
+                  onChanged: (v) {
+                    noteValue = v;
+                    if (validationError != null) setState(() => validationError = null);
+                  },
                 ),
               ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => handleConfirm(),
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    decoration: BoxDecoration(color: AppUtility.colorRed, borderRadius: BorderRadius.circular(12)),
-                    child: AppText(label: 'Confirm', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.white),
-                  ),
-                ),
-              ),
+              if ((validationError ?? '').isNotEmpty) ...[
+                const SizedBox(height: 8),
+                const Text('กรุณากรอก canceled note', style: TextStyle(color: Colors.red, fontSize: 12), textScaler: TextScaler.noScaling),
+              ],
             ],
           ),
-        ],
-      ),
-    );
-  }
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: AppText(label: 'Cancel', textColor: Color(0xFF007BFE)),
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () async {
+                final note = noteValue.trim();
+                if (Validator.required(note) != null) {
+                  setState(() => validationError = 'required');
+                  return;
+                }
 
-  AppDialogs.custom(context, widget: dialogCancelAppointment());
+                try {
+                  await ref
+                      .read(appointmentProvider.notifier)
+                      .updateAppointmentStatus(
+                        appointmentID: appointmentID,
+                        appointmentStatusID: "16CBDB62-30BB-4679-A1ED-CB935E11B7E2",
+                        cancelNoted: note,
+                        onSuccess: () {
+                          final now = DateTime.now();
+                          final bool isSameDate = currentDate.year == now.year && currentDate.month == now.month && currentDate.day == now.day;
 
-  return completer.future;
+                          if (isSameDate) {
+                            ref.invalidate(appointmentsProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
+                            ref.invalidate(appointmentSummaryProvider(DateTime(currentDate.year, currentDate.month, currentDate.day)));
+                          }
+
+                          ref.read(selectedMonthProvider.notifier).setMonth(currentDate);
+                          ref.read(selectedDateProvider.notifier).setDate(currentDate);
+
+                          ref.read(appointmentMarkDateProvider(DateTime(currentDate.year, currentDate.month, 1)).notifier).refresh();
+                          ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(currentDate)).notifier).refresh();
+                        },
+                      );
+                  completed = true;
+                } finally {
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+              child: AppText(label: 'Confirm', textColor: Color(0xFF007BFE)),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+
+  return completed;
 }

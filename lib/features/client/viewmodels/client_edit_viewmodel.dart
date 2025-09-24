@@ -11,6 +11,7 @@ import 'package:wfs/features/client/models/client_level.dart';
 import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/features/client/services/client_service.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/providers/client_provider.dart' show clientProvider;
 
 @immutable
 class ClientEditState {
@@ -154,6 +155,7 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
 
       ref.invalidate(clientDetailProvider);
       ref.invalidate(clientListProvider);
+      ref.invalidate(clientProvider);
 
       return result;
     } catch (e, st) {

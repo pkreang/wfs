@@ -15,8 +15,10 @@ import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/cancel_appointment_dialog.dart';
 import 'package:wfs/widgets/form_address.dart';
+import 'package:wfs/widgets/form_company_by_id_tile.dart';
 import 'package:wfs/widgets/form_company_with_data_tile.dart';
 import 'package:wfs/widgets/form_datetime_picker.dart';
+import 'package:wfs/widgets/form_datetime_range_picker.dart';
 import 'package:wfs/widgets/form_info_tile.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -175,6 +177,16 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
       return;
     }
 
+    if (Validator.required(appointment.companyID) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก Company");
+      return;
+    }
+
+    if (Validator.required((appointment.companyName ?? '').toString()) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก Company");
+      return;
+    }
+
     if (Validator.required(addressController.text) != null) {
       AppDialogs.error(context, message: "กรุณากรอกข้อมูล Address");
       return;
@@ -202,11 +214,6 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
 
     if (Validator.required(notedController.text) != null) {
       AppDialogs.error(context, message: "ไม่มีข้อมูล note");
-      return;
-    }
-
-    if (Validator.required(appointment.companyID) != null) {
-      AppDialogs.error(context, message: "กรุณาเลือก Company");
       return;
     }
 
@@ -370,21 +377,13 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
               //   Column(
               //     children: [FormInfoTile(label: 'canceled note', value: AppTextFormField(maxLines: 5), height: 126, isShowBorderBottom: true, isHideIcon: true)],
               //   ),
-              Column(
-                children: [
-                  FormDatetimePicker(
-                    label: 'Starts',
-                    datetime: DateTime.parse(appointmentDetail.appointmentDateTimeFrom),
-                    onDateSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromDate(value),
-                    onTimeSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromTime(value),
-                  ),
-                  FormDatetimePicker(
-                    label: 'Ends',
-                    datetime: DateTime.parse(appointmentDetail.appointmentDateTimeTo),
-                    onDateSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToDate(value),
-                    onTimeSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToTime(value),
-                  ),
-                ],
+              FormDatetimeRangePicker(
+                start: DateTime.parse(appointmentDetail.appointmentDateTimeFrom),
+                end: DateTime.parse(appointmentDetail.appointmentDateTimeTo),
+                onStartDateSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromDate(value),
+                onStartTimeSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentFromTime(value),
+                onEndDateSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToDate(value),
+                onEndTimeSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setAppointmentToTime(value),
               ),
               Column(
                 children: [
@@ -400,10 +399,9 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
-                  FormCompanyWithDataTile(
+                  FormCompanyByIDTile(
                     companyID: appointmentDetail.companyID ?? '',
                     companyName: appointmentDetail.companyName ?? '',
-                    companies: companies,
                     onSelected: (value) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setCompany(value),
                     onRemove: (_) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).removeCompany(),
                   ),

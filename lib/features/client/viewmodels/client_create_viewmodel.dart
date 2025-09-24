@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +11,7 @@ import 'package:wfs/features/client/models/client_level.dart';
 import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/features/client/services/client_service.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/providers/client_provider.dart' show clientProvider;
 
 DateTime get roundedNow {
   final now = DateTime.now();
@@ -152,6 +151,7 @@ class ClientCreateViewModel extends StateNotifier<ClientCreateState> {
       if (!result) return result;
 
       ref.invalidate(clientListProvider);
+      ref.invalidate(clientProvider);
 
       return result;
     } catch (e, st) {

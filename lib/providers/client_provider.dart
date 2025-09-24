@@ -17,7 +17,7 @@ final clientLoadTriggerProvider = StateProvider<bool>((ref) => false);
 
 final clientDataProvider = StateProvider<AsyncValue<List<Client>>>((ref) => const AsyncValue.loading());
 
-final clientProvider = FutureProvider<List<Client>>((ref) async {
+final clientProvider = FutureProvider.autoDispose<List<Client>>((ref) async {
   final authState = ref.watch(authProvider);
   final clientService = ref.read(clientServiceProvider);
   //final shouldLoad = ref.watch(clientLoadTriggerProvider);

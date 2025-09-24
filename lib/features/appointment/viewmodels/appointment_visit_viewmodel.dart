@@ -8,6 +8,7 @@ import 'package:wfs/features/appointment/models/outcome.dart';
 import 'package:wfs/features/appointment/models/visit_activities.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
 import 'package:wfs/features/appointment/views/appointment_visit_page.dart';
+import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/services/location_service.dart';
 
 @immutable
@@ -113,6 +114,9 @@ class AppointmentVisitViewModel extends StateNotifier<AppointmentVisitState> {
   }
 
   Future<void> checkOut({required double latitude, required double longitude}) async {
+    final detail = state.data.value;
+    if (detail == null) return;
+
     if (state.visitActivity == null) return;
 
     final now = DateTime.now();
@@ -125,6 +129,19 @@ class AppointmentVisitViewModel extends StateNotifier<AppointmentVisitState> {
 
     try {
       await _appointmentService.checkOut(state.visitActivity!, ref);
+
+      final filter = DateTime.tryParse(detail.appointmentDateTimeFrom) ?? DateTime.now();
+
+      final now = DateTime.now();
+      final bool isSameDate = filter.year == now.year && filter.month == now.month && filter.day == now.day;
+
+      if (isSameDate) {
+        ref.invalidate(appointmentsProvider(DateTime(filter.year, filter.month, filter.day)));
+        ref.invalidate(appointmentSummaryProvider(DateTime(filter.year, filter.month, filter.day)));
+      }
+
+      ref.read(appointmentMarkDateProvider(DateTime(filter.year, filter.month, 1)).notifier).refresh();
+      ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));
     } finally {

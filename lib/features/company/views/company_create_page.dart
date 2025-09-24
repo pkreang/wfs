@@ -188,12 +188,12 @@ class _CreateCompanyPageState extends ConsumerState<CreateCompanyPage> {
                     value: AppTextFormField(controller: taxIDController, isNumberOnly: true, onChanged: (value) => ref.read(companyCreateProvider.notifier).setTaxID(value)),
                     isHideIcon: true,
                   ),
-                  FormInfoTile(
-                    label: 'status',
-                    value: CompanyStatusCapsule(isActive: company.isActive ?? false),
-                    onTap: () =>
-                        AppSheet.openCompanyStatusSheet(context: context, isActive: company.isActive ?? false, onSelected: (value) => ref.read(companyCreateProvider.notifier).setIsActive(value)),
-                  ),
+                  // FormInfoTile(
+                  //   label: 'status',
+                  //   value: CompanyStatusCapsule(isActive: company.isActive ?? false),
+                  //   onTap: () =>
+                  //       AppSheet.openCompanyStatusSheet(context: context, isActive: company.isActive ?? false, onSelected: (value) => ref.read(companyCreateProvider.notifier).setIsActive(value)),
+                  // ),
                   FormInfoTile(
                     label: 'territory',
                     value: AppText(label: company.salesTerritoryName ?? ''),

@@ -81,7 +81,22 @@ class AppSheet {
     final selected = await CupertinoOptionsPicker.show<Company>(
       context: context,
       title: 'Company',
-      provider: companyProvider,
+      provider: companysProvider,
+      label: (p) => p.companyName ?? "",
+      initialKey: (p) => p.companyID ?? "",
+      initialValue: companyID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openCompanyByIDSheet({required BuildContext context, required String companyID, required void Function(Company) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<Company>(
+      context: context,
+      title: 'Company',
+      provider: companyByIDProvider(companyID),
       label: (p) => p.companyName ?? "",
       initialKey: (p) => p.companyID ?? "",
       initialValue: companyID,

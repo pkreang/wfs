@@ -29,7 +29,7 @@ class CompanyService {
     final accessToken = authState.accessToken;
 
     final company = await apiClient.get(
-      path: "/company/?CompanyID=${companyID.toString()}",
+      path: "/company/?CompanyID=${companyID.toString()}/",
       decode: (json) {
         final map = json as Map<String, dynamic>;
         final list = map['companies'] as List? ?? const [];

@@ -99,8 +99,13 @@ final outcomeProvider = FutureProvider.autoDispose<List<Outcome>>((ref) async {
   return await ref.read(appointmentServiceProvider).fetchOutcomes();
 });
 
-final companyProvider = FutureProvider.autoDispose<List<Company>>((ref) async {
+final companysProvider = FutureProvider.autoDispose<List<Company>>((ref) async {
   return await ref.read(companyServiceProvider).fetchCompanies(ref);
+});
+
+final companyByIDProvider = FutureProvider.autoDispose.family<List<Company>, String>((ref, id) async {
+  final company = await ref.read(companyServiceProvider).getById(ref, id);
+  return [company];
 });
 
 //* Client

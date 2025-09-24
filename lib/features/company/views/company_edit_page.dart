@@ -190,15 +190,15 @@ class _CompanyEditPageState extends ConsumerState<CompanyEditPage> {
                     value: AppTextFormField(controller: taxIDController, isNumberOnly: true, onChanged: (value) => ref.read(companyEditProvider(widget.companyID).notifier).setTaxID(value)),
                     isHideIcon: true,
                   ),
-                  FormInfoTile(
-                    label: 'status',
-                    value: CompanyStatusCapsule(isActive: company.isActive ?? false),
-                    onTap: () => AppSheet.openCompanyStatusSheet(
-                      context: context,
-                      isActive: company.isActive ?? false,
-                      onSelected: (value) => ref.read(companyEditProvider(widget.companyID).notifier).setIsActive(value),
-                    ),
-                  ),
+                  // FormInfoTile(
+                  //   label: 'status',
+                  //   value: CompanyStatusCapsule(isActive: company.isActive ?? false),
+                  //   onTap: () => AppSheet.openCompanyStatusSheet(
+                  //     context: context,
+                  //     isActive: company.isActive ?? false,
+                  //     onSelected: (value) => ref.read(companyEditProvider(widget.companyID).notifier).setIsActive(value),
+                  //   ),
+                  // ),
                   FormInfoTile(
                     label: 'territory',
                     value: AppText(label: company.salesTerritoryName ?? ''),
