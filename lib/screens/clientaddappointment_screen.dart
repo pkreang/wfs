@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
+import 'package:wfs/features/client/models/client.dart';
+import 'package:wfs/features/client/widgets/client_list_item.dart';
 import 'package:wfs/features/company/models/company.dart';
 import 'package:wfs/main.dart'; // ตรวจสอบว่า selectedItemProvider อยู่ใน main.dart หรือไม่
-import 'package:wfs/models/client_model.dart';
+// import 'package:wfs/models/client_model.dart';
 import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/features/appointment/views/appointment_create_page.dart';
 // import '../providers/company_provider.dart'; // ไม่ได้ใช้สำหรับ ClientAddAppointmentScreen
@@ -20,85 +22,85 @@ import 'package:wfs/features/appointment/views/appointment_create_page.dart';
 final clientSearchProvider = StateProvider<String>((ref) => '');
 
 // เพิ่ม provider สำหรับกรอง Client
-final filteredClientsProvider = Provider<AsyncValue<List<Client>>>((ref) {
-  final allClientsAsync = ref.watch(clientProvider); // ใช้ clientProvider
-  final searchQuery = ref.watch(clientSearchProvider).toLowerCase();
+// final filteredClientsProvider = Provider<AsyncValue<List<Client>>>((ref) {
+//   final allClientsAsync = ref.watch(clientProvider); // ใช้ clientProvider
+//   final searchQuery = ref.watch(clientSearchProvider).toLowerCase();
 
-  return allClientsAsync.when(
-    data: (clients) {
-      if (searchQuery.isEmpty) {
-        return AsyncValue.data(clients);
-      }
-      final filteredList = clients.where((client) {
-        // ตรวจสอบ firstName, lastName, phone, address, product name
-        final fullName = '${client.firstName ?? ''} ${client.lastName ?? ''}'.toLowerCase();
-        final nameMatch = fullName.contains(searchQuery);
+//   return allClientsAsync.when(
+//     data: (clients) {
+//       if (searchQuery.isEmpty) {
+//         return AsyncValue.data(clients);
+//       }
+//       final filteredList = clients.where((client) {
+//         // ตรวจสอบ firstName, lastName, phone, address, product name
+//         final fullName = '${client.firstName ?? ''} ${client.lastName ?? ''}'.toLowerCase();
+//         final nameMatch = fullName.contains(searchQuery);
 
-        final phoneMatch = client.phone?.toLowerCase().contains(searchQuery) ?? false;
+//         final phoneMatch = client.phone?.toLowerCase().contains(searchQuery) ?? false;
 
-        bool addressMatch = false;
-        if (client.clientAddresses != null) {
-          addressMatch = client.clientAddresses!.any((address) => address.address?.toLowerCase().contains(searchQuery) ?? false);
-        }
+//         bool addressMatch = false;
+//         if (client.clientAddresses != null) {
+//           addressMatch = client.clientAddresses!.any((address) => address.address?.toLowerCase().contains(searchQuery) ?? false);
+//         }
 
-        bool productMatch = false;
-        if (client.products != null) {
-          productMatch = client.products!.any((product) => product.productName?.toLowerCase().contains(searchQuery) ?? false);
-        }
+//         bool productMatch = false;
+//         if (client.products != null) {
+//           productMatch = client.products!.any((product) => product.productName?.toLowerCase().contains(searchQuery) ?? false);
+//         }
 
-        // เพิ่มการค้นหาแบบเฉพาะเจาะจง
-        if (searchQuery.startsWith('status:')) {
-          final statusQuery = searchQuery.substring(7).trim();
-          final isActive = client.isActive ?? false;
-          if (statusQuery == 'active' && isActive) {
-            return true;
-          }
-          if (statusQuery == 'inactive' && !isActive) {
-            return true;
-          }
-          return false;
-        } else if (searchQuery.startsWith('name:')) {
-          final nameQuery = searchQuery.substring(5).trim();
-          return fullName.contains(nameQuery.toLowerCase());
-        } else if (searchQuery.startsWith('phone:')) {
-          final phoneQuery = searchQuery.substring(6).trim();
-          return client.phone?.toLowerCase().contains(phoneQuery.toLowerCase()) ?? false;
-        } else if (searchQuery.startsWith('address:')) {
-          final addressQuery = searchQuery.substring(8).trim();
-          return client.clientAddresses?.any((addr) => addr.address?.toLowerCase().contains(addressQuery.toLowerCase()) ?? false) ?? false;
-        } else if (searchQuery.startsWith('product:')) {
-          final productQuery = searchQuery.substring(8).trim();
-          return client.products?.any((prod) => prod.productName?.toLowerCase().contains(productQuery.toLowerCase()) ?? false) ?? false;
-        }
+//         // เพิ่มการค้นหาแบบเฉพาะเจาะจง
+//         if (searchQuery.startsWith('status:')) {
+//           final statusQuery = searchQuery.substring(7).trim();
+//           final isActive = client.isActive ?? false;
+//           if (statusQuery == 'active' && isActive) {
+//             return true;
+//           }
+//           if (statusQuery == 'inactive' && !isActive) {
+//             return true;
+//           }
+//           return false;
+//         } else if (searchQuery.startsWith('name:')) {
+//           final nameQuery = searchQuery.substring(5).trim();
+//           return fullName.contains(nameQuery.toLowerCase());
+//         } else if (searchQuery.startsWith('phone:')) {
+//           final phoneQuery = searchQuery.substring(6).trim();
+//           return client.phone?.toLowerCase().contains(phoneQuery.toLowerCase()) ?? false;
+//         } else if (searchQuery.startsWith('address:')) {
+//           final addressQuery = searchQuery.substring(8).trim();
+//           return client.clientAddresses?.any((addr) => addr.address?.toLowerCase().contains(addressQuery.toLowerCase()) ?? false) ?? false;
+//         } else if (searchQuery.startsWith('product:')) {
+//           final productQuery = searchQuery.substring(8).trim();
+//           return client.products?.any((prod) => prod.productName?.toLowerCase().contains(productQuery.toLowerCase()) ?? false) ?? false;
+//         }
 
-        return nameMatch || phoneMatch || addressMatch || productMatch;
-      }).toList();
-      return AsyncValue.data(filteredList);
-    },
-    loading: () => const AsyncValue.loading(),
-    error: (error, stack) => AsyncValue.error(error, stack),
-  );
-});
+//         return nameMatch || phoneMatch || addressMatch || productMatch;
+//       }).toList();
+//       return AsyncValue.data(filteredList);
+//     },
+//     loading: () => const AsyncValue.loading(),
+//     error: (error, stack) => AsyncValue.error(error, stack),
+//   );
+// });
 
 // เพิ่ม provider สำหรับจัดกลุ่ม Client ตามตัวอักษรแรกของ firstName
-final clientSectionsProvider = Provider<Map<String, List<Client>>>((ref) {
-  final clientsAsync = ref.watch(filteredClientsProvider);
+// final clientSectionsProvider = Provider<Map<String, List<Client>>>((ref) {
+//   final clientsAsync = ref.watch(filteredClientsProvider);
 
-  return clientsAsync.when(
-    data: (clients) {
-      final Map<String, List<Client>> sections = {};
-      for (var client in clients) {
-        if (client.firstName != null && client.firstName!.isNotEmpty) {
-          final firstChar = client.firstName![0].toUpperCase();
-          sections.putIfAbsent(firstChar, () => []).add(client);
-        }
-      }
-      return sections;
-    },
-    loading: () => {},
-    error: (error, stack) => {},
-  );
-});
+//   return clientsAsync.when(
+//     data: (clients) {
+//       final Map<String, List<Client>> sections = {};
+//       for (var client in clients) {
+//         if (client.firstName != null && client.firstName!.isNotEmpty) {
+//           final firstChar = client.firstName![0].toUpperCase();
+//           sections.putIfAbsent(firstChar, () => []).add(client);
+//         }
+//       }
+//       return sections;
+//     },
+//     loading: () => {},
+//     error: (error, stack) => {},
+//   );
+// });
 
 // เพิ่มฟังก์ชันสำหรับ refresh client list
 Future<void> refreshClients(WidgetRef ref) async {
@@ -151,7 +153,9 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
 
   @override
   Widget build(BuildContext context) {
-    final clientsAsync = ref.watch(filteredClientsProvider); // ใช้ filteredClientsProvider
+    // final clientsAsync = ref.watch(filteredClientsProvider); // ใช้ filteredClientsProvider
+
+    final state = ref.watch(clientListProvider('Active'));
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -176,14 +180,15 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async => refreshClients(ref), // ใช้ refreshClients
-                child: clientsAsync.when(
+                child: state.clients.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(child: Text('Error: $error')),
                   data: (clients) {
                     if (clients.isEmpty && !_showSearchOptions) {
                       return const Center(child: AppText(label: 'No clients found.'));
                     }
-                    return _buildClientList(); // เปลี่ยนเป็น _buildClientList
+
+                    return _buildClientList(state.sections); // เปลี่ยนเป็น _buildClientList
                   },
                 ),
               ),
@@ -261,13 +266,12 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
     );
   }
 
-  Widget _buildClientList() {
+  Widget _buildClientList(Map<String, List<Client>> sections) {
     if (_showSearchOptions) {
       return Container(); // ไม่แสดงรายการ Client เมื่อ search options เปิดอยู่
     }
-    final sections = ref.watch(clientSectionsProvider);
-    final sectionKeys = sections.keys.toList()..sort();
 
+    final sectionKeys = sections.keys.toList()..sort();
     if (sectionKeys.isEmpty) {
       return const Center(child: AppText(label: 'No clients found.'));
     }
@@ -294,123 +298,16 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
               itemCount: sectionClients.length,
               itemBuilder: (context, itemIndex) {
                 final client = sectionClients[itemIndex];
-                return _buildClientItem(client);
+
+                return ClientListItem(
+                  client: client,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => CreateAppointmentScreen(clientId: client.clientID ?? ''))),
+                );
               },
             ),
           ],
         );
       },
-    );
-  }
-
-  Widget _buildClientItem(Client client) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () {
-            // เมื่อเลือก client ให้ส่ง clientID ไปยัง selectedItemProvider
-            ref.read(selectedItemProvider.notifier).state = client.clientID;
-
-            // List<Company> companies = [];
-            // if ((client.clientAddresses ?? []).isNotEmpty) {
-            //   for (var company in client.clientAddresses!) {
-            //     companies.add(Company.fromJson(company.toJson()));
-            //   }
-            // }
-
-            // ref.read(companiesOfClentProvider.notifier).state = companies;
-            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateAppointmentScreen(clientId: client.clientID ?? '')));
-          },
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          AppText(label: '${client.firstName ?? ''} ${client.lastName ?? ''}', fontSize: 17),
-                          const SizedBox(width: 8),
-                          _buildStatusTag(client.isActive ?? false), // จัดการ null
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      // Phone
-                      if (client.phone != null && client.phone!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2.0),
-                                child: Icon(Icons.phone, color: Colors.grey.shade600, size: 20),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: AppText(label: client.phone.toString(), fontSize: 14, textColor: Colors.grey.shade600),
-                              ),
-                            ],
-                          ),
-                        ),
-                      // Address
-                      if (client.clientAddresses?.isNotEmpty == true && client.clientAddresses!.first.address != null && client.clientAddresses!.first.address!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2.0),
-                                child: Icon(Icons.location_on, color: Colors.grey.shade600, size: 20),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: AppText(label: client.clientAddresses!.first.address!, fontSize: 14, textColor: Colors.grey.shade600),
-                              ),
-                            ],
-                          ),
-                        ),
-                      // Product (ถ้ามี)
-                      if (client.products?.isNotEmpty == true && client.products!.first.productName != null && client.products!.first.productName!.isNotEmpty)
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2.0),
-                              child: Icon(Icons.production_quantity_limits, color: Colors.grey.shade600, size: 20),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: AppText(label: client.products!.first.productName!, fontSize: 14, textColor: Colors.grey.shade600),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade300),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const Divider(height: 1, thickness: 1, indent: 16, color: Color(0xFFEFEFEF)),
-      ],
-    );
-  }
-
-  Widget _buildStatusTag(bool isActive) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(color: isActive ? const Color(0xFFD7F5E4) : const Color(0xFFF1F1F1), borderRadius: BorderRadius.circular(12)),
-      child: AppText(label: isActive ? 'Active' : 'Inactive', fontSize: 12, fontWeight: FontWeight.w500, textColor: isActive ? const Color(0xFF2B8C43) : const Color(0xFF6A6A6A)),
     );
   }
 }

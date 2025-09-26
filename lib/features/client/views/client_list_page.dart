@@ -5,8 +5,7 @@ import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/views/client_detail_page.dart';
-import 'package:wfs/features/client/widgets/client_level_capsule.dart';
-import 'package:wfs/features/client/widgets/client_status_capsule.dart';
+import 'package:wfs/features/client/widgets/client_list_item.dart';
 import 'package:wfs/features/client/views/client_create_page.dart';
 import 'package:wfs/utility/app_utility.dart';
 // import '../providers/company_provider.dart'; // ไม่ได้ใช้แล้วสำหรับ ClientScreen
@@ -109,8 +108,8 @@ final clientSearchProvider = StateProvider<String>((ref) => '');
 //   );
 // });
 
-Future<void> refreshClients(WidgetRef ref) async {
-  ref.invalidate(clientListProvider); // Invalidate the main client provider
+Future<void> refreshClients(WidgetRef ref, {String? statusName}) async {
+  ref.invalidate(clientListProvider(statusName));
 }
 
 class ClientScreen extends ConsumerStatefulWidget {
@@ -175,7 +174,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
               isDestructiveAction: true,
               onPressed: () async {
                 Navigator.pop(dialogContext);
-                ref.read(clientListProvider.notifier).onRemoveClient(clientID);
+                ref.read(clientListProvider(null).notifier).onRemoveClient(clientID);
               },
               child: AppText(label: 'Delete', textColor: Color(0xFFFF382B)),
             ),
@@ -187,7 +186,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(clientListProvider);
+    final state = ref.watch(clientListProvider(null));
     final countText = state.clients.when(data: (clients) => '${clients.length} Entry', loading: () => 'Loading...', error: (err, stack) => 'Error');
 
     return Scaffold(
@@ -222,7 +221,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => ref.read(clientListProvider.notifier).setEditMode(),
+            onPressed: () => ref.read(clientListProvider(null).notifier).setEditMode(),
             child: AppText(label: state.isEdit ? 'Done' : 'Edit', textColor: AppUtility.colorPrimary, fontSize: 17, fontWeight: FontWeight.w500),
           ),
         ],
@@ -351,105 +350,17 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
               itemCount: sectionClients.length,
               itemBuilder: (context, itemIndex) {
                 final client = sectionClients[itemIndex];
-                return _buildClientItem(client, isEdit);
+                return ClientListItem(
+                  client: client,
+                  isEdit: isEdit,
+                  onDelete: () => handelDeleteClient(client.clientID ?? ''),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ClientDetailPage(clientID: client.clientID ?? '', isCanEdit: true))),
+                );
               },
             ),
           ],
         );
       },
-    );
-  }
-
-  Widget _buildClientItem(Client client, bool isEdit) {
-    return Container(
-      color: Color(0xFFFFFFFF),
-      child: Row(
-        children: [
-          if (isEdit)
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: GestureDetector(
-                onTap: () => handelDeleteClient(client.clientID ?? ''),
-                child: Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 24),
-              ),
-            ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ClientDetailPage(clientID: client.clientID ?? '', isCanEdit: true))),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                spacing: 8,
-                                children: [
-                                  AppText(label: '${client.firstName ?? ''} ${client.lastName ?? ''}', fontSize: 17),
-                                  ClientStatusCapsule(clientStatusName: client.clientStatus?.clientStatusName ?? ''),
-                                  ClientLevelCapsule(clientLevelName: client.clientLevel?.clientLevelName ?? ''),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              // Phone
-                              if (client.phone != null && client.phone!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 2.0),
-                                        child: Icon(Icons.phone, color: Colors.grey.shade600, size: 20),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: AppText(label: client.phone.toString(), fontSize: 14, textColor: Colors.grey.shade600),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              // Address
-                              if (client.addresses?.isNotEmpty == true && client.addresses!.first.address != null && client.addresses!.first.address!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 2.0),
-                                        child: Icon(Icons.location_on, color: Colors.grey.shade600, size: 20),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: AppText(label: client.addresses!.first.address!, fontSize: 14, textColor: Colors.grey.shade600),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade300),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1, thickness: 1, indent: 16, color: Color(0xFFEFEFEF)),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

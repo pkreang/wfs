@@ -13,8 +13,9 @@ class ClientListState {
   final bool isDirty;
   final bool isLoading;
   final String? errorMessage;
+  final String? statusNameFilter;
 
-  const ClientListState({required this.clients, this.sections = const {}, this.isEdit = false, this.isDirty = false, this.isLoading = false, this.errorMessage});
+  const ClientListState({required this.clients, this.sections = const {}, this.isEdit = false, this.isDirty = false, this.isLoading = false, this.errorMessage, this.statusNameFilter});
 
   ClientListState copyWith({
     AsyncValue<List<Client>>? clients,
@@ -23,6 +24,7 @@ class ClientListState {
     bool? isDirty,
     bool? isLoading,
     String? errorMessage,
+    String? statusNameFilter,
     bool clearErrorMessage = false,
   }) => ClientListState(
     clients: clients ?? this.clients,
@@ -31,11 +33,12 @@ class ClientListState {
     isDirty: isDirty ?? this.isDirty,
     isLoading: isLoading ?? this.isLoading,
     errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+    statusNameFilter: statusNameFilter ?? this.statusNameFilter,
   );
 }
 
 class ClientListViewModel extends StateNotifier<ClientListState> {
-  ClientListViewModel(this.ref) : super(const ClientListState(clients: AsyncValue.loading())) {
+  ClientListViewModel(this.ref, {String? initialStatus}) : super(ClientListState(clients: const AsyncValue.loading(), statusNameFilter: initialStatus)) {
     fetch();
   }
 
@@ -46,8 +49,15 @@ class ClientListViewModel extends StateNotifier<ClientListState> {
   Future<void> fetch() async {
     final clientsAsync = await AsyncValue.guard(() => _clientService.fetchClients(ref));
     clientsAsync.whenData((clients) {
+      List<Client> filtered = clients;
+      final status = state.statusNameFilter?.trim();
+      if (status != null && status.isNotEmpty) {
+        final target = status.toLowerCase();
+        filtered = clients.where((c) => (c.clientStatus?.clientStatusName ?? '').toLowerCase() == target).toList();
+      }
+
       final Map<String, List<Client>> sections = {};
-      for (var client in clients) {
+      for (var client in filtered) {
         final firstChar = client.clientName[0].toUpperCase();
         sections.putIfAbsent(firstChar, () => []).add(client);
       }
@@ -66,7 +76,7 @@ class ClientListViewModel extends StateNotifier<ClientListState> {
         });
       }
 
-      state = state.copyWith(clients: clientsAsync, sections: sections);
+      state = state.copyWith(clients: AsyncValue.data(filtered), sections: sections);
     });
   }
 

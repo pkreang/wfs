@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/providers/appointment_provider.dart';
-import 'package:wfs/utility/appdialogs.dart';
+import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/utility/validator.dart';
 import 'package:wfs/widgets/app_text_form_field.dart';
 
@@ -43,7 +43,11 @@ Future<bool> showCancelAppointmentDialog({required BuildContext context, require
               ),
               if ((validationError ?? '').isNotEmpty) ...[
                 const SizedBox(height: 8),
-                const Text('กรุณากรอก canceled note', style: TextStyle(color: Colors.red, fontSize: 12), textScaler: TextScaler.noScaling),
+                const Text(
+                  'กรุณากรอก canceled note',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  textScaler: TextScaler.noScaling,
+                ),
               ],
             ],
           ),
@@ -51,7 +55,7 @@ Future<bool> showCancelAppointmentDialog({required BuildContext context, require
             CupertinoDialogAction(
               isDefaultAction: true,
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: AppText(label: 'Cancel', textColor: Color(0xFF007BFE)),
+              child: AppText(label: 'Cancel', textColor: AppUtility.textGray),
             ),
             CupertinoDialogAction(
               isDestructiveAction: true,
@@ -90,7 +94,7 @@ Future<bool> showCancelAppointmentDialog({required BuildContext context, require
                   Navigator.of(dialogContext).pop();
                 }
               },
-              child: AppText(label: 'Confirm', textColor: Color(0xFF007BFE)),
+              child: AppText(label: 'Confirm', textColor: AppUtility.colorRed),
             ),
           ],
         ),

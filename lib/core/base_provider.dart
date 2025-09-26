@@ -111,8 +111,8 @@ final companyByIDProvider = FutureProvider.autoDispose.family<List<Company>, Str
 //* Client
 final clientServiceProvider = Provider<ClientService>((ref) => ClientService());
 
-final clientListProvider = StateNotifierProvider.autoDispose<ClientListViewModel, ClientListState>((ref) {
-  return ClientListViewModel(ref);
+final clientListProvider = StateNotifierProvider.autoDispose.family<ClientListViewModel, ClientListState, String?>((ref, statusName) {
+  return ClientListViewModel(ref, initialStatus: statusName);
 });
 
 final clientCreateProvider = StateNotifierProvider.autoDispose<ClientCreateViewModel, ClientCreateState>((ref) {

@@ -220,8 +220,7 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
     final result = await ref.read(appointmentEditProvider(widget.appointmentID).notifier).updateAppointment(noted: notedController.text);
     if (!result) return;
 
-    if (!mounted) return;
-    Navigator.pop(context, result);
+    AppDialogs.success(context, btnOkOnPress: () => Navigator.pop(context, result));
   }
 
   void handleAppointmentStatusChange(AppointmentDetail appointmentDetail, AppointmentStatus value) async {
