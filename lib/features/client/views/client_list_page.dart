@@ -10,106 +10,10 @@ import 'package:wfs/features/client/views/client_create_page.dart';
 import 'package:wfs/utility/app_utility.dart';
 // import '../providers/company_provider.dart'; // ไม่ได้ใช้แล้วสำหรับ ClientScreen
 
-// เพิ่ม provider สำหรับจัดการการค้นหา Client
-final clientSearchProvider = StateProvider<String>((ref) => '');
+// การค้นหา/กรองถูกย้ายไปอยู่ใน ClientListViewModel แล้ว
 
-// เพิ่ม provider สำหรับกรอง Client
-// final filteredClientsProvider = Provider<AsyncValue<List<Client>>>((ref) {
-//   final allClientsAsync = ref.watch(clientProvider); // ใช้ clientProvider
-//   final searchQuery = ref.watch(clientSearchProvider).toLowerCase();
-
-//   return allClientsAsync.when(
-//     data: (clients) {
-//       if (searchQuery.isEmpty) {
-//         return AsyncValue.data(clients);
-//       }
-//       final filteredList = clients.where((client) {
-//         // ตรวจสอบ firstName, lastName, phone, address, product name
-//         final fullName = '${client.firstName ?? ''} ${client.lastName ?? ''}'.toLowerCase();
-//         final nameMatch = fullName.contains(searchQuery);
-
-//         final phoneMatch = client.phone?.toLowerCase().contains(searchQuery) ?? false;
-
-//         bool addressMatch = false;
-//         if (client.clientAddresses != null) {
-//           addressMatch = client.clientAddresses!.any((address) => address.address?.toLowerCase().contains(searchQuery) ?? false);
-//         }
-
-//         bool productMatch = false;
-//         if (client.products != null) {
-//           productMatch = client.products!.any((product) => product.productName?.toLowerCase().contains(searchQuery) ?? false);
-//         }
-
-//         // เพิ่มการค้นหาแบบเฉพาะเจาะจง
-//         if (searchQuery.startsWith('status:')) {
-//           final statusQuery = searchQuery.substring(7).trim();
-//           final isActive = client.isActive ?? false;
-//           if (statusQuery == 'active' && isActive) {
-//             return true;
-//           }
-//           if (statusQuery == 'inactive' && !isActive) {
-//             return true;
-//           }
-//           return false;
-//         } else if (searchQuery.startsWith('name:')) {
-//           final nameQuery = searchQuery.substring(5).trim();
-//           return fullName.contains(nameQuery.toLowerCase());
-//         } else if (searchQuery.startsWith('phone:')) {
-//           final phoneQuery = searchQuery.substring(6).trim();
-//           return client.phone?.toLowerCase().contains(phoneQuery.toLowerCase()) ?? false;
-//         } else if (searchQuery.startsWith('address:')) {
-//           final addressQuery = searchQuery.substring(8).trim();
-//           return client.clientAddresses?.any((addr) => addr.address?.toLowerCase().contains(addressQuery.toLowerCase()) ?? false) ?? false;
-//         } else if (searchQuery.startsWith('product:')) {
-//           final productQuery = searchQuery.substring(8).trim();
-//           return client.products?.any((prod) => prod.productName?.toLowerCase().contains(productQuery.toLowerCase()) ?? false) ?? false;
-//         }
-
-//         return nameMatch || phoneMatch || addressMatch || productMatch;
-//       }).toList();
-//       return AsyncValue.data(filteredList);
-//     },
-//     loading: () => const AsyncValue.loading(),
-//     error: (error, stack) => AsyncValue.error(error, stack),
-//   );
-// });
-
-// // เพิ่ม provider สำหรับจัดกลุ่ม Client ตามตัวอักษรแรกของ firstName
-// final clientSectionsProvider = Provider<Map<String, List<Client>>>((ref) {
-//   final clientsAsync = ref.watch(filteredClientsProvider);
-
-//   return clientsAsync.when(
-//     data: (clients) {
-//       final Map<String, List<Client>> sections = {};
-//       for (var client in clients) {
-//         if (client.firstName != null && client.firstName!.isNotEmpty) {
-//           final firstChar = client.firstName![0].toUpperCase();
-//           sections.putIfAbsent(firstChar, () => []).add(client);
-//         }
-//       }
-//       // Sort each section by clientLevelName in order A..F, then by name
-//       const levelOrder = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5};
-//       int levelRank(String? level) => levelOrder[level?.toUpperCase()] ?? 999;
-//       int nameCompare(Client a, Client b) => ('${a.firstName ?? ''} ${a.lastName ?? ''}').compareTo('${b.firstName ?? ''} ${b.lastName ?? ''}');
-
-//       for (final entry in sections.entries) {
-//         entry.value.sort((a, b) {
-//           final ra = levelRank(a.clientLevel?.clientLevelName);
-//           final rb = levelRank(b.clientLevel?.clientLevelName);
-//           final cmp = ra.compareTo(rb);
-//           if (cmp != 0) return cmp;
-//           return nameCompare(a, b);
-//         });
-//       }
-//       return sections;
-//     },
-//     loading: () => {},
-//     error: (error, stack) => {},
-//   );
-// });
-
-Future<void> refreshClients(WidgetRef ref, {String? statusName}) async {
-  ref.invalidate(clientListProvider(statusName));
+Future<void> refreshClients(WidgetRef ref, {List<String>? statusNames}) async {
+  ref.invalidate(clientListProvider(statusNames));
 }
 
 class ClientScreen extends ConsumerStatefulWidget {
@@ -141,7 +45,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
   }
 
   void _onSearchChanged() {
-    ref.read(clientSearchProvider.notifier).state = _searchController.text; // ใช้ clientSearchProvider
+    ref.read(clientListProvider(null).notifier).setSearchQuery(_searchController.text);
     setState(() {
       _showSearchOptions = _searchFocusNode.hasFocus && _searchController.text.isNotEmpty;
     });
@@ -231,7 +135,7 @@ class _ClientScreenState extends ConsumerState<ClientScreen> {
         child: Column(
           children: [
             _buildSearchBar(),
-            if (_showSearchOptions) _buildSearchOptions(),
+            // if (_showSearchOptions) _buildSearchOptions(),
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
             Expanded(
               child: RefreshIndicator(

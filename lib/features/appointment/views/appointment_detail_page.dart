@@ -184,12 +184,14 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     // final products = appointmentDetail.products;
 
     bool isVisit = appointmentDetail.appointmentTypeID == "7DEEC491-A5AE-4856-B981-7E91870179FF";
+    bool isOnline = appointmentDetail.appointmentTypeID.isOnline;
+    bool isOnCall = appointmentDetail.appointmentTypeID.isOnCall;
     bool isComplete = appointmentDetail.appointmentStatusID.isCompleted;
     bool isCanceled = appointmentDetail.appointmentStatusID.isCanceled;
 
     //* appointmentType = visit, appointmentStatus != complete
     final isShowIconCheckIn = isVisit && (!isComplete && !isCanceled);
-    final isShowIconComplete = appointmentDetail.appointmentTypeID != "7DEEC491-A5AE-4856-B981-7E91870179FF" && !appointmentDetail.appointmentStatusID.isCompleted;
+    final isShowIconComplete = (isOnline || isOnCall) && !isComplete && !isCanceled;
 
     final visitActivities = appointmentDetail.visitActivities;
     final isCheckIn = visitActivities.isEmpty;

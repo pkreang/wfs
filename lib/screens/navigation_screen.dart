@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:go_router/go_router.dart';
 import 'package:wfs/providers/auth_provider.dart';
@@ -7,6 +8,8 @@ import 'package:wfs/features/client/views/client_list_page.dart';
 import 'package:wfs/features/company/views/company_list_page.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
+import 'package:wfs/utility/app_text.dart';
+import 'package:wfs/utility/app_utility.dart';
 
 // The GoRouter-based navigation for this screen has been replaced
 // by a PageView-based navigation for smoother tab interactions.
@@ -30,6 +33,7 @@ class MainScaffold extends ConsumerStatefulWidget {
 class _MainScaffoldState extends ConsumerState<MainScaffold> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+  DateTime? _lastBackPressed;
 
   @override
   void dispose() {
@@ -57,22 +61,41 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       // const BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Test'),
     ];
 
-    return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (i) => setState(() => _currentIndex = i),
-        children: pages,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        items: items,
-        onTap: (i) {
-          setState(() => _currentIndex = i);
-          _pageController.animateToPage(i, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
-        },
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        final now = DateTime.now();
+        if (_lastBackPressed == null || now.difference(_lastBackPressed!) > const Duration(seconds: 3)) {
+          _lastBackPressed = now;
+          final messenger = ScaffoldMessenger.of(context);
+          messenger.removeCurrentSnackBar();
+          messenger.showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.white,
+              content: AppText(label: 'กดอีกครั้งเพื่อออกจากแอป', textAlign: TextAlign.center, textColor: AppUtility.colorRed),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          return;
+        }
+
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
+        body: PageView(controller: _pageController, onPageChanged: (i) => setState(() => _currentIndex = i), children: pages),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey,
+          items: items,
+          onTap: (i) {
+            setState(() => _currentIndex = i);
+            _pageController.animateToPage(i, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+          },
+        ),
       ),
     );
   }

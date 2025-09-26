@@ -226,6 +226,8 @@ class AppointmentDetail {
 extension Status on String {
   bool get isCompleted => this == 'Completed' || this == 'C9B78060-8F8C-46FA-92A6-65D932701EB7';
   bool get isCanceled => this == 'Canceled' || this == '16CBDB62-30BB-4679-A1ED-CB935E11B7E2';
+  bool get isOnline => this == 'Online' || this == '28C8F53B-068B-48D5-AB31-BE7E65993096';
+  bool get isOnCall => this == 'On Call' || this == '61CDDF98-CCDE-4DB3-837C-DCCCDB42AEBE';
 }
 
 extension PurposeType on String {

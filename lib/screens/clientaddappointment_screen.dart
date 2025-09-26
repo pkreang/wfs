@@ -4,10 +4,8 @@ import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/widgets/client_list_item.dart';
-import 'package:wfs/features/company/models/company.dart';
-import 'package:wfs/main.dart'; // ตรวจสอบว่า selectedItemProvider อยู่ใน main.dart หรือไม่
 // import 'package:wfs/models/client_model.dart';
-import 'package:wfs/providers/client_provider.dart';
+// import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/features/appointment/views/appointment_create_page.dart';
 // import '../providers/company_provider.dart'; // ไม่ได้ใช้สำหรับ ClientAddAppointmentScreen
 
@@ -18,8 +16,8 @@ import 'package:wfs/features/appointment/views/appointment_create_page.dart';
 // แต่เพื่อความสมบูรณ์ของโค้ดที่ให้มา ผมจะรวมไว้ในไฟล์นี้ชั่วคราว
 // แต่แนะนำให้ย้ายไป client_provider.dart หากมีการใช้ซ้ำ
 
-// เพิ่ม provider สำหรับจัดการการค้นหา Client
-final clientSearchProvider = StateProvider<String>((ref) => '');
+// การค้นหาจะส่งตรงไปยัง ClientListViewModel
+// final clientSearchProvider = StateProvider<String>((ref) => '');
 
 // เพิ่ม provider สำหรับกรอง Client
 // final filteredClientsProvider = Provider<AsyncValue<List<Client>>>((ref) {
@@ -104,9 +102,8 @@ final clientSearchProvider = StateProvider<String>((ref) => '');
 
 // เพิ่มฟังก์ชันสำหรับ refresh client list
 Future<void> refreshClients(WidgetRef ref) async {
-  ref.invalidate(clientProvider); // Invalidate the main client provider
+  ref.invalidate(clientListProvider(const ['Active', 'Lead']));
 }
-// --- สิ้นสุด Providers ที่อาจต้องย้ายไป client_provider.dart ---
 
 class ClientAddAppointmentScreen extends ConsumerStatefulWidget {
   const ClientAddAppointmentScreen({super.key});
@@ -137,7 +134,7 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
   }
 
   void _onSearchChanged() {
-    ref.read(clientSearchProvider.notifier).state = _searchController.text; // ใช้ clientSearchProvider
+    ref.read(clientListProvider(const ['Active', 'Lead']).notifier).setSearchQuery(_searchController.text);
     setState(() {
       _showSearchOptions = _searchFocusNode.hasFocus && _searchController.text.isNotEmpty;
     });
@@ -153,9 +150,7 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
 
   @override
   Widget build(BuildContext context) {
-    // final clientsAsync = ref.watch(filteredClientsProvider); // ใช้ filteredClientsProvider
-
-    final state = ref.watch(clientListProvider('Active'));
+    final state = ref.watch(clientListProvider(const ['Active', 'Lead']));
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -175,7 +170,6 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
           children: [
             // _buildHeader() ถูกย้ายไปอยู่ใน AppBar แล้ว หรือสามารถปรับใช้ได้หากต้องการ
             _buildSearchBar(),
-            if (_showSearchOptions) _buildSearchOptions(),
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
             Expanded(
               child: RefreshIndicator(

@@ -11,6 +11,63 @@ import 'package:wfs/utility/app_utility.dart';
 
 final companySearchProvider = StateProvider<String>((ref) => '');
 
+final filteredCompaniesProvider = Provider.autoDispose<AsyncValue<List<Company>>>((ref) {
+  final state = ref.watch(companyListProvider);
+  final searchQuery = ref.watch(companySearchProvider).toLowerCase().trim();
+
+  return state.companies.when(
+    data: (companies) {
+      if (searchQuery.isEmpty) return AsyncValue.data(companies);
+
+      final filteredList = companies.where((company) {
+        final companyName = (company.companyName ?? '').toLowerCase();
+        final companyNameMatch = companyName.contains(searchQuery);
+
+        if (searchQuery.startsWith('status:')) {
+          final statusQuery = searchQuery.substring(7).trim();
+          final isActive = company.isActive ?? false;
+          if (statusQuery == 'active' && isActive) return true;
+          if (statusQuery == 'inactive' && !isActive) return true;
+
+          return false;
+        } else if (searchQuery.startsWith('name:')) {
+          final nameQuery = searchQuery.substring(5).trim().toLowerCase();
+
+          return companyName.contains(nameQuery);
+        }
+
+        bool addressMatch = false;
+        if (company.addresses.isNotEmpty) {
+          addressMatch = company.addresses.any((addr) => (addr.address ?? '').toLowerCase().contains(searchQuery));
+        }
+
+        return companyNameMatch || addressMatch;
+      }).toList();
+
+      return AsyncValue.data(filteredList);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
+});
+
+final filteredCompanySectionsProvider = Provider.autoDispose<Map<String, List<Company>>>((ref) {
+  final companiesAsync = ref.watch(filteredCompaniesProvider);
+  return companiesAsync.maybeWhen(
+    data: (companies) {
+      final Map<String, List<Company>> sections = {};
+      for (final company in companies) {
+        final name = (company.companyName ?? '').trim();
+        if (name.isEmpty) continue;
+        final firstChar = name[0].toUpperCase();
+        sections.putIfAbsent(firstChar, () => []).add(company);
+      }
+      return sections;
+    },
+    orElse: () => const {},
+  );
+});
+
 // เพิ่มฟังก์ชันสำหรับ refresh company list
 Future<void> refreshCompanies(WidgetRef ref) async {
   ref.invalidate(companyListProvider);
@@ -91,7 +148,9 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(companyListProvider);
-    final countText = state.companies.when(data: (companies) => '${companies.length} Entry', loading: () => 'Loading...', error: (err, stack) => 'Error');
+    final filteredCompanies = ref.watch(filteredCompaniesProvider);
+    final filteredSections = ref.watch(filteredCompanySectionsProvider);
+    final countText = filteredCompanies.when(data: (companies) => '${companies.length} Entry', loading: () => 'Loading...', error: (err, stack) => 'Error');
 
     return Scaffold(
       backgroundColor: Color(0xFFF6F6F6),
@@ -135,19 +194,19 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
         child: Column(
           children: [
             _buildSearchBar(),
-            if (_showSearchOptions) _buildSearchOptions(),
+            // if (_showSearchOptions) _buildSearchOptions(),
             const Divider(height: 1, thickness: 1, color: Color(0xFFEFEFEF)),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async => refreshCompanies(ref),
-                child: state.companies.when(
+                child: filteredCompanies.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(child: Text('Error: $error')),
                   data: (companies) {
                     if (companies.isEmpty && !_showSearchOptions) {
                       return const Center(child: AppText(label: 'No companies found.'));
                     }
-                    return _buildCompanyList(companies, state.sections, state.isEdit);
+                    return _buildCompanyList(companies, filteredSections, state.isEdit);
                   },
                 ),
               ),

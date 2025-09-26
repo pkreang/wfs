@@ -43,7 +43,7 @@ class ClientListItem extends StatelessWidget {
                               Row(
                                 spacing: 8,
                                 children: [
-                                  AppText(label: '${client.firstName ?? ''} ${client.lastName ?? ''}', fontSize: 17),
+                                  Flexible(child: AppText(label: '${client.firstName ?? ''} ${client.lastName ?? ''}', fontSize: 17)),
                                   ClientStatusCapsule(clientStatusName: client.clientStatus?.clientStatusName ?? ''),
                                   ClientLevelCapsule(clientLevelName: client.clientLevel?.clientLevelName ?? ''),
                                 ],

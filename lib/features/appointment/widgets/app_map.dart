@@ -13,6 +13,7 @@ class AppMap extends StatefulWidget {
 
 class _AppMapState extends State<AppMap> {
   GoogleMapController? _controller;
+  bool _mapLoaded = false;
 
   @override
   void dispose() {
@@ -24,8 +25,6 @@ class _AppMapState extends State<AppMap> {
   Widget build(BuildContext context) {
     final latitude = widget.lat;
     final longitude = widget.lng;
-
-    print('latitude: $latitude longitude: $longitude');
 
     if (latitude == null || longitude == null) return const SizedBox.shrink();
 
@@ -48,16 +47,36 @@ class _AppMapState extends State<AppMap> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16), // คงที่ = ถูกสุด
-        child: GoogleMap(
-          initialCameraPosition: pos,
-          onMapCreated: (c) => _controller = c,
-          markers: markers,
-          myLocationEnabled: false,
-          myLocationButtonEnabled: false,
-          compassEnabled: false,
-          mapToolbarEnabled: false,
-          zoomControlsEnabled: false,
-          zoomGesturesEnabled: false,
+        child: Stack(
+          children: [
+            GoogleMap(
+              initialCameraPosition: pos,
+              onMapCreated: (c) {
+                _controller = c;
+
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  if (mounted && !_mapLoaded) setState(() => _mapLoaded = true);
+                });
+              },
+              onCameraIdle: () {
+                if (!_mapLoaded && mounted) setState(() => _mapLoaded = true);
+              },
+              markers: markers,
+              myLocationEnabled: false,
+              myLocationButtonEnabled: false,
+              compassEnabled: false,
+              mapToolbarEnabled: false,
+              zoomControlsEnabled: false,
+              zoomGesturesEnabled: false,
+            ),
+            if (!_mapLoaded)
+              const Positioned.fill(
+                child: ColoredBox(
+                  color: Colors.white,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
+          ],
         ),
       ),
     );
