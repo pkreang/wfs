@@ -1,7 +1,7 @@
 name: wfs
-description: "A new Flutter project."
+description: "wfs."
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.0
 
 environment:
   sdk: ^3.8.1
@@ -20,6 +20,7 @@ dependencies:
   camera: ^0.11.2
   permission_handler: ^12.0.1
   url_launcher: ^6.3.2
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:

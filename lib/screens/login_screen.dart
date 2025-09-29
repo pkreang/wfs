@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/models/auth_model.dart';
 import '../providers/auth_provider.dart';
 
@@ -14,6 +16,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool _obscurePassword = true;
+  String _appVersion = '';
 
   @override
   void initState() {
@@ -22,6 +25,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(authProvider.notifier).clearError();
     });
+
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (mounted) {
+        setState(() {
+          _appVersion = info.version;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -71,7 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     // The Align widget will handle positioning the form at the bottom.
                     Container(
                       width: double.infinity, // Make the container take full width
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
+                      padding: const EdgeInsets.only(left: 24.0, top: 48, right: 24.0, bottom: 24),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: const BorderRadius.only(topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0)), // Only top corners are rounded
@@ -181,7 +197,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ],
                               ),
                             ),
-
                           // Align(
                           //   alignment: Alignment.center,
                           //   child: TextButton(
@@ -191,6 +206,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           //     child: const Text('Forgot password?'),
                           //   ),
                           // ),
+                          const SizedBox(height: 8),
+                          AppText(label: _appVersion.isEmpty ? '' : 'V.$_appVersion', fontSize: 12, textColor: Colors.black, textAlign: TextAlign.center),
                         ],
                       ),
                     ),
