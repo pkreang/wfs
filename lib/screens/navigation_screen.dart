@@ -7,6 +7,7 @@ import 'package:wfs/screens/appointment_screen.dart';
 import 'package:wfs/features/client/views/client_list_page.dart';
 import 'package:wfs/features/company/views/company_list_page.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
+import 'package:wfs/screens/setting_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
 import 'package:wfs/utility/app_text.dart';
 import 'package:wfs/utility/app_utility.dart';
@@ -50,7 +51,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       const AppointmentScreen(),
       if (authState.isSuperAdmin) const ClientScreen(),
       if (authState.isSuperAdmin) const CompanyScreen(),
-      // const TestScreen(),
+      const SettingScreen(),
     ];
 
     final items = <BottomNavigationBarItem>[
@@ -58,7 +59,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       const BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), label: 'Appointment'),
       if (authState.isSuperAdmin) const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Clients'),
       if (authState.isSuperAdmin) const BottomNavigationBarItem(icon: Icon(Icons.business_center_outlined), label: 'Company'),
-      // const BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Test'),
+      const BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
     ];
 
     return PopScope(

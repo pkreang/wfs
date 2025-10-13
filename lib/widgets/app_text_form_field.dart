@@ -8,6 +8,7 @@ class AppTextFormField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final bool isValidate;
   final String? Function(String?)? validator;
+  final String? requiredMessage;
   final int maxLines;
   final bool enabled;
   final AutovalidateMode? autovalidateMode;
@@ -17,6 +18,9 @@ class AppTextFormField extends StatelessWidget {
   final bool isShowBorder;
   final bool isNumberOnly;
   final bool allowDecimal;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final ValueChanged<String>? onFieldSubmitted;
 
   const AppTextFormField({
     super.key,
@@ -25,6 +29,7 @@ class AppTextFormField extends StatelessWidget {
     this.onChanged,
     this.isValidate = false,
     this.validator,
+    this.requiredMessage,
     this.maxLines = 1,
     this.enabled = true,
     this.autovalidateMode,
@@ -34,6 +39,9 @@ class AppTextFormField extends StatelessWidget {
     this.isShowBorder = false,
     this.isNumberOnly = false,
     this.allowDecimal = false,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.onFieldSubmitted,
   });
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -43,11 +51,29 @@ class AppTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String? Function(String?)? effectiveValidator;
+    if (validator != null || isValidate) {
+      effectiveValidator = (v) {
+        if (isDisabled) return null;
+        if (validator != null) return validator!(v);
+
+        if (isValidate) {
+          if (v == null || v.trim().isEmpty) {
+            return requiredMessage ?? '';
+          }
+        }
+
+        return null;
+      };
+    }
+
     return TextFormField(
       focusNode: isDisabled ? AlwaysDisabledFocusNode() : focusNode,
       controller: controller,
       onChanged: isDisabled ? null : onChanged,
-      validator: isValidate ? (v) => (v == null || v.trim().isEmpty) ? '' : null : null,
+      onFieldSubmitted: onFieldSubmitted,
+      obscureText: obscureText,
+      validator: effectiveValidator,
       maxLines: maxLines,
       enabled: enabled,
       autovalidateMode: autovalidateMode,
@@ -57,6 +83,7 @@ class AppTextFormField extends StatelessWidget {
       decoration: InputDecoration(
         hint: AppText(label: hintText ?? '', textColor: Colors.grey.shade400),
         isDense: true,
+        suffixIcon: suffixIcon,
         border: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
         enabledBorder: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
         focusedBorder: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,

@@ -96,19 +96,7 @@ class DashboardScreen extends ConsumerWidget {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            AppText(label: "Today's Summary", fontSize: 18, fontWeight: FontWeight.bold),
-            GestureDetector(
-              onTap: () {
-                ref.read(authProvider.notifier).logout();
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-                decoration: BoxDecoration(border: Border.all(color: Colors.red, width: 1)),
-                child: AppText(label: 'Logout', fontSize: 14, fontWeight: FontWeight.bold, textColor: Colors.red),
-              ),
-            ),
-          ],
+          children: [AppText(label: "Today's Summary", fontSize: 18, fontWeight: FontWeight.bold)],
         ),
         const SizedBox(height: 16),
         Row(

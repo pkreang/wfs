@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/core/http/api_client.dart';
 
 import '../models/auth_model.dart';
 import '../services/auth_service.dart';
@@ -33,6 +34,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
 
       final user = await _authService.getUserId(accessToken, tokenType);
+      // if (user["status"] == "failed") {
+      //   throw Exception('Failed to get user ID: ${user["message"] ?? 'Unknown error'}');
+      // }
 
       final List<dynamic> users = user['users'];
       final Map<String, dynamic> userMap = {for (var user in users) user['UserID']: user};
@@ -40,12 +44,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
       String? foundUserId;
       String? userRoleID;
       String? userRoleName;
+      String? email;
       for (var user in userMap.values) {
         if (user['Email'] == username) {
           foundUserId = user['UserID'];
           final userRole = user['UserRole'];
           userRoleID = userRole['UserRoleID'];
           userRoleName = userRole['UserRoleName'];
+          email = user['Email'];
           break;
         }
       }
@@ -54,7 +60,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
         throw Exception('User details not found for the logged-in user.');
       }
 
-      state = state.copyWith(isLoading: false, isAuthenticated: true, accessToken: accessToken, tokenType: tokenType, userID: foundUserId, userRoleID: userRoleID, userRoleName: userRoleName);
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        accessToken: accessToken,
+        tokenType: tokenType,
+        userID: foundUserId,
+        userRoleID: userRoleID,
+        userRoleName: userRoleName,
+        email: email,
+      );
     } catch (e) {
       String errorMessage = e.toString();
 
@@ -78,5 +93,33 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  Future<bool> forgotPassword(String email) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      return await _authService.forgotPassword(email);
+    } catch (e, st) {
+      state = state.copyWith(errorMessage: e is ApiException ? e.message : 'Request failed');
+
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  Future<bool> changePassword(WidgetRef ref, String oldPassword, String newPassword) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      return await _authService.changePassword(ref, oldPassword, newPassword);
+    } catch (e, st) {
+      state = state.copyWith(errorMessage: e is ApiException ? e.message : 'Request failed');
+
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
   }
 }

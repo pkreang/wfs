@@ -8,10 +8,36 @@ class AuthState {
   final String? userName;
   final String? error;
   final String? userID;
+  final String? email;
+  final String? errorMessage;
 
-  AuthState({this.isLoading = false, this.isAuthenticated = false, this.accessToken = "", this.tokenType, this.userRoleID, this.userRoleName, this.userName, this.error, this.userID});
+  AuthState({
+    this.isLoading = false,
+    this.isAuthenticated = false,
+    this.accessToken = "",
+    this.tokenType,
+    this.userRoleID,
+    this.userRoleName,
+    this.userName,
+    this.error,
+    this.userID,
+    this.email,
+    this.errorMessage,
+  });
 
-  AuthState copyWith({bool? isLoading, bool? isAuthenticated, String? accessToken, String? tokenType, String? userRoleID, String? userRoleName, String? userName, String? error, String? userID}) {
+  AuthState copyWith({
+    bool? isLoading,
+    bool? isAuthenticated,
+    String? accessToken,
+    String? tokenType,
+    String? userRoleID,
+    String? userRoleName,
+    String? userName,
+    String? error,
+    String? userID,
+    String? email,
+    String? errorMessage,
+  }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
@@ -21,6 +47,8 @@ class AuthState {
       userRoleName: userRoleName ?? this.userRoleName,
       userName: userName ?? this.userName,
       userID: userID ?? this.userID,
+      email: email ?? this.email,
+      errorMessage: errorMessage ?? this.errorMessage,
       error: error ?? this.error,
     );
   }
