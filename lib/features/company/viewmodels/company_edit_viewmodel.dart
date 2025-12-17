@@ -5,6 +5,7 @@ import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/features/company/models/company_address.dart';
 import 'package:wfs/features/company/models/company_status.dart';
 import 'package:wfs/features/company/services/company_service.dart';
 
@@ -72,10 +73,11 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
   void setLatitude(double? latitude) {
     state = state.copyWith(
       data: state.data.whenData((v) {
-        if (v.addresses.isEmpty) return v;
+        final hasAddress = v.addresses.isNotEmpty;
+        final initial = hasAddress ? v.addresses.first : const CompanyAddress();
 
-        final first = v.addresses.first.copyWith(latitude: latitude);
-        final updated = [first, ...v.addresses.skip(1)];
+        final first = initial.copyWith(latitude: latitude);
+        final updated = hasAddress ? [first, ...v.addresses.skip(1)] : [first];
         return v.copyWith(addresses: updated);
       }),
       isDirty: true,
@@ -86,10 +88,11 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
   void setLongitude(double? longitude) {
     state = state.copyWith(
       data: state.data.whenData((v) {
-        if (v.addresses.isEmpty) return v;
+        final hasAddress = v.addresses.isNotEmpty;
+        final initial = hasAddress ? v.addresses.first : const CompanyAddress();
 
-        final first = v.addresses.first.copyWith(longitude: longitude);
-        final updated = [first, ...v.addresses.skip(1)];
+        final first = initial.copyWith(longitude: longitude);
+        final updated = hasAddress ? [first, ...v.addresses.skip(1)] : [first];
         return v.copyWith(addresses: updated);
       }),
       isDirty: true,
@@ -100,19 +103,31 @@ class CompanyEditViewModel extends StateNotifier<CompanyEditState> {
   void setAddress(Address address) {
     state = state.copyWith(
       data: state.data.whenData((v) {
-        if (v.addresses.isEmpty) return v;
+        final hasAddress = v.addresses.isNotEmpty;
+        final initial = hasAddress ? v.addresses.first : const CompanyAddress();
 
-        final first = v.addresses.first.copyWith(
-          address: address.address,
-          subDistrictID: address.subDistrictID,
-          subDistrictName: address.subDistrictName,
-          districtID: address.districtID,
-          districtName: address.districtName,
-          provinceID: address.provinceID,
-          provinceName: address.provinceName,
-          postCode: address.postCode,
+        final merged = address.copyWith(
+          latitude: address.latitude ?? initial.latitude,
+          longitude: address.longitude ?? initial.longitude,
+          countryID: address.countryID ?? initial.countryID,
+          countryName: address.countryName ?? initial.countryName,
         );
-        final updated = [first, ...v.addresses.skip(1)];
+
+        final first = initial.copyWith(
+          address: merged.address,
+          subDistrictID: merged.subDistrictID,
+          subDistrictName: merged.subDistrictName,
+          districtID: merged.districtID,
+          districtName: merged.districtName,
+          provinceID: merged.provinceID,
+          provinceName: merged.provinceName,
+          countryID: merged.countryID,
+          countryName: merged.countryName,
+          latitude: merged.latitude,
+          longitude: merged.longitude,
+          postCode: merged.postCode,
+        );
+        final updated = hasAddress ? [first, ...v.addresses.skip(1)] : [first];
 
         return v.copyWith(addresses: updated);
       }),

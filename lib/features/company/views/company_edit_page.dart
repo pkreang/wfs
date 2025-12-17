@@ -22,7 +22,7 @@ class CompanyEditPage extends ConsumerStatefulWidget {
 }
 
 class _CompanyEditPageState extends ConsumerState<CompanyEditPage> {
-  bool isInit = false;
+  bool isInit = true;
   final TextEditingController companyNameController = TextEditingController();
   final TextEditingController taxIDController = TextEditingController();
   final TextEditingController latitudeController = TextEditingController();
@@ -156,7 +156,7 @@ class _CompanyEditPageState extends ConsumerState<CompanyEditPage> {
   Widget buildContent(Company company, List<Company> companies) {
     final address = company.addresses.isNotEmpty ? Address.fromJson(company.addresses.first.toJson()) : Address();
 
-    if (!isInit) {
+    if (isInit) {
       companyNameController.text = company.companyName ?? '';
       taxIDController.text = company.taxID ?? '';
 

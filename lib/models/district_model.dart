@@ -13,9 +13,11 @@ class District {
 
   District.fromJson(Map<String, dynamic> json) {
     isActive = json['IsActive'];
-    districtID = json['DistrictID'];
+    final id = json['DistrictID'] ?? json['districtID'] ?? json['DistrictId'];
+    districtID = id is String ? int.tryParse(id) : id;
     districtName = json['DistrictName'];
-    provinceID = json['ProvinceID'];
+    final pId = json['ProvinceID'] ?? json['provinceID'] ?? json['ProvinceId'];
+    provinceID = pId is String ? int.tryParse(pId) : pId;
   }
 
   Map<String, dynamic> toJson() {
