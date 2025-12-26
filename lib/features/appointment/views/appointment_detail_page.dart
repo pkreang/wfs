@@ -16,6 +16,7 @@ import 'package:wfs/features/appointment/widgets/client_status.dart';
 import 'package:wfs/features/appointment/widgets/level_status.dart';
 import 'package:wfs/features/client/views/client_detail_page.dart';
 import 'package:wfs/providers/appointment_provider.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/widgets/app_action_tile.dart';
 import 'package:wfs/widgets/app_detail_section_card.dart';
 
@@ -175,6 +176,7 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
   }
 
   Widget buildContent(AppointmentDetail appointmentDetail) {
+    final authState = ref.watch(authProvider);
     final address = appointmentDetail.address;
     final client = appointmentDetail.client;
     final salesTerritory = client.salesTerritory;
@@ -318,6 +320,12 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
             descWidget: AppText(label: appointmentDetail.noted, maxLines: null),
             fullWidth: true,
           ),
+          if (authState.isSupervisor)
+            AppDetailSectionCard(
+              title: 'sales',
+              descWidget: AppText(label: appointmentDetail.saleName, maxLines: null),
+              fullWidth: true,
+            ),
         ],
       ),
     );

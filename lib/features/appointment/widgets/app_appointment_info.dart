@@ -9,6 +9,7 @@ import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/cancel_appointment_dialog.dart';
 import 'package:wfs/providers/appointment_provider.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/widgets/app_text.dart';
 
@@ -89,11 +90,18 @@ class AppointmentInfo extends ConsumerWidget {
     if (isComplete || isCancel) isShowCompleteButton = false;
     if (!isComplete && !isCancel) isShowCancelButton = true;
 
+    final authState = ref.watch(authProvider);
+
+    double height = 97;
+    if (authState.isSupervisor) {
+      height = 103;
+    }
+
     return GestureDetector(
       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => AppointmentDetailPage(appointmentID: appointment.appointmentID ?? ''))),
       child: Container(
         // height: 152,
-        height: 97,
+        height: height,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(border: Border(bottom: AppUtility.borderSide)),
         child: Row(
@@ -137,6 +145,16 @@ class AppointmentInfo extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  if (authState.isSupervisor)
+                    Row(
+                      spacing: 4,
+                      children: [
+                        Icon(Icons.people_alt_rounded, color: AppUtility.textGray, size: 18),
+                        Expanded(
+                          child: AppText(label: appointment.saleName ?? '', fontSize: 14, textColor: AppUtility.textLight),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

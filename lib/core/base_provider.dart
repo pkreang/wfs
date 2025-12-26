@@ -27,6 +27,8 @@ import 'package:wfs/features/company/viewmodels/company_create_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_edit_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_detail_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_list_viewmodel.dart';
+import 'package:wfs/models/user_model.dart';
+import 'package:wfs/services/user_service.dart';
 
 final appointmentServiceProvider = Provider<AppointmentService>((ref) => AppointmentService());
 final appointmentProvider = StateNotifierProvider.autoDispose<AppointmentViewModel, AppointmentState>((ref) => AppointmentViewModel(ref));
@@ -108,6 +110,10 @@ final companyByIDProvider = FutureProvider.autoDispose.family<List<Company>, Str
   return [company];
 });
 
+final saleProvider = FutureProvider.autoDispose<List<User>>((ref) async {
+  return await ref.read(userServiceProvider).GetSales(ref);
+});
+
 //* Client
 final clientServiceProvider = Provider<ClientService>((ref) => ClientService());
 
@@ -154,6 +160,7 @@ final companyEditProvider = StateNotifierProvider.autoDispose.family<CompanyEdit
   return CompanyEditViewModel(ref, id);
 });
 
+final userServiceProvider = Provider<UserService>((ref) => UserService());
 // final clientGetByIdProvider = FutureProvider.autoDispose.family<Client, String>((ref, clientId) async {
 //   return await ref.read(clientServiceProvider).getById(ref, clientId);
 // });

@@ -8,6 +8,7 @@ import 'package:wfs/features/appointment/models/product.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
@@ -301,6 +302,7 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
   }
 
   Widget buildContent(AppointmentDetail appointmentDetail, List<Company> companies) {
+    final authState = ref.watch(authProvider);
     final address = appointmentDetail.address;
     final client = appointmentDetail.client;
     final salesTerritory = client.salesTerritory;
@@ -418,6 +420,13 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
                 isShowBorderBottom: true,
                 isHideIcon: true,
               ),
+              if (authState.isSupervisor)
+                FormInfoTile(
+                  label: 'sales',
+                  value: AppText(label: appointmentDetail.saleName),
+                  isShowBorderBottom: true,
+                  isHideIcon: true,
+                ),
               GestureDetector(
                 onTap: () => deleteAppointment(appointmentDetail.appointmentID),
                 child: Container(

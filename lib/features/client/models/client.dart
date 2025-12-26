@@ -30,6 +30,8 @@ class Client {
   final List<Address>? addresses;
   final List<ClientCompany>? companies;
   final String? createdBy;
+  final String? saleID;
+  final String? saleName;
 
   Client({
     this.clientID,
@@ -50,6 +52,8 @@ class Client {
     this.addresses,
     this.companies,
     this.createdBy,
+    this.saleID,
+    this.saleName,
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
@@ -72,6 +76,8 @@ class Client {
       addresses: Address.listFromJson(json['addresses'] ?? []),
       companies: ClientCompany.listFromJson(json['companies'] ?? []),
       createdBy: json['CreatedBy'],
+      saleID: json['SaleID'],
+      saleName: json['SaleName'],
     );
   }
 
@@ -106,6 +112,7 @@ class Client {
       "ClientAddresses": null,
       "ClientProducts": null,
       "ClientCompanies": (companies ?? []).map((v) => v.toJson()).toList(),
+      "ClientSales": [saleID],
     };
   }
 
@@ -128,6 +135,7 @@ class Client {
       "ClientAddresses": null,
       "ClientProducts": null,
       "ClientCompanies": (companies ?? []).map((v) => v.toJson()).toList(),
+      "ClientSales": [saleID],
     };
   }
 
@@ -150,6 +158,8 @@ class Client {
     List<Address>? addresses,
     List<ClientCompany>? companies,
     String? createdBy,
+    String? saleID,
+    String? saleName,
   }) {
     return Client(
       clientID: clientID ?? this.clientID,
@@ -170,6 +180,8 @@ class Client {
       addresses: addresses ?? this.addresses,
       companies: companies ?? this.companies,
       createdBy: createdBy ?? this.createdBy,
+      saleID: saleID ?? this.saleID,
+      saleName: saleName ?? this.saleName,
     );
   }
 

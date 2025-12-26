@@ -47,9 +47,7 @@ class User {
     isActive = json['IsActive'];
     createdDate = json['CreatedDate'];
     modifiedDate = json['ModifiedDate'];
-    userRole = json['UserRole'] != null
-        ? new UserRole.fromJson(json['UserRole'])
-        : null;
+    userRole = json['UserRole'] != null ? new UserRole.fromJson(json['UserRole']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -71,5 +69,10 @@ class User {
       data['UserRole'] = this.userRole!.toJson();
     }
     return data;
+  }
+
+  String get fullname {
+    final parts = [firstName, lastName].where((e) => (e ?? '').isNotEmpty).join(' ');
+    return parts;
   }
 }

@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
 import 'package:wfs/models/user_model.dart';
 import 'package:wfs/models/userprofile_model.dart';
+import 'package:wfs/providers/auth_provider.dart';
 
 class UserService {
   Future<List<User>> getList(String accessToken) async {
@@ -10,21 +12,13 @@ class UserService {
       throw Exception('Authentication token is not available.');
     }
     final uri = Uri.parse(ApiConfig.getListUserUrl);
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> UserListJson = data['users'];
       return UserListJson.map((json) => User.fromJson(json)).toList();
     } else {
-      throw Exception(
-        'Failed to load Users. Status code: ${response.statusCode}',
-      );
+      throw Exception('Failed to load Users. Status code: ${response.statusCode}');
     }
   }
 
@@ -35,11 +29,7 @@ class UserService {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.addUser),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: json.encode(user),
       );
       //jsonEncode(user)
@@ -61,22 +51,41 @@ class UserService {
 
     final uri = Uri.parse(ApiConfig.userProfileUrl);
 
-    final response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final dynamic userProfileJson = data['user_profile'];
       return UserProfile.fromJson(userProfileJson);
     } else {
-      throw Exception(
-        'Failed to load UserProfiles. Status code: ${response.statusCode}',
-      );
+      throw Exception('Failed to load UserProfiles. Status code: ${response.statusCode}');
+    }
+  }
+
+  Future<List<User>> GetSales(Ref ref) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+
+    final uri = Uri.parse(ApiConfig.getListSaleUrl);
+
+    final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final dynamic userJson = data['users'];
+      if (userJson is List) {
+        return userJson.map((json) => User.fromJson(json)).toList();
+      }
+      if (userJson is Map<String, dynamic>) {
+        return [User.fromJson(userJson)];
+      }
+      throw Exception('Unexpected user_profile format.');
+    } else {
+      throw Exception('Failed to load UserProfiles. Status code: ${response.statusCode}');
     }
   }
 }

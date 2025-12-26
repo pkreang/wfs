@@ -32,6 +32,7 @@ class AppointmentDetail {
   final String modifiedBy;
   final String createdBy;
   final bool isActive;
+  final String saleName;
 
   AppointmentDetail({
     required this.userID,
@@ -61,6 +62,7 @@ class AppointmentDetail {
     required this.modifiedBy,
     required this.createdBy,
     required this.isActive,
+    required this.saleName,
   });
 
   factory AppointmentDetail.fromJson(Map<String, dynamic> json) => AppointmentDetail(
@@ -91,6 +93,7 @@ class AppointmentDetail {
     modifiedBy: json["ModifiedBy"],
     createdBy: json["CreatedBy"],
     isActive: json["IsActive"],
+    saleName: json["SaleName"] ?? '',
   );
 
   Map<String, dynamic> toJson() => {
@@ -120,6 +123,7 @@ class AppointmentDetail {
     "ModifiedBy": modifiedBy,
     "CreatedBy": createdBy,
     "IsActive": isActive,
+    "SaleName": saleName,
   };
 
   Map<String, dynamic> toJsonUpdate() {
@@ -185,6 +189,7 @@ class AppointmentDetail {
     String? modifiedBy,
     String? createdBy,
     bool? isActive,
+    String? saleName,
     bool isClearPurposeOther = false,
     bool isRemoveCompany = false,
     bool isRemoveAddress = false,
@@ -219,6 +224,7 @@ class AppointmentDetail {
       modifiedBy: modifiedBy ?? this.modifiedBy,
       createdBy: createdBy ?? this.createdBy,
       isActive: isActive ?? this.isActive,
+      saleName: saleName ?? this.saleName,
     );
   }
 }

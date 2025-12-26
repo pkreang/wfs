@@ -96,6 +96,11 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       return;
     }
 
+    if (Validator.required(asyncClient.value?.saleID) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก Sales");
+      return;
+    }
+
     final result = await ref.read(clientCreateProvider.notifier).createClient();
     if (!result) {
       final errMsg = ref.read(clientCreateProvider).errorMessage;
@@ -255,6 +260,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 companyName: companyName,
                 onSelected: (value) => ref.read(clientCreateProvider.notifier).setCompany(value),
                 onRemove: (companyID) => ref.read(clientCreateProvider.notifier).removeCompany(companyID),
+              ),
+              FormInfoTile(
+                label: 'sales',
+                value: AppText(label: client.saleName ?? ''),
+                onTap: () => AppSheet.openSaleSheet(context: context, salesID: client.saleID ?? '', onSelected: (value) => ref.read(clientCreateProvider.notifier).setSales(value)),
+                isShowBorderBottom: true,
               ),
             ],
           ),

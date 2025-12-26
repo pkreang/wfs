@@ -78,6 +78,11 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
       return;
     }
 
+    if (Validator.required(asyncClient.value?.saleID) != null) {
+      AppDialogs.error(context, message: "กรุณาเลือก Sales");
+      return;
+    }
+
     final result = await ref.read(clientEditProvider(widget.clientID).notifier).updateClient();
     if (!result) {
       final errMsg = ref.read(clientEditProvider(widget.clientID)).errorMessage;
@@ -251,13 +256,12 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                 onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setCompany(value),
                 onRemove: (companyID) => ref.read(clientEditProvider(widget.clientID).notifier).removeCompany(companyID),
               ),
-              // FormCompanyWithDataTile(
-              //   companyID: companyID,
-              //   companyName: companyName,
-              //   companies: companies,
-              //   onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setCompany(value),
-              //   onRemove: (companyID) => ref.read(clientEditProvider(widget.clientID).notifier).removeCompany(companyID),
-              // ),
+              FormInfoTile(
+                label: 'sales',
+                value: AppText(label: client.saleName ?? ''),
+                onTap: () => AppSheet.openSaleSheet(context: context, salesID: client.saleID ?? '', onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setSales(value)),
+                isShowBorderBottom: true,
+              ),
             ],
           ),
         ],

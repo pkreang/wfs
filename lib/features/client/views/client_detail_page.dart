@@ -190,6 +190,11 @@ class _ClientDetailPageState extends ConsumerState<ClientDetailPage> {
             ),
             fullWidth: true,
           ),
+          AppDetailSectionCard(
+            title: 'sales',
+            descWidget: AppText(label: client.saleName ?? ''),
+            fullWidth: true,
+          ),
         ],
       ),
     );

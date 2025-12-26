@@ -31,6 +31,7 @@ class Appointment {
   bool? isActive;
   String? createdBy;
   String? modifiedBy;
+  String? saleName;
 
   Appointment({
     this.appointmentID,
@@ -63,6 +64,7 @@ class Appointment {
     this.isActive,
     this.createdBy,
     this.modifiedBy,
+    this.saleName,
   });
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
@@ -97,6 +99,7 @@ class Appointment {
       isActive: json['IsActive'] ?? true,
       createdBy: json['CreatedBy'] ?? '',
       modifiedBy: json['ModifiedBy'] ?? '',
+      saleName: json['SaleName'] ?? '',
     );
   }
 
@@ -164,6 +167,7 @@ class Appointment {
     bool? isActive,
     String? createdBy,
     String? modifiedBy,
+    String? saleName,
     bool isClearPurposeOther = false,
     bool isRemoveCompany = false,
     bool isRemoveAddress = false,
@@ -195,6 +199,7 @@ class Appointment {
       isActive: isActive ?? this.isActive,
       createdBy: createdBy ?? this.createdBy,
       modifiedBy: modifiedBy ?? this.modifiedBy,
+      saleName: saleName ?? this.saleName,
     );
   }
 }

@@ -11,6 +11,7 @@ import 'package:wfs/features/client/models/client_level.dart';
 import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/features/client/services/client_service.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/models/user_model.dart';
 import 'package:wfs/providers/client_provider.dart' show clientProvider;
 
 DateTime get roundedNow {
@@ -136,6 +137,13 @@ class ClientCreateViewModel extends StateNotifier<ClientCreateState> {
       data: state.data.whenData((v) {
         return v.copyWith(companies: []);
       }),
+      isDirty: true,
+    );
+  }
+
+  void setSales(User sale) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(saleID: sale.userID, saleName: sale.fullname)),
       isDirty: true,
     );
   }

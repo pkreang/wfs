@@ -12,6 +12,7 @@ import 'package:wfs/features/company/models/company_status.dart';
 import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
+import 'package:wfs/models/user_model.dart';
 import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
@@ -208,6 +209,21 @@ class AppSheet {
       label: (p) => p.statusName,
       initialKey: (p) => p.isActive,
       initialValue: isActive,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openSaleSheet({required BuildContext context, required String salesID, required void Function(User) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<User>(
+      context: context,
+      title: 'Sales',
+      provider: saleProvider,
+      label: (p) => p.firstName ?? '',
+      initialKey: (p) => p.userID ?? '',
+      initialValue: salesID,
     );
 
     if (selected == null) return;
