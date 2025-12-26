@@ -94,7 +94,7 @@ class AppointmentInfo extends ConsumerWidget {
 
     double height = 97;
     if (authState.isSupervisor) {
-      height = 103;
+      height = 125;
     }
 
     return GestureDetector(
@@ -114,7 +114,7 @@ class AppointmentInfo extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 6,
                 children: [
-                  Expanded(child: AppText(label: appointment.clientName ?? '', fontSize: 17)),
+                  AppText(label: appointment.clientName ?? '', fontSize: 17),
                   Row(
                     spacing: 6,
                     children: [
