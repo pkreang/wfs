@@ -11,6 +11,7 @@ class ApiConfig {
   static const String addAppointmentUrl = '$baseUrl/appointment/';
   static const String userProfileUrl = '$baseUrl/user/profile';
   static const String getListUserUrl = '$baseUrl/user/?IsActive=true';
+  static const String getListSaleUrl = '$baseUrl/user/?IsActive=true&UserRoleID=BBCC9574-F8F2-402A-8ED1-784934A04FA0';
   static const String addUser = '$baseUrl/user/';
   static const String getUserRoleUrl = '$baseUrl/user/role';
   static const String addCompanyUrl = '$baseUrl/company/';
