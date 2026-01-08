@@ -107,6 +107,8 @@ class _ClientDetailPageState extends ConsumerState<ClientDetailPage> {
 
   Widget buildContent(Client client) {
     final clientCompanies = client.companies;
+    final tags = client.tags;
+
     double lat = 0;
     double lng = 0;
 
@@ -193,6 +195,26 @@ class _ClientDetailPageState extends ConsumerState<ClientDetailPage> {
           AppDetailSectionCard(
             title: 'sales',
             descWidget: AppText(label: client.saleName ?? ''),
+            fullWidth: true,
+          ),
+          AppDetailSectionCard(
+            title: 'tags',
+            descWidget: ListView.separated(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: (tags ?? []).length,
+              itemBuilder: (_, index) {
+                final tag = (tags ?? [])[index];
+
+                return Container(
+                  alignment: Alignment.centerLeft,
+                  height: 38,
+                  child: AppText(label: tag.tagName ?? '', textColor: AppUtility.colorPrimary),
+                );
+              },
+              separatorBuilder: (_, _) => const Divider(height: 0, thickness: 0.33, color: Color(0xFFC7C7CC)),
+            ),
             fullWidth: true,
           ),
         ],

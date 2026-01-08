@@ -3,6 +3,7 @@ import 'package:wfs/features/appointment/models/sales_territory.dart';
 import 'package:wfs/features/client/models/client_company.dart';
 import 'package:wfs/features/client/models/client_level.dart';
 import 'package:wfs/features/client/models/client_status.dart';
+import 'package:wfs/features/tag/models/tag.dart';
 
 extension TimeFormat on String {
   String toHHmm() {
@@ -32,6 +33,7 @@ class Client {
   final String? createdBy;
   final String? saleID;
   final String? saleName;
+  final List<Tag>? tags;
 
   Client({
     this.clientID,
@@ -54,6 +56,7 @@ class Client {
     this.createdBy,
     this.saleID,
     this.saleName,
+    this.tags,
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
@@ -78,6 +81,7 @@ class Client {
       createdBy: json['CreatedBy'],
       saleID: json['SaleID'],
       saleName: json['SaleName'],
+      tags: Tag.listFromJson(json['tags'] ?? []),
     );
   }
 
@@ -113,6 +117,7 @@ class Client {
       "ClientProducts": null,
       "ClientCompanies": (companies ?? []).map((v) => v.toJson()).toList(),
       "ClientSales": [saleID],
+      "Tags": (tags ?? []).map((v) => v.toJson()).toList(),
     };
   }
 
@@ -160,6 +165,7 @@ class Client {
     String? createdBy,
     String? saleID,
     String? saleName,
+    List<Tag>? tags,
   }) {
     return Client(
       clientID: clientID ?? this.clientID,
@@ -182,6 +188,7 @@ class Client {
       createdBy: createdBy ?? this.createdBy,
       saleID: saleID ?? this.saleID,
       saleName: saleName ?? this.saleName,
+      tags: tags ?? this.tags,
     );
   }
 

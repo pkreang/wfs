@@ -17,6 +17,7 @@ import 'package:wfs/features/appointment/widgets/level_status.dart';
 import 'package:wfs/features/client/views/client_detail_page.dart';
 import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
+import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/widgets/app_action_tile.dart';
 import 'package:wfs/widgets/app_detail_section_card.dart';
 
@@ -183,6 +184,7 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     final clientCompany = client.companies.isNotEmpty ? client.companies.first : null;
     final companyAddresses = (clientCompany?.company?.addresses ?? []);
     final companyAddress = companyAddresses.isNotEmpty ? companyAddresses.first : null;
+    final tags = appointmentDetail.tags;
     // final products = appointmentDetail.products;
 
     bool isVisit = appointmentDetail.appointmentTypeID == "7DEEC491-A5AE-4856-B981-7E91870179FF";
@@ -326,6 +328,31 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
               descWidget: AppText(label: appointmentDetail.saleName, maxLines: null),
               fullWidth: true,
             ),
+          AppDetailSectionCard(
+            title: 'tags',
+            descWidget: tags.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: AppText(label: 'ไม่พบข้อมูล tag', textColor: AppUtility.textGray),
+                  )
+                : ListView.separated(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: tags.length,
+                    itemBuilder: (_, index) {
+                      final tag = tags[index];
+
+                      return Container(
+                        alignment: Alignment.centerLeft,
+                        height: 38,
+                        child: AppText(label: tag.tagName ?? '', textColor: AppUtility.colorPrimary),
+                      );
+                    },
+                    separatorBuilder: (_, _) => const Divider(height: 0, thickness: 0.33, color: Color(0xFFC7C7CC)),
+                  ),
+            fullWidth: true,
+          ),
         ],
       ),
     );

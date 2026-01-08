@@ -27,6 +27,9 @@ import 'package:wfs/features/company/viewmodels/company_create_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_edit_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_detail_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_list_viewmodel.dart';
+import 'package:wfs/features/tag/services/tag_service.dart';
+import 'package:wfs/features/tag/viewmodels/tag_create_viewmodel.dart';
+import 'package:wfs/features/tag/viewmodels/tag_list_viewmodel.dart';
 import 'package:wfs/models/user_model.dart';
 import 'package:wfs/services/user_service.dart';
 
@@ -114,6 +117,14 @@ final saleProvider = FutureProvider.autoDispose<List<User>>((ref) async {
   return await ref.read(userServiceProvider).GetSales(ref);
 });
 
+//* Tag
+final tagServiceProvider = Provider<TagService>((ref) => TagService());
+
+final tagListProvider = StateNotifierProvider.autoDispose<TagListViewModel, TagListState>((ref) {
+  final service = ref.read(tagServiceProvider);
+  return TagListViewModel(ref, service: service);
+});
+
 //* Client
 final clientServiceProvider = Provider<ClientService>((ref) => ClientService());
 
@@ -161,6 +172,11 @@ final companyEditProvider = StateNotifierProvider.autoDispose.family<CompanyEdit
 });
 
 final userServiceProvider = Provider<UserService>((ref) => UserService());
+
+final tagCreateProvider = StateNotifierProvider.autoDispose<TagCreateViewModel, TagCreateState>((ref) {
+  return TagCreateViewModel(ref);
+});
+
 // final clientGetByIdProvider = FutureProvider.autoDispose.family<Client, String>((ref, clientId) async {
 //   return await ref.read(clientServiceProvider).getById(ref, clientId);
 // });

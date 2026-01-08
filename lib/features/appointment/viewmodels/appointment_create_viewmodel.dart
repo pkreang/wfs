@@ -9,9 +9,11 @@ import 'package:wfs/features/appointment/models/appointment_type.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/features/tag/models/tag.dart';
 import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/services/client_service.dart';
+import 'package:wfs/features/client/services/client_service.dart' as client_service;
 
 DateTime get roundedNow {
   final now = DateTime.now();
@@ -24,13 +26,19 @@ DateTime get roundedNow {
 class AppointmentCreateState {
   final AsyncValue<Appointment> appointment;
   final List<Company> companies;
+  final bool isChangeTag;
   final bool isDirty;
   final bool isLoading;
 
-  const AppointmentCreateState({required this.appointment, this.companies = const [], this.isDirty = false, this.isLoading = false});
+  const AppointmentCreateState({required this.appointment, this.companies = const [], this.isChangeTag = false, this.isDirty = false, this.isLoading = false});
 
-  AppointmentCreateState copyWith({AsyncValue<Appointment>? appointment, List<Company>? companies, bool? isDirty, bool? isLoading}) =>
-      AppointmentCreateState(appointment: appointment ?? this.appointment, companies: companies ?? this.companies, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
+  AppointmentCreateState copyWith({AsyncValue<Appointment>? appointment, List<Company>? companies, bool? isChangeTag, bool? isDirty, bool? isLoading}) => AppointmentCreateState(
+    appointment: appointment ?? this.appointment,
+    companies: companies ?? this.companies,
+    isChangeTag: isChangeTag ?? this.isChangeTag,
+    isDirty: isDirty ?? this.isDirty,
+    isLoading: isLoading ?? this.isLoading,
+  );
 }
 
 class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
@@ -42,6 +50,7 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
   final String id;
 
   ClientService get _cleintService => ClientService();
+  client_service.ClientService get _clientService => client_service.ClientService();
   AppointmentService get _appointmentService => ref.read(appointmentServiceProvider);
 
   Future<void> fetchClientById() async {
@@ -64,6 +73,7 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
             appointmentStatusName: 'Scheduled',
             clientID: client.clientID,
             clientName: client.clientName,
+            tags: client.tags,
             phone: client.phone,
             email: client.email,
             salesTerritoryID: salesTerritory?.salesTerritoryID,
@@ -77,6 +87,10 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
         companies: companies,
       );
     });
+  }
+
+  void setTags(List<Tag> tags) {
+    state = state.copyWith(appointment: state.appointment.whenData((value) => value.copyWith(tags: tags)), isChangeTag: true, isDirty: true);
   }
 
   void setAppointmentType(AppointmentType status) {
@@ -193,6 +207,11 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
     try {
       final result = await _appointmentService.createAppointment(appointment, ref);
       if (!result) return result;
+
+      final tagNames = appointment.tags?.map((t) => t.tagName).toList() ?? [];
+      if (tagNames.isNotEmpty) {
+        await _clientService.updateTags(appointment.clientID ?? '', tagNames, ref);
+      }
 
       final filter = state.appointment.value?.appointmentDateTimeFrom ?? DateTime.now();
       ref.read(selectedMonthProvider.notifier).setMonth(filter);

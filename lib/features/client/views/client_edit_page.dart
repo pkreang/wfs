@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
+import 'package:wfs/features/tag/views/widgets/form_tag_with_data_tile.dart';
 import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
@@ -82,6 +83,11 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
       AppDialogs.error(context, message: "กรุณาเลือก Sales");
       return;
     }
+
+    // if ((asyncClient.value?.tags ?? []).isEmpty) {
+    //   AppDialogs.error(context, message: "กรุณาเลือก Tag");
+    //   return;
+    // }
 
     final result = await ref.read(clientEditProvider(widget.clientID).notifier).updateClient();
     if (!result) {
@@ -262,6 +268,7 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                 onTap: () => AppSheet.openSaleSheet(context: context, salesID: client.saleID ?? '', onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setSales(value)),
                 isShowBorderBottom: true,
               ),
+              FormTagWithDataTile(selectedTags: client.tags ?? [], onSelected: (tags) => ref.read(clientEditProvider(widget.clientID).notifier).setTags(tags)),
             ],
           ),
         ],

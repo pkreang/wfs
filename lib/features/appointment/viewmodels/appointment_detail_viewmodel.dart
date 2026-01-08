@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
+import 'package:wfs/features/client/services/client_service.dart';
 
 class AppointmentDetailViewModel extends StateNotifier<AsyncValue<AppointmentDetail>> {
   AppointmentDetailViewModel(this.ref, this.id) : super(const AsyncValue.loading()) {
@@ -13,11 +14,23 @@ class AppointmentDetailViewModel extends StateNotifier<AsyncValue<AppointmentDet
   final String id;
 
   AppointmentService get _appointmentService => ref.read(appointmentServiceProvider);
+  ClientService get _clientService => ref.read(clientServiceProvider);
 
   Future<void> fetch() async {
     state = const AsyncLoading();
     final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(ref, id));
-    state = res;
+    res.whenData((appointment) async {
+      final clientAsync = await AsyncValue.guard(() => _clientService.getById(ref, appointment.clientID));
+
+      final updatedData = res.whenData((value) {
+        return clientAsync.whenData((client) {
+              return value.copyWith(tags: client.tags ?? []);
+            }).value ??
+            value;
+      });
+
+      state = updatedData;
+    });
   }
 
   Future<void> refresh() => fetch();

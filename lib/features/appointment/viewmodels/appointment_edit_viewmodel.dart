@@ -13,20 +13,27 @@ import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/models/sales_territory.dart';
 import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
+import 'package:wfs/features/client/services/client_service.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/features/tag/models/tag.dart';
 import 'package:wfs/providers/appointment_provider.dart';
 
 @immutable
 class AppointmentEditState {
   final AsyncValue<AppointmentDetail> data;
   final List<Company> companies;
+  final bool isChangeTag;
   final bool isDirty;
   final bool isLoading;
 
-  const AppointmentEditState({required this.data, this.companies = const [], this.isDirty = false, this.isLoading = false});
-
-  AppointmentEditState copyWith({AsyncValue<AppointmentDetail>? data, List<Company>? companies, bool? isDirty, bool? isLoading}) =>
-      AppointmentEditState(data: data ?? this.data, companies: companies ?? this.companies, isDirty: isDirty ?? this.isDirty, isLoading: isLoading ?? this.isLoading);
+  const AppointmentEditState({required this.data, this.companies = const [], this.isChangeTag = false, this.isDirty = false, this.isLoading = false});
+  AppointmentEditState copyWith({AsyncValue<AppointmentDetail>? data, List<Company>? companies, bool? isChangeTag, bool? isDirty, bool? isLoading}) => AppointmentEditState(
+    data: data ?? this.data,
+    companies: companies ?? this.companies,
+    isChangeTag: isChangeTag ?? this.isChangeTag,
+    isDirty: isDirty ?? this.isDirty,
+    isLoading: isLoading ?? this.isLoading,
+  );
 }
 
 class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
@@ -38,6 +45,7 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
   final String id;
 
   AppointmentService get _appointmentService => ref.read(appointmentServiceProvider);
+  ClientService get _clientService => ref.read(clientServiceProvider);
 
   void setIsLoading(bool value) {
     state = state.copyWith(isLoading: value);
@@ -45,14 +53,28 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
 
   Future<void> fetch() async {
     final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(ref, id));
-    res.whenData((appointment) {
+    res.whenData((appointment) async {
+      final clientAsync = await AsyncValue.guard(() => _clientService.getById(ref, appointment.clientID));
+
       List<Company> companies = (appointment.client.companies)
           .map((cc) => cc.company)
           .where((c) => (c?.companyID ?? '').isNotEmpty)
           .map((c) => Company(companyID: c!.companyID, companyName: c.companyName, addresses: c.addresses))
           .toList();
-      state = state.copyWith(data: res, companies: companies, isDirty: false);
+
+      final updatedData = res.whenData((value) {
+        return clientAsync.whenData((client) {
+              return value.copyWith(tags: client.tags ?? []);
+            }).value ??
+            value;
+      });
+
+      state = state.copyWith(data: updatedData, companies: companies, isDirty: false);
     });
+  }
+
+  void setTags(List<Tag> tags) {
+    state = state.copyWith(data: state.data.whenData((value) => value.copyWith(tags: tags)), isChangeTag: true, isDirty: true);
   }
 
   void setAppointmentType(AppointmentType status) {
@@ -198,6 +220,11 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
     try {
       final result = await _appointmentService.updateAppointment(detail, ref);
       if (!result) return result;
+
+      final tagNames = detail.tags.map((t) => t.tagName).toList();
+      if (tagNames.isNotEmpty) {
+        await _clientService.updateTags(detail.clientID, tagNames, ref);
+      }
 
       final filter = DateTime.tryParse(detail.appointmentDateTimeFrom) ?? DateTime.now();
 

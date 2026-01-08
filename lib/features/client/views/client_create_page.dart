@@ -4,6 +4,7 @@ import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/widgets/client_level_capsule.dart';
 import 'package:wfs/features/client/widgets/client_status_capsule.dart';
+import 'package:wfs/features/tag/views/widgets/form_tag_with_data_tile.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -55,6 +56,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     }
 
     final companies = client.companies ?? [];
+    final tags = client.tags ?? [];
 
     if (Validator.required(firstNameController.text) != null) {
       AppDialogs.error(context, message: "กรุณากรอก FirstName");
@@ -100,6 +102,11 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       AppDialogs.error(context, message: "กรุณาเลือก Sales");
       return;
     }
+
+    // if (tags.isEmpty) {
+    //   AppDialogs.error(context, message: "กรุณาเลือก Tag");
+    //   return;
+    // }
 
     final result = await ref.read(clientCreateProvider.notifier).createClient();
     if (!result) {
@@ -267,6 +274,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 onTap: () => AppSheet.openSaleSheet(context: context, salesID: client.saleID ?? '', onSelected: (value) => ref.read(clientCreateProvider.notifier).setSales(value)),
                 isShowBorderBottom: true,
               ),
+              FormTagWithDataTile(selectedTags: client.tags ?? [], onSelected: (tags) => ref.read(clientCreateProvider.notifier).setTags(tags)),
             ],
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:wfs/features/appointment/models/address.dart';
+import 'package:wfs/features/tag/models/tag.dart';
 
 class Appointment {
   String? appointmentID;
@@ -32,6 +33,7 @@ class Appointment {
   String? createdBy;
   String? modifiedBy;
   String? saleName;
+  List<Tag>? tags;
 
   Appointment({
     this.appointmentID,
@@ -65,6 +67,7 @@ class Appointment {
     this.createdBy,
     this.modifiedBy,
     this.saleName,
+    this.tags,
   });
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
@@ -100,6 +103,7 @@ class Appointment {
       createdBy: json['CreatedBy'] ?? '',
       modifiedBy: json['ModifiedBy'] ?? '',
       saleName: json['SaleName'] ?? '',
+      tags: json['Tags'] != null ? Tag.listFromJson(json['Tags'] as List<dynamic>) : [],
     );
   }
 
@@ -168,6 +172,7 @@ class Appointment {
     String? createdBy,
     String? modifiedBy,
     String? saleName,
+    List<Tag>? tags,
     bool isClearPurposeOther = false,
     bool isRemoveCompany = false,
     bool isRemoveAddress = false,
@@ -200,6 +205,7 @@ class Appointment {
       createdBy: createdBy ?? this.createdBy,
       modifiedBy: modifiedBy ?? this.modifiedBy,
       saleName: saleName ?? this.saleName,
+      tags: tags ?? this.tags,
     );
   }
 }

@@ -11,6 +11,7 @@ import 'package:wfs/features/client/models/client_level.dart';
 import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/features/client/services/client_service.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/features/tag/models/tag.dart';
 import 'package:wfs/models/user_model.dart';
 import 'package:wfs/providers/client_provider.dart' show clientProvider;
 
@@ -152,6 +153,10 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
     );
   }
 
+  void setTags(List<Tag> tags) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(tags: tags)), isDirty: true, clearErrorMessage: true);
+  }
+
   Future<bool> updateClient() async {
     final detail = state.data.value;
     if (!state.isDirty || detail == null) return false;
@@ -161,6 +166,11 @@ class ClientEditViewModel extends StateNotifier<ClientEditState> {
     try {
       final result = await _clientService.updateClient(detail, ref);
       if (!result) return result;
+
+      final tagNames = detail.tags?.map((t) => t.tagName).toList() ?? [];
+      if (tagNames.isNotEmpty) {
+        await _clientService.updateTags(detail.clientID ?? '', tagNames, ref);
+      }
 
       ref.invalidate(clientDetailProvider);
       ref.invalidate(clientListProvider);

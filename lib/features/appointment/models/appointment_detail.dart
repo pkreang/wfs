@@ -3,6 +3,7 @@ import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/client.dart';
 import 'package:wfs/features/appointment/models/product.dart';
 import 'package:wfs/features/appointment/models/visit_activities.dart';
+import 'package:wfs/features/tag/models/tag.dart';
 
 class AppointmentDetail {
   final String userID;
@@ -33,6 +34,7 @@ class AppointmentDetail {
   final String createdBy;
   final bool isActive;
   final String saleName;
+  final List<Tag> tags;
 
   AppointmentDetail({
     required this.userID,
@@ -63,6 +65,7 @@ class AppointmentDetail {
     required this.createdBy,
     required this.isActive,
     required this.saleName,
+    required this.tags,
   });
 
   factory AppointmentDetail.fromJson(Map<String, dynamic> json) => AppointmentDetail(
@@ -94,6 +97,7 @@ class AppointmentDetail {
     createdBy: json["CreatedBy"],
     isActive: json["IsActive"],
     saleName: json["SaleName"] ?? '',
+    tags: (json["tags"] as List? ?? []).map((e) => Tag.fromJson(e)).toList(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -124,6 +128,7 @@ class AppointmentDetail {
     "CreatedBy": createdBy,
     "IsActive": isActive,
     "SaleName": saleName,
+    "tags": tags.map((e) => e.toJson()).toList(),
   };
 
   Map<String, dynamic> toJsonUpdate() {
@@ -190,6 +195,7 @@ class AppointmentDetail {
     String? createdBy,
     bool? isActive,
     String? saleName,
+    List<Tag>? tags,
     bool isClearPurposeOther = false,
     bool isRemoveCompany = false,
     bool isRemoveAddress = false,
@@ -225,6 +231,7 @@ class AppointmentDetail {
       createdBy: createdBy ?? this.createdBy,
       isActive: isActive ?? this.isActive,
       saleName: saleName ?? this.saleName,
+      tags: tags ?? this.tags,
     );
   }
 }

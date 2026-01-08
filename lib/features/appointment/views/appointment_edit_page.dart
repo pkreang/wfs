@@ -8,6 +8,7 @@ import 'package:wfs/features/appointment/models/product.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/features/tag/views/widgets/form_tag_with_data_tile.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
@@ -331,6 +332,11 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
             children: [
               Column(
                 children: [
+                  FormTagWithDataTile(
+                    selectedTags: appointmentDetail.tags,
+                    onSelected: (tags) => ref.read(appointmentEditProvider(widget.appointmentID).notifier).setTags(tags),
+                    isEnableRemove: false,
+                  ),
                   FormInfoTile(
                     label: 'meeting',
                     value: AppointmentTypeCapsule(appointmentTypeName: appointmentDetail.appointmentTypeName),

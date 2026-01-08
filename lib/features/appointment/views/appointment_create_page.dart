@@ -5,6 +5,7 @@ import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/company/models/company.dart';
+import 'package:wfs/features/tag/views/widgets/form_tag_with_data_tile.dart';
 import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
 import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
@@ -50,6 +51,11 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
     }
 
     final appointmentAddress = appointment.appointmentAddress;
+
+    // if ((appointment.tags ?? []).isEmpty) {
+    //   AppDialogs.error(context, message: "กรุณาเลือก Tag");
+    //   return;
+    // }
 
     if (Validator.required(appointment.appointmentTypeID) != null) {
       AppDialogs.error(context, message: "กรุณาเลือก Meeting");
@@ -212,6 +218,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
+                  FormTagWithDataTile(selectedTags: appointment.tags ?? [], onSelected: (tags) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setTags(tags), isEnableRemove: false),
                   FormInfoTile(
                     label: 'meeting',
                     value: AppointmentTypeCapsule(appointmentTypeName: appointment.appointmentTypeName ?? ''),

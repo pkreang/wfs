@@ -79,7 +79,7 @@ class ClientService {
     return clientLevel;
   }
 
-  Future<bool> createClient(Client client, Ref ref) async {
+  Future<(bool, String)> createClient(Client client, Ref ref) async {
     final authState = ref.watch(authProvider);
     final accessToken = authState.accessToken;
     final userID = authState.userID ?? '';
@@ -89,7 +89,7 @@ class ClientService {
       body: client.toJsonCreate(userID),
       decode: (json) {
         final map = json as Map<String, dynamic>;
-        return (map['status'] as String?)?.toLowerCase() == "success";
+        return ((map['status'] as String?)?.toLowerCase() == "success", map['client']['ClientID'] as String? ?? '');
       },
       headers: {"Authorization": "Bearer $accessToken"},
     );
@@ -108,5 +108,13 @@ class ClientService {
     final accessToken = authState.accessToken;
 
     return await apiClient.delete(path: "/client/${clientID.toString()}", headers: {"Authorization": "Bearer $accessToken"});
+  }
+
+  Future<bool> updateTags(String clientID, List<String?> tagNames, Ref ref) async {
+    final authState = ref.watch(authProvider);
+    final accessToken = authState.accessToken;
+    final userID = authState.userID ?? '';
+
+    return await apiClient.put(path: "/client/tags/${clientID.toString()}", body: {"TagNames": tagNames, "ModifiedBy": userID}, headers: {"Authorization": "Bearer $accessToken"});
   }
 }
