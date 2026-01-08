@@ -1,13 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:intl/intl.dart';
 import 'package:wfs/features/appointment/widgets/app_appointment_info.dart';
+import 'package:wfs/features/appointment/widgets/app_datepicker.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/models/appointment_summary_model.dart';
-import 'package:wfs/providers/auth_provider.dart';
-import '../providers/appointment_provider.dart';
+import 'package:wfs/providers/date_picker_provider.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
+import 'package:wfs/utility/app_utility.dart';
+import '../providers/appointment_provider.dart';
 
 final currentDateProvider = StateProvider<DateTime>((ref) {
   final now = DateTime.now();
@@ -16,6 +18,130 @@ final currentDateProvider = StateProvider<DateTime>((ref) {
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+  Future<bool> showDateRangeDialog({required BuildContext context, required WidgetRef ref}) async {
+    // ref.read(datePickerProvider.notifier).reset();
+    var completed = false;
+    String? validationError;
+
+    void _handleClose(BuildContext context) {
+      Navigator.of(context).pop();
+    }
+
+    void _handleConfirm(BuildContext context) {
+      final datePickerState = ref.read(datePickerProvider);
+      if (datePickerState.startDate != null && datePickerState.endDate != null) {
+        // อัปเดต selectedDateRangeProvider
+        ref.read(selectedDateRangeProvider.notifier).state = (start: datePickerState.startDate!, end: datePickerState.endDate);
+
+        ref.read(currentDateProvider.notifier).state = datePickerState.startDate!;
+        ref.invalidate(appointmentsProvider(datePickerState.startDate!));
+        ref.invalidate(appointmentSummaryProvider(datePickerState.startDate!));
+
+        Navigator.of(context).pop();
+      }
+    }
+
+    await showCupertinoDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final datePickerState = ref.watch(datePickerProvider);
+            final startDate = datePickerState.startDate;
+            final endDate = datePickerState.endDate;
+
+            return CupertinoAlertDialog(
+              title: Center(child: const AppText(label: "เลือกช่วงวันที่")),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () async {
+                      await showDialog<DateTime>(
+                        context: context,
+                        builder: (pickerContext) => Dialog(
+                          child: AppDatePicker(
+                            appointmentMarkDate: const {},
+                            currentMonth: datePickerState.currentMonth,
+                            selectedDate: startDate ?? DateTime.now(),
+                            onConfirm: (date) => ref.read(datePickerProvider.notifier).setStartDate(date),
+                            onClose: () => Navigator.of(pickerContext).pop(),
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400, width: 1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: AppText(
+                        label: startDate == null ? 'เลือกวันที่เริ่มต้น' : 'วันที่เริ่มต้น: ${DateFormat('dd/MM/yyyy').format(startDate)}',
+                        fontSize: 14,
+                        textColor: startDate == null ? Colors.grey : Colors.black,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () async {
+                      await showDialog<DateTime>(
+                        context: context,
+                        builder: (pickerContext) => Dialog(
+                          child: AppDatePicker(
+                            appointmentMarkDate: const {},
+                            currentMonth: datePickerState.currentMonth,
+                            selectedDate: endDate ?? DateTime.now(),
+                            onConfirm: (date) => ref.read(datePickerProvider.notifier).setEndDate(date),
+                            onClose: () => Navigator.of(pickerContext).pop(),
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400, width: 1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: AppText(
+                        label: endDate == null ? 'เลือกวันที่สิ้นสุด' : 'วันที่สิ้นสุด: ${DateFormat('dd/MM/yyyy').format(endDate)}',
+                        fontSize: 14,
+                        textColor: endDate == null ? Colors.grey : Colors.black,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => _handleClose(context),
+                          child: const AppText(label: 'ปิด'),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: startDate != null && endDate != null ? () => _handleConfirm(context) : null,
+                          child: AppText(label: 'ค้นหา', textColor: startDate != null && endDate != null ? AppUtility.colorPrimary : Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    return completed;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -77,14 +203,32 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context, WidgetRef ref, DateTime currentDate) {
+    final selectedRange = ref.watch(selectedDateRangeProvider);
+
+    String dateLabel;
+    if (selectedRange.end != null) {
+      // แสดงช่วงวันที่
+      dateLabel = '${DateFormat('dd/MM/yyyy').format(selectedRange.start)} - ${DateFormat('dd/MM/yyyy').format(selectedRange.end!)}';
+    } else {
+      // แสดงวันเดียว
+      dateLabel = DateFormat('dd/MM/yyyy').format(selectedRange.start);
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ปุ่มย้อนกลับ (ลดวัน)
-          // แสดงวันที่ปัจจุบัน
-          AppText(label: DateFormat('MMMM d').format(currentDate), fontSize: 18, fontWeight: FontWeight.bold),
+          GestureDetector(
+            onTap: () => showDateRangeDialog(context: context, ref: ref),
+            child: Row(
+              children: [
+                AppText(label: dateLabel, fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(width: 8),
+                const Icon(Icons.calendar_today, size: 18, color: AppUtility.colorPrimary),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:intl/intl.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
+import 'package:wfs/providers/date_picker_provider.dart';
 import '../services/appointment_service.dart';
 import 'auth_provider.dart';
 import '../models/appointment_summary_model.dart';
@@ -13,7 +14,12 @@ final appointmentServiceProvider2 = Provider<AppointmentService>((ref) {
 final appointmentsProvider = FutureProvider.autoDispose.family<List<Appointment>, DateTime>((ref, date) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
-  final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+
+  // ใช้ watch แทน read เพื่อให้ฟังการเปลี่ยนแปลง
+  final selectedRange = ref.watch(selectedDateRangeProvider);
+
+  final formattedStartDate = DateFormat('yyyy-MM-dd').format(selectedRange.start);
+  final formattedEndDate = selectedRange.end != null ? DateFormat('yyyy-MM-dd').format(selectedRange.end!) : formattedStartDate;
 
   if (accessToken == null || accessToken.isEmpty) {
     throw Exception('User is not authenticated.');
@@ -23,7 +29,8 @@ final appointmentsProvider = FutureProvider.autoDispose.family<List<Appointment>
 
   const statusOrder = <String, int>{'Scheduled': 0, 'Completed': 1, 'Canceled': 2};
 
-  final appointments = await appointmentService.fetchAppointments(accessToken, authState.userID!, formattedDate);
+  final appointments = await appointmentService.fetchAppointments(accessToken, authState.userID!, formattedStartDate, formattedEndDate);
+
   final sorted = [...appointments];
   sorted.sort((a, b) {
     final ra = statusOrder[(a.appointmentStatusName ?? '').trim()] ?? 999;

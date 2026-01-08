@@ -3,40 +3,46 @@ import 'package:intl/intl.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/utility/app_utility.dart';
 
-class AppDatePicker extends StatefulWidget {
-  const AppDatePicker({required this.appointmentMarkDate, required this.currentMonth, required this.selectedDate, this.onSelectMonth, this.onClose, this.onConfirm, super.key});
+class AppDatePickerRange extends StatefulWidget {
+  const AppDatePickerRange({required this.appointmentMarkDate, required this.currentMonth, required this.startDate, this.endDate, this.onSelectMonth, this.onClose, this.onConfirm, super.key});
 
   final Map<String, bool> appointmentMarkDate;
   final DateTime currentMonth;
-  final DateTime selectedDate;
+  final DateTime startDate;
+  final DateTime? endDate;
   final ValueChanged<DateTime>? onSelectMonth;
   final VoidCallback? onClose;
-  final ValueChanged<DateTime>? onConfirm;
+  final void Function(DateTime startDate, DateTime? endDate)? onConfirm;
 
   @override
-  State<AppDatePicker> createState() => _AppDatePickerState();
+  State<AppDatePickerRange> createState() => _AppDatePickerRangeState();
 }
 
-class _AppDatePickerState extends State<AppDatePicker> {
+class _AppDatePickerRangeState extends State<AppDatePickerRange> {
   bool _showMonthPicker = false;
   bool _showCalendar = true;
-  DateTime? _tempSelectedDate;
+  DateTime? _tempStartDate;
+  DateTime? _tempEndDate;
   late int _selectedYear;
   late DateTime _currentMonth;
 
   @override
   void initState() {
     super.initState();
-    _tempSelectedDate = widget.selectedDate;
+    _tempStartDate = widget.startDate;
+    _tempEndDate = widget.endDate;
     _selectedYear = widget.currentMonth.year;
     _currentMonth = widget.currentMonth;
   }
 
   @override
-  void didUpdateWidget(covariant AppDatePicker oldWidget) {
+  void didUpdateWidget(covariant AppDatePickerRange oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_isSameDayNullable(oldWidget.selectedDate, widget.selectedDate)) {
-      _tempSelectedDate = widget.selectedDate;
+    final startChanged = !_isSameDayNullable(oldWidget.startDate, widget.startDate);
+    final endChanged = !_isSameDayNullable(oldWidget.endDate, widget.endDate);
+    if (startChanged || endChanged) {
+      _tempStartDate = widget.startDate;
+      _tempEndDate = widget.endDate;
     }
   }
 
@@ -191,8 +197,12 @@ class _AppDatePickerState extends State<AppDatePicker> {
 
     for (int i = 1; i <= daysInMonth; i++) {
       final day = DateTime(_currentMonth.year, _currentMonth.month, i);
-      final selectedDate = _tempSelectedDate ?? widget.selectedDate;
-      final isSelected = _isSameDay(day, selectedDate);
+      final startDate = _tempStartDate ?? widget.startDate;
+      final endDate = _tempEndDate;
+      final isStart = _isSameDay(day, startDate);
+      final isEnd = endDate != null && _isSameDay(day, endDate);
+      final hasRange = endDate != null && !day.isBefore(startDate) && !day.isAfter(endDate);
+      final isInRange = hasRange && !isStart && !isEnd;
       final isHasAppointment = widget.appointmentMarkDate[DateFormat('yyyy-MM-dd').format(day)] ?? false;
 
       dayWidgets.add(
@@ -202,11 +212,21 @@ class _AppDatePickerState extends State<AppDatePicker> {
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
+              if (hasRange)
+                Positioned.fill(
+                  child: Container(
+                    margin: EdgeInsets.only(left: isStart ? 8 : 0, right: isEnd ? 8 : 0),
+                    decoration: BoxDecoration(
+                      color: AppUtility.colorPrimary.withOpacity(0.16),
+                      borderRadius: BorderRadius.horizontal(left: Radius.circular(isStart ? 12 : 0), right: Radius.circular(isEnd ? 12 : 0)),
+                    ),
+                  ),
+                ),
               Container(
                 margin: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: isSelected ? AppUtility.colorPrimary.withOpacity(0.16) : Colors.transparent, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: isStart && endDate == null ? AppUtility.colorPrimary.withOpacity(0.16) : Colors.transparent, shape: BoxShape.circle),
                 alignment: Alignment.center,
-                child: AppText(label: '$i', textColor: Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+                child: AppText(label: '$i', textColor: Colors.black, fontWeight: isStart || isEnd ? FontWeight.bold : FontWeight.normal),
               ),
               if (isHasAppointment) Positioned(top: 31, child: Icon(Icons.circle, size: 8, color: AppUtility.colorPrimary)),
             ],
@@ -233,8 +253,22 @@ class _AppDatePickerState extends State<AppDatePicker> {
 
   void _handleDayTap(DateTime day) {
     final normalized = DateTime(day.year, day.month, day.day);
+
     setState(() {
-      _tempSelectedDate = normalized;
+      if (_tempStartDate == null || (_tempStartDate != null && _tempEndDate != null)) {
+        _tempStartDate = normalized;
+        _tempEndDate = null;
+        return;
+      }
+
+      if (_isSameDay(normalized, _tempStartDate!)) {
+        _tempEndDate = null;
+      } else if (normalized.isBefore(_tempStartDate!)) {
+        _tempStartDate = normalized;
+        _tempEndDate = null;
+      } else {
+        _tempEndDate = normalized;
+      }
     });
   }
 
@@ -257,8 +291,8 @@ class _AppDatePickerState extends State<AppDatePicker> {
   }
 
   void _handleConfirm(BuildContext context) {
-    if (widget.onConfirm != null && _tempSelectedDate != null) {
-      widget.onConfirm!(_tempSelectedDate!);
+    if (widget.onConfirm != null) {
+      widget.onConfirm!(_tempStartDate ?? widget.startDate, _tempEndDate);
     }
     Navigator.of(context).pop();
   }

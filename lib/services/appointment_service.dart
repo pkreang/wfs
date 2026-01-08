@@ -1,18 +1,17 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:wfs/config/api_config.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
 import 'package:wfs/models/appointment_summary_model.dart';
 
 class AppointmentService {
-  Future<List<Appointment>> fetchAppointments(String accessToken, String userID, String dateAppoinment) async {
+  Future<List<Appointment>> fetchAppointments(String accessToken, String userID, String appointmentDateFrom, String appointmentDateTo) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
 
-    final uri = Uri.parse('${ApiConfig.appointmentUrl}/bydate/').replace(queryParameters: {'AppointmentDateFrom': dateAppoinment, 'AppointmentDateTo': dateAppoinment});
+    final uri = Uri.parse('${ApiConfig.appointmentUrl}/bydate/').replace(queryParameters: {'AppointmentDateFrom': appointmentDateFrom, 'AppointmentDateTo': appointmentDateTo});
 
     final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
 
