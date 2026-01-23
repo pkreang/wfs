@@ -12,6 +12,7 @@ class ApiConfig {
   static const String userProfileUrl = '$baseUrl/user/profile';
   static const String getListUserUrl = '$baseUrl/user/?IsActive=true';
   static const String getListSaleUrl = '$baseUrl/user/?IsActive=true&UserRoleID=BBCC9574-F8F2-402A-8ED1-784934A04FA0';
+  static const String getListSupervisorUrl = '$baseUrl/user/?IsActive=true&UserRoleID=8CFBD382-FA8B-459C-9BCF-6A3FDF66A8D6';
   static const String addUser = '$baseUrl/user/';
   static const String getUserRoleUrl = '$baseUrl/user/role';
   static const String addCompanyUrl = '$baseUrl/company/';
@@ -42,4 +43,5 @@ class ApiConfig {
   static const String getByIdCompanyUrl = '$baseUrl/company/?CompanyID=';
   static const String getByIdSubdistrictUrl = '$baseUrl/address/subdistrict/?SearchName=&IsActive=true&SubDistrictID=';
   static const String editCompanyUrl = '$baseUrl/company/';
+  static const String validatePincodeUrl = '$baseUrl/user/validate_pincode';
 }

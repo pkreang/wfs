@@ -45,7 +45,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ฟัง error จาก authProvider
     ref.listen<AuthState>(authProvider, (previous, next) {
       if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +64,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     });
 
-    final authState = ref.watch(authProvider);
+    final authState = ref.read(authProvider);
 
     return Scaffold(
       body: Stack(
@@ -117,6 +116,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _performLogin() {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
+
+    // email = "noppakan.j@extend-it-resource.com";
+    // password = "fE89nj32#";
+
+    // email = "danusorn.t@extend-it-resource.com";
+    // password = "dA49dt984\$";
+
+    // Sale
+    // email = "panu.t@extend-it-resource.com";
+    // password = "cF49pt457\$";
 
     // email = "systemadmin@mail.com";
     // password = "abcd1234";

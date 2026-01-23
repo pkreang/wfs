@@ -25,12 +25,12 @@ class AppointmentService {
     }
   }
 
-  Future<AppointmentSummary> fetchAppointmentSummary(String accessToken, String userID, String dateAppoinment) async {
+  Future<AppointmentSummary> fetchAppointmentSummary(String accessToken, String userID, String appointmentDateFrom, String appointmentDateTo) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
 
-    final uri = Uri.parse('${ApiConfig.appointmentUrl}/summary/').replace(queryParameters: {'AppointmentDate': dateAppoinment});
+    final uri = Uri.parse('${ApiConfig.appointmentUrl}/summary/').replace(queryParameters: {'AppointmentDateFrom': appointmentDateFrom, 'AppointmentDateTo': appointmentDateTo});
 
     final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wfs/features/sales/views/sales_screen.dart';
+import 'package:wfs/features/team/views/team_screen.dart';
 // import 'package:go_router/go_router.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/screens/appointment_screen.dart';
@@ -8,7 +10,6 @@ import 'package:wfs/features/client/views/client_list_page.dart';
 import 'package:wfs/features/company/views/company_list_page.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/screens/setting_screen.dart';
-import 'package:wfs/screens/test_screen.dart';
 import 'package:wfs/utility/app_text.dart';
 import 'package:wfs/utility/app_utility.dart';
 
@@ -49,18 +50,37 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     final pages = <Widget>[
       const DashboardScreen(),
       const AppointmentScreen(),
-      if (authState.isSuperAdmin) const ClientScreen(),
+      if (authState.isSuperAdmin || authState.isSupervisor) const ClientScreen(),
       if (authState.isSuperAdmin) const CompanyScreen(),
+      if (authState.isSuperAdmin || authState.isSupervisor) const SalesScreen(),
+      if (authState.isSuperAdmin || authState.isSupervisor) const TeamScreen(),
       const SettingScreen(),
     ];
 
     final items = <BottomNavigationBarItem>[
       const BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
       const BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), label: 'Appointment'),
-      if (authState.isSuperAdmin) const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Clients'),
+      if (authState.isSuperAdmin || authState.isSupervisor) const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Clients'),
       if (authState.isSuperAdmin) const BottomNavigationBarItem(icon: Icon(Icons.business_center_outlined), label: 'Company'),
+      if (authState.isSuperAdmin || authState.isSupervisor) const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'User'),
+      if (authState.isSuperAdmin || authState.isSupervisor) const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Team'),
       const BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
     ];
+
+    // Clamp currentIndex to valid range to prevent crash
+    final safeIndex = _currentIndex.clamp(0, items.length - 1);
+
+    // Reset index if it was out of bounds
+    if (_currentIndex != safeIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _pageController.hasClients) {
+          setState(() {
+            _currentIndex = safeIndex;
+          });
+          _pageController.jumpToPage(safeIndex);
+        }
+      });
+    }
 
     return PopScope(
       canPop: false,
@@ -87,14 +107,16 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       child: Scaffold(
         body: PageView(controller: _pageController, onPageChanged: (i) => setState(() => _currentIndex = i), children: pages),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
+          currentIndex: safeIndex,
           type: BottomNavigationBarType.fixed,
           selectedItemColor: Colors.blue,
           unselectedItemColor: Colors.grey,
           items: items,
           onTap: (i) {
             setState(() => _currentIndex = i);
-            _pageController.animateToPage(i, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+            if (_pageController.hasClients) {
+              _pageController.animateToPage(i, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+            }
           },
         ),
       ),

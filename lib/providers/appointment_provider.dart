@@ -77,10 +77,10 @@ final appointmentSummaryProvider = FutureProvider.autoDispose.family<Appointment
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 
-  // ไม่ต้อง watch currentDateProvider ข้างในนี้อีกแล้ว
-  // final date = ref.watch(currentDateProvider); // <--- ลบบรรทัดนี้
+  final selectedRange = ref.watch(selectedDateRangeProvider);
 
-  final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+  final formattedStartDate = DateFormat('yyyy-MM-dd').format(selectedRange.start);
+  final formattedEndDate = selectedRange.end != null ? DateFormat('yyyy-MM-dd').format(selectedRange.end!) : formattedStartDate;
 
   if (accessToken == null || accessToken.isEmpty) {
     throw Exception('User is not authenticated.');
@@ -88,7 +88,7 @@ final appointmentSummaryProvider = FutureProvider.autoDispose.family<Appointment
 
   final summaryAppointmentService = ref.read(appointmentServiceProvider2); // เปลี่ยนเป็น read
 
-  return summaryAppointmentService.fetchAppointmentSummary(accessToken, authState.userID!, formattedDate);
+  return summaryAppointmentService.fetchAppointmentSummary(accessToken, authState.userID!, formattedStartDate, formattedEndDate);
 });
 
 // // currentDateProvider ยังคงเหมือนเดิม

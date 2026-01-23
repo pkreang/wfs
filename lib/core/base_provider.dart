@@ -28,9 +28,24 @@ import 'package:wfs/features/company/viewmodels/company_edit_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_detail_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_list_viewmodel.dart';
 import 'package:wfs/features/tag/services/tag_service.dart';
+import 'package:wfs/features/sales/services/sales_service.dart';
+import 'package:wfs/features/sales/viewmodels/sales_list_viewmodel.dart';
+import 'package:wfs/features/sales/viewmodels/sales_create_viewmodel.dart';
+import 'package:wfs/features/sales/viewmodels/sales_detail_viewmodel.dart';
+import 'package:wfs/features/sales/viewmodels/sales_edit_viewmodel.dart';
+import 'package:wfs/features/team/models/team_member.dart';
+import 'package:wfs/features/team/services/team_service.dart';
+import 'package:wfs/features/team/viewmodels/team_list_viewmodel.dart';
+import 'package:wfs/features/team/viewmodels/team_create_viewmodel.dart';
+import 'package:wfs/features/team/viewmodels/team_client_detail_viewmodel.dart';
 import 'package:wfs/features/tag/viewmodels/tag_create_viewmodel.dart';
 import 'package:wfs/features/tag/viewmodels/tag_list_viewmodel.dart';
+import 'package:wfs/features/pin/services/pin_service.dart';
+import 'package:wfs/features/pin/viewmodels/pin_viewmodel.dart';
+import 'package:wfs/features/team/viewmodels/team_sales_detail_viewmodel.dart';
 import 'package:wfs/models/user_model.dart';
+import 'package:wfs/models/userrole_model.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/services/user_service.dart';
 
 final appointmentServiceProvider = Provider<AppointmentService>((ref) => AppointmentService());
@@ -117,12 +132,42 @@ final saleProvider = FutureProvider.autoDispose<List<User>>((ref) async {
   return await ref.read(userServiceProvider).GetSales(ref);
 });
 
+final userRoleProvider = FutureProvider.autoDispose<List<UserRole>>((ref) async {
+  final authState = ref.watch(authProvider);
+  final roles = await ref.read(userServiceProvider).fetchUserRoles(ref);
+
+  if (authState.isSupervisor) {
+    return roles.where((role) => role.userRoleID == 'BBCC9574-F8F2-402A-8ED1-784934A04FA0').toList();
+  } else if (authState.isAdmin) {
+    return roles.where((role) => role.userRoleID == '8CFBD382-FA8B-459C-9BCF-6A3FDF66A8D6' || role.userRoleID == 'BBCC9574-F8F2-402A-8ED1-784934A04FA0').toList();
+  } else if (authState.isSystemAdmin) {
+    return roles
+        .where(
+          (role) => role.userRoleID == '91FA9057-F815-456C-8D7E-C8CCCBC2A805' || role.userRoleID == '8CFBD382-FA8B-459C-9BCF-6A3FDF66A8D6' || role.userRoleID == 'BBCC9574-F8F2-402A-8ED1-784934A04FA0',
+        )
+        .toList();
+  }
+
+  return roles;
+});
+
+final supervisorProvider = FutureProvider.autoDispose<List<User>>((ref) async {
+  return await ref.read(userServiceProvider).GetSupervisors(ref);
+});
+
 //* Tag
 final tagServiceProvider = Provider<TagService>((ref) => TagService());
 
 final tagListProvider = StateNotifierProvider.autoDispose<TagListViewModel, TagListState>((ref) {
   final service = ref.read(tagServiceProvider);
   return TagListViewModel(ref, service: service);
+});
+
+//* Pin
+final pinServiceProvider = Provider<PinService>((ref) => PinService());
+
+final pinViewModelProvider = StateNotifierProvider<PinViewModel, PinState>((ref) {
+  return PinViewModel(ref.watch(pinServiceProvider), ref);
 });
 
 //* Client
@@ -169,6 +214,44 @@ final companyDetailProvider = StateNotifierProvider.autoDispose.family<CompanyDe
 
 final companyEditProvider = StateNotifierProvider.autoDispose.family<CompanyEditViewModel, CompanyEditState, String>((ref, id) {
   return CompanyEditViewModel(ref, id);
+});
+
+//* Sales
+final salesServiceProvider = Provider<SalesService>((ref) => SalesService());
+
+final salesListProvider = StateNotifierProvider.autoDispose<SalesListViewModel, SalesListState>((ref) {
+  return SalesListViewModel(ref);
+});
+
+final salesCreateProvider = StateNotifierProvider.autoDispose<SalesCreateViewModel, SalesCreateState>((ref) {
+  return SalesCreateViewModel(ref);
+});
+
+final salesDetailProvider = StateNotifierProvider.autoDispose.family<SalesDetailViewModel, AsyncValue<User>, String>((ref, id) {
+  return SalesDetailViewModel(ref, id);
+});
+
+final salesEditProvider = StateNotifierProvider.autoDispose.family<SalesEditViewModel, SalesEditState, String>((ref, id) {
+  return SalesEditViewModel(ref, id);
+});
+
+//* Team
+final teamServiceProvider = Provider<TeamService>((ref) => TeamService());
+
+final teamListProvider = StateNotifierProvider.autoDispose<TeamListViewModel, TeamListState>((ref) {
+  return TeamListViewModel(ref);
+});
+
+final teamCreateProvider = StateNotifierProvider.autoDispose<TeamCreateViewModel, TeamCreateState>((ref) {
+  return TeamCreateViewModel(ref);
+});
+
+final teamClientDetailProvider = StateNotifierProvider.autoDispose.family<TeamClientDetailViewModel, AsyncValue<List<Client>>, List<String>>((ref, ids) {
+  return TeamClientDetailViewModel(ref, ids);
+});
+
+final teamSalesDetailProvider = StateNotifierProvider.autoDispose.family<TeamSalesDetailViewModel, AsyncValue<List<User>>, String>((ref, id) {
+  return TeamSalesDetailViewModel(ref, id);
 });
 
 final userServiceProvider = Provider<UserService>((ref) => UserService());

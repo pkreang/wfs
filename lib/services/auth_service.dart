@@ -56,7 +56,7 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>> getUserId(String accessToken, String token) async {
+  Future<Map<String, dynamic>> getUserId(String accessToken) async {
     try {
       final response = await http.get(Uri.parse(ApiConfig.userIdUrl), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
 

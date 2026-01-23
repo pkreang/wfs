@@ -5,6 +5,8 @@ import 'package:wfs/widgets/app_text_form_field.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/widgets/app_text.dart';
+import 'package:wfs/widgets/image_picker_widget.dart';
+import 'package:wfs/widgets/auth_checker.dart';
 
 class PasswordValidation {
   final bool lengthOk;
@@ -288,9 +290,12 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
 
     AppDialogs.success(
       context,
-      btnOkOnPress: () {
-        ref.read(authProvider.notifier).logout();
-        Navigator.pop(context);
+      btnOkOnPress: () async {
+        await ref.read(authProvider.notifier).logout();
+        ref.invalidate(userPinCheckProvider);
+        if (context.mounted) {
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const AuthChecker()), (route) => false);
+        }
       },
     );
   }
@@ -319,20 +324,20 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
           child: Column(
             spacing: 36,
             children: [
+              ImagePickerWidget(userID: authState.userID ?? '', width: 120, height: 120),
               Container(
                 padding: EdgeInsets.symmetric(vertical: 6, horizontal: 16),
                 decoration: BoxDecoration(color: Color(0xFFFFFFFF), borderRadius: BorderRadius.circular(14)),
                 child: Row(
                   spacing: 13,
                   children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: const BoxDecoration(color: Color(0xFFE27980), shape: BoxShape.circle),
-                      clipBehavior: Clip.antiAlias,
-                      child: Image.asset('assets/images/avatar_profile.png'),
+                    Expanded(
+                      child: SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: Center(child: AppText(label: authState.email ?? '', fontSize: 22)),
+                      ),
                     ),
-                    Expanded(child: AppText(label: authState.email ?? '', fontSize: 22)),
                   ],
                 ),
               ),
@@ -352,7 +357,13 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
               ),
               Spacer(),
               GestureDetector(
-                onTap: () => ref.read(authProvider.notifier).logout(),
+                onTap: () async {
+                  await ref.read(authProvider.notifier).logout();
+                  ref.invalidate(userPinCheckProvider);
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const AuthChecker()), (route) => false);
+                  }
+                },
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 15, horizontal: 83),
                   decoration: BoxDecoration(

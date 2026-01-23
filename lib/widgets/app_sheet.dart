@@ -13,6 +13,7 @@ import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
 import 'package:wfs/models/user_model.dart';
+import 'package:wfs/models/userrole_model.dart';
 import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
@@ -224,6 +225,36 @@ class AppSheet {
       label: (p) => p.firstName ?? '',
       initialKey: (p) => p.userID ?? '',
       initialValue: salesID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openRoleSheet({required BuildContext context, required String userRoleID, required void Function(UserRole) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<UserRole>(
+      context: context,
+      title: 'Role',
+      provider: userRoleProvider,
+      label: (p) => p.userRoleName ?? '',
+      initialKey: (p) => p.userRoleID ?? '',
+      initialValue: userRoleID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openSupervisorSheet({required BuildContext context, required String userID, required void Function(User) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<User>(
+      context: context,
+      title: 'Supervisor',
+      provider: supervisorProvider,
+      label: (p) => p.fullname,
+      initialKey: (p) => p.userID ?? '',
+      initialValue: userID,
     );
 
     if (selected == null) return;

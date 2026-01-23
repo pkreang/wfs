@@ -203,12 +203,12 @@ class _AppDatePickerState extends State<AppDatePicker> {
             clipBehavior: Clip.none,
             children: [
               Container(
-                margin: const EdgeInsets.all(8),
+                margin: const EdgeInsets.all(4),
                 decoration: BoxDecoration(color: isSelected ? AppUtility.colorPrimary.withOpacity(0.16) : Colors.transparent, shape: BoxShape.circle),
                 alignment: Alignment.center,
-                child: AppText(label: '$i', textColor: Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+                child: AppText(label: '$i', fontSize: 16, textColor: Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
               ),
-              if (isHasAppointment) Positioned(top: 31, child: Icon(Icons.circle, size: 8, color: AppUtility.colorPrimary)),
+              if (isHasAppointment) Positioned(bottom: 4, child: Icon(Icons.circle, size: 6, color: AppUtility.colorPrimary)),
             ],
           ),
         ),
@@ -222,7 +222,7 @@ class _AppDatePickerState extends State<AppDatePicker> {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1.6),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1.0, mainAxisSpacing: 8, crossAxisSpacing: 4),
           itemCount: dayWidgets.length,
           itemBuilder: (context, index) => dayWidgets[index],
         ),

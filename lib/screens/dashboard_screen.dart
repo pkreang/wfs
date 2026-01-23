@@ -28,6 +28,21 @@ class DashboardScreen extends ConsumerWidget {
       Navigator.of(context).pop();
     }
 
+    void _handleClear(BuildContext context) {
+      ref.read(datePickerProvider.notifier).reset();
+
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      ref.read(selectedDateRangeProvider.notifier).state = (start: today, end: null);
+      ref.read(currentDateProvider.notifier).state = today;
+
+      ref.invalidate(appointmentsProvider(today));
+      ref.invalidate(appointmentSummaryProvider(today));
+
+      Navigator.of(context).pop();
+    }
+
     void _handleConfirm(BuildContext context) {
       final datePickerState = ref.read(datePickerProvider);
       if (datePickerState.startDate != null && datePickerState.endDate != null) {
@@ -118,16 +133,24 @@ class DashboardScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 16),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextButton(
-                          onPressed: () => _handleClose(context),
-                          child: const AppText(label: 'ปิด'),
+                          onPressed: () => _handleClear(context),
+                          child: const AppText(label: 'ล้างค่า'),
                         ),
-                        const SizedBox(width: 8),
-                        TextButton(
-                          onPressed: startDate != null && endDate != null ? () => _handleConfirm(context) : null,
-                          child: AppText(label: 'ค้นหา', textColor: startDate != null && endDate != null ? AppUtility.colorPrimary : Colors.grey),
+                        Row(
+                          children: [
+                            TextButton(
+                              onPressed: () => _handleClose(context),
+                              child: const AppText(label: 'ปิด'),
+                            ),
+                            const SizedBox(width: 8),
+                            TextButton(
+                              onPressed: startDate != null && endDate != null ? () => _handleConfirm(context) : null,
+                              child: AppText(label: 'ค้นหา', textColor: startDate != null && endDate != null ? AppUtility.colorPrimary : Colors.grey),
+                            ),
+                          ],
                         ),
                       ],
                     ),
