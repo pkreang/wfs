@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/features/sales/views/sales_screen.dart';
 import 'package:wfs/features/team/views/team_screen.dart';
+import 'package:wfs/providers/notification_provider.dart';
+import 'package:wfs/core/base_provider.dart';
 // import 'package:go_router/go_router.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/screens/appointment_screen.dart';
@@ -36,6 +38,45 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
   DateTime? _lastBackPressed;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchClientNotifications();
+    _fetchAppointmentNotifications();
+  }
+
+  Future<void> _fetchClientNotifications() async {
+    try {
+      final clientService = ref.read(clientServiceProvider);
+      final clients = await clientService.getNotifications(ref);
+
+      final notificationService = ref.read(notificationServiceProvider);
+      for (var i = 0; i < clients.length; i++) {
+        final client = clients[i];
+        await notificationService.showNotification(id: i + 1000, title: 'มี Client ใหม่สำหรับคุณ', body: 'Client ใหม่ ชื่อ ${client.firstName} ${client.lastName}');
+        // await clientService.markNotification(clientID: client.clientID ?? '', ref: ref);
+      }
+    } catch (e) {
+      print('Error fetching notifications: $e');
+    }
+  }
+
+  Future<void> _fetchAppointmentNotifications() async {
+    try {
+      final appointmentService = ref.read(appointmentServiceProvider);
+      final appointments = await appointmentService.getNotifications(ref);
+
+      final notificationService = ref.read(notificationServiceProvider);
+      for (var i = 0; i < appointments.length; i++) {
+        final appointment = appointments[i];
+        await notificationService.showNotification(id: i + 1000, title: 'นัดหมายทีกำลังจะมาถึง', body: 'Client ชื่อ ${appointment.clientName} บริษัทชื่อ ${appointment.companyName}');
+        // await appointmentService.markNotification(appointmentID: appointment.appointmentID ?? '', ref: ref);
+      }
+    } catch (e) {
+      print('Error fetching notifications: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -113,6 +154,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           unselectedItemColor: Colors.grey,
           items: items,
           onTap: (i) {
+            _fetchClientNotifications();
+            _fetchAppointmentNotifications();
+
             setState(() => _currentIndex = i);
             if (_pageController.hasClients) {
               _pageController.animateToPage(i, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);

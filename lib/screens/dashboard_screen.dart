@@ -8,6 +8,7 @@ import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/models/appointment_summary_model.dart';
 import 'package:wfs/providers/date_picker_provider.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
+import 'package:wfs/screens/notification_screen.dart';
 import 'package:wfs/utility/app_utility.dart';
 import '../providers/appointment_provider.dart';
 
@@ -237,11 +238,31 @@ class DashboardScreen extends ConsumerWidget {
       dateLabel = DateFormat('dd/MM/yyyy').format(selectedRange.start);
     }
 
+    // return Padding(
+    //   padding: const EdgeInsets.symmetric(vertical: 16.0),
+    //   child: Row(
+    //     mainAxisAlignment: MainAxisAlignment.center,
+    //     children: [
+    //       GestureDetector(
+    //         onTap: () => showDateRangeDialog(context: context, ref: ref),
+    //         child: Row(
+    //           children: [
+    //             AppText(label: dateLabel, fontSize: 18, fontWeight: FontWeight.bold),
+    //             const SizedBox(width: 8),
+    //             const Icon(Icons.calendar_today, size: 18, color: AppUtility.colorPrimary),
+    //           ],
+    //         ),
+    //       ),
+    //     ],
+    //   ),
+    // );
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          const SizedBox(width: 24),
           GestureDetector(
             onTap: () => showDateRangeDialog(context: context, ref: ref),
             child: Row(
@@ -251,6 +272,14 @@ class DashboardScreen extends ConsumerWidget {
                 const Icon(Icons.calendar_today, size: 18, color: AppUtility.colorPrimary),
               ],
             ),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const NotificationScreen()));
+            },
+            icon: const Icon(Icons.notifications_outlined, size: 24, color: AppUtility.colorPrimary),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
         ],
       ),

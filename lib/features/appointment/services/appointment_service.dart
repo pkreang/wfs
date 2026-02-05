@@ -1,4 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:wfs/config/api_config.dart';
 import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
@@ -11,6 +16,7 @@ import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/appointment/models/visit_activities.dart';
 import 'package:wfs/providers/auth_provider.dart';
+import 'package:http/http.dart' as http;
 
 class AppointmentService {
   final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
@@ -313,5 +319,77 @@ class AppointmentService {
       print('updateAppointmentStatus catch: $e');
       return false;
     }
+  }
+
+  Future<File?> getImage(WidgetRef ref, String activityID) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    if (accessToken.isEmpty) {
+      throw Exception('Authentication token is not available.');
+    }
+
+    try {
+      final uri = Uri.parse('${ApiConfig.baseUrl}/appointment/get-image/${activityID.toString()}');
+
+      final response = await http.get(uri, headers: {'Authorization': 'Bearer $accessToken'});
+
+      if (response.statusCode == 200) {
+        // Parse JSON response
+        final jsonData = json.decode(response.body);
+
+        if (jsonData['status'] == 'success') {
+          // Decode base64 image data
+          final base64String = jsonData['image_data'] as String;
+          final bytes = base64.decode(base64String);
+
+          // Get filename from response or use default
+          final fileName = jsonData['file_name'] ?? 'appointment_$activityID.jpg';
+
+          // Save to temporary file
+          final dir = await getTemporaryDirectory();
+          final file = File('${dir.path}/$fileName');
+          await file.writeAsBytes(bytes);
+
+          return file;
+        } else {
+          print('Failed to get image: ${jsonData['status']}');
+          return null;
+        }
+      } else {
+        print('Failed to get image. Status: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error getting profile image: $e');
+      return null;
+    }
+  }
+
+  Future<List<Appointment>> getNotifications(WidgetRef ref) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    final appointments = await apiClient.get(
+      path: "/appointment/notification",
+      decode: (json) {
+        final map = json as Map<String, dynamic>;
+        final list = map['appointments'] as List? ?? const [];
+
+        return list.map((e) => Appointment.fromJson(e as Map<String, dynamic>)).toList();
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+
+    return appointments;
+  }
+
+  Future<void> markNotification({required String appointmentID, required WidgetRef ref}) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    final url = Uri.parse('https://sfe-api.appnormalthink.com/notification/');
+
+    await http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'}, body: json.encode({'RefID': appointmentID, 'NotificationType': 'Appointment'}));
   }
 }

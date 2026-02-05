@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/models/client_level.dart';
@@ -116,5 +118,35 @@ class ClientService {
     final userID = authState.userID ?? '';
 
     return await apiClient.put(path: "/client/tags/${clientID.toString()}", body: {"TagNames": tagNames, "ModifiedBy": userID}, headers: {"Authorization": "Bearer $accessToken"});
+  }
+
+  Future<List<Client>> getNotifications(WidgetRef ref) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    final clients = await apiClient.get(
+      path: "/client/notification",
+      decode: (json) {
+        print('json: $json');
+        final map = json as Map<String, dynamic>;
+        final list = map['clients'] as List? ?? const [];
+
+        print('list: $list');
+
+        return list.map((e) => Client.fromJson(e as Map<String, dynamic>)).toList();
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+
+    return clients;
+  }
+
+  Future<void> markNotification({required String clientID, required WidgetRef ref}) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    final url = Uri.parse('https://sfe-api.appnormalthink.com/notification/');
+
+    await http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'}, body: json.encode({'RefID': clientID, 'NotificationType': 'Client'}));
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -353,6 +355,76 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                   ),
             fullWidth: true,
           ),
+          if (isComplete && visitActivities.isNotEmpty)
+            AppDetailSectionCard(
+              title: 'Activity Images',
+              descWidget: ListView.separated(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: visitActivities.length,
+                itemBuilder: (_, index) {
+                  final activity = visitActivities[index];
+                  final activityID = activity.activityID ?? '';
+
+                  if (activityID.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return FutureBuilder<File?>(
+                    future: ref.read(appointmentServiceProvider).getImage(ref, activityID),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Container(
+                          height: 400,
+                          alignment: Alignment.center,
+                          child: CircularProgressIndicator(color: colorPrimary),
+                        );
+                      }
+
+                      if (snapshot.hasError) {
+                        return Container(
+                          height: 400,
+                          alignment: Alignment.center,
+                          child: AppText(label: 'Error loading image: ${snapshot.error}', textColor: Colors.red, textAlign: TextAlign.center),
+                        );
+                      }
+
+                      if (!snapshot.hasData || snapshot.data == null) {
+                        return Container(
+                          height: 400,
+                          alignment: Alignment.center,
+                          color: Colors.grey[300],
+                          child: const AppText(label: 'No image available', textColor: AppUtility.textGray),
+                        );
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            snapshot.data!,
+                            width: double.infinity,
+                            height: 400,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                // height: 100,
+                                color: Colors.grey[300],
+                                child: const Icon(Icons.error_outline, size: 40, color: Colors.red),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                separatorBuilder: (_, _) => const Divider(height: 16, thickness: 0.33, color: Color(0xFFC7C7CC)),
+              ),
+              fullWidth: true,
+            ),
         ],
       ),
     );
