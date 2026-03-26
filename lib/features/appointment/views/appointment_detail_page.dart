@@ -20,6 +20,7 @@ import 'package:wfs/features/client/views/client_detail_page.dart';
 import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/utility/app_utility.dart';
+import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/widgets/app_action_tile.dart';
 import 'package:wfs/widgets/app_detail_section_card.dart';
 
@@ -48,11 +49,16 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     }
   }
 
-  void callVisitPage() async {
+  void callVisitPage(bool isCheckIn) async {
     final result = await Navigator.push(context, MaterialPageRoute<bool>(builder: (BuildContext context) => AppointmentVisitPage(appointmentID: widget.appointmentID)));
     if (result == true && mounted) {
+      AppDialogs.successCustom(context, title: isCheckIn ? "Check In สำเร็จ" : "Check Out สำเร็จ", btnOkOnPress: () {});
+
       await ref.read(appointmentDetailProvider(widget.appointmentID).notifier).refresh();
+      return;
     }
+
+    AppDialogs.alert(context, title: isCheckIn ? "Check In ไม่สำเร็จ" : "Check Out ไม่สำเร็จ", message: "กรุณาลองใหม่อีกครั้ง");
   }
 
   Future<void> showCompleteConfirmDialog({required BuildContext context, required WidgetRef ref, required DateTime currentDate, required String appointmentID}) async {
@@ -123,6 +129,47 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     } else {
       throw 'Could not open Google Maps';
     }
+  }
+
+  String formatVisitDuration(String? checkInTime, String? checkOutTime) {
+    if ((checkInTime ?? '').isEmpty || (checkOutTime ?? '').isEmpty) {
+      return '-';
+    }
+
+    final checkIn = DateTime.tryParse(checkInTime!);
+    final checkOut = DateTime.tryParse(checkOutTime!);
+
+    if (checkIn == null || checkOut == null) {
+      return '-';
+    }
+
+    final duration = checkOut.difference(checkIn);
+    if (duration.isNegative) {
+      return '-';
+    }
+
+    final days = duration.inDays;
+    final hours = duration.inHours.remainder(24);
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+
+    final parts = <String>[];
+
+    if (days > 0) {
+      parts.add('$days วัน');
+    }
+
+    if (hours > 0) {
+      parts.add('$hours ชม');
+    }
+
+    if (minutes > 0) {
+      parts.add('$minutes นาที');
+    }
+
+    parts.add('$seconds วินาที');
+
+    return parts.join(' ');
   }
 
   @override
@@ -196,15 +243,18 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     bool isCanceled = appointmentDetail.appointmentStatusID.isCanceled;
 
     //* appointmentType = visit, appointmentStatus != complete
-    final isShowIconCheckIn = isVisit && (!isComplete && !isCanceled);
+    final isShowIconCheckIn = isVisit && !isCanceled;
     final isShowIconComplete = (isOnline || isOnCall) && !isComplete && !isCanceled;
 
     final visitActivities = appointmentDetail.visitActivities;
     final isCheckIn = visitActivities.isEmpty;
     final visitTitle = isCheckIn ? 'check in' : 'check out';
+    final visitDuration = visitActivities.isNotEmpty ? formatVisitDuration(visitActivities.first.checkInTime, visitActivities.first.checkOutTime) : '-';
 
     final latitude = companyAddress?.latitude ?? 0;
     final longitude = companyAddress?.longitude ?? 0;
+
+    print('appointmentDetail: ${appointmentDetail.appointmentID}');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -241,7 +291,15 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ClientDetailPage(clientID: client.clientID))),
                   ),
                   AppActionTile(icon: Icons.location_pin, title: 'map', onTap: () => openGoogleMap(latitude, longitude)),
-                  if (isShowIconCheckIn) AppActionTile(icon: Icons.menu_book, title: visitTitle, onTap: () => callVisitPage()),
+                  if (isShowIconCheckIn)
+                    AppActionTile(
+                      icon: Icons.menu_book,
+                      title: visitTitle,
+                      onTap: () => isComplete ? null : callVisitPage(isCheckIn),
+                      iconColor: isComplete ? Colors.grey : AppUtility.colorPrimary,
+                      textColor: isComplete ? Colors.grey : AppUtility.colorPrimary,
+                      splashColor: isComplete ? Colors.transparent : const Color(0x33007AFF),
+                    ),
                   if (isShowIconComplete)
                     AppActionTile(
                       icon: Icons.check_circle,
@@ -355,7 +413,29 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                   ),
             fullWidth: true,
           ),
-          if (isComplete && visitActivities.isNotEmpty)
+          if (isComplete && visitActivities.isNotEmpty) ...[
+            Row(
+              spacing: 16,
+              children: [
+                Expanded(
+                  child: AppDetailSectionCard(
+                    title: 'CheckIn Time',
+                    descWidget: AppText(label: '${visitActivities.first.checkInTime?.dateTime()}'),
+                  ),
+                ),
+                Expanded(
+                  child: AppDetailSectionCard(
+                    title: 'CheckOut Time',
+                    descWidget: AppText(label: '${visitActivities.first.checkOutTime?.dateTime()}'),
+                  ),
+                ),
+              ],
+            ),
+            AppDetailSectionCard(
+              title: "CheckIn/Out Duration",
+              descWidget: AppText(label: visitDuration),
+              fullWidth: true,
+            ),
             AppDetailSectionCard(
               title: 'Activity Images',
               descWidget: ListView.separated(
@@ -425,6 +505,7 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
               ),
               fullWidth: true,
             ),
+          ],
         ],
       ),
     );

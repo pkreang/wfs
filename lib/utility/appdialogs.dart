@@ -16,6 +16,20 @@ class AppDialogs {
     ).show();
   }
 
+  static void successCustom(BuildContext context, {required String title, String? message, void Function()? btnOkOnPress}) {
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.noHeader,
+      customHeader: Icon(Icons.check_circle, color: Colors.green, size: 50),
+      animType: AnimType.bottomSlide,
+      dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
+      title: title,
+      desc: message,
+      btnOkOnPress: btnOkOnPress,
+    ).show();
+  }
+
   static void alert(BuildContext context, {String? message, String? title}) {
     AwesomeDialog(
       context: context,

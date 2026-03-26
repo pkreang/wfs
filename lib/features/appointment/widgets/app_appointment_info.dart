@@ -92,9 +92,9 @@ class AppointmentInfo extends ConsumerWidget {
 
     final authState = ref.watch(authProvider);
 
-    double height = 97;
+    double height = 125;
     if (authState.isSupervisor) {
-      height = 125;
+      height = 153;
     }
 
     return GestureDetector(
@@ -155,6 +155,15 @@ class AppointmentInfo extends ConsumerWidget {
                         ),
                       ],
                     ),
+                  Row(
+                    spacing: 4,
+                    children: [
+                      Icon(Icons.access_time_outlined, color: AppUtility.textGray, size: 12),
+                      Expanded(
+                        child: AppText(label: DateFormat('dd/MM/yyyy').format(appointment.appointmentDateTimeFrom), fontSize: 12, textColor: AppUtility.textLight),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

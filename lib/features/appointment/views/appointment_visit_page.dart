@@ -110,8 +110,8 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
     ref.read(appointmentVisitProvider(widget.appointmentID).notifier).loading(true);
 
     final pos = await locationService.getPosition();
-    await ref.read(appointmentVisitProvider(widget.appointmentID).notifier).checkIn(latitude: pos.latitude, longitude: pos.longitude, imgBase64: imgBase64);
-    Navigator.pop(context, true);
+    final result = await ref.read(appointmentVisitProvider(widget.appointmentID).notifier).checkIn(latitude: pos.latitude, longitude: pos.longitude, imgBase64: imgBase64);
+    Navigator.pop(context, result);
   }
 
   Future<void> handleCheckOut() async {
@@ -138,8 +138,8 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
       return;
     }
 
-    await ref.read(appointmentVisitProvider(widget.appointmentID).notifier).checkOut(latitude: pos.latitude, longitude: pos.longitude);
-    Navigator.pop(context, true);
+    final result = await ref.read(appointmentVisitProvider(widget.appointmentID).notifier).checkOut(latitude: pos.latitude, longitude: pos.longitude);
+    Navigator.pop(context, result);
   }
 
   Future<void> openOutcomeSheet(BuildContext context) async {

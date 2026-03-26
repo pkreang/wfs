@@ -264,4 +264,11 @@ extension TimeFormat on String {
 
     return DateFormat.Hm().format(midnight);
   }
+
+  String dateTime() {
+    final date = DateTime.tryParse(this);
+    if (date == null) return this;
+
+    return DateFormat('dd/MM/yyyy HH:mm:ss').format(date);
+  }
 }

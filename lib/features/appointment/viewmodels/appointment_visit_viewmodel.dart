@@ -113,11 +113,11 @@ class AppointmentVisitViewModel extends StateNotifier<AppointmentVisitState> {
     return false;
   }
 
-  Future<void> checkOut({required double latitude, required double longitude}) async {
+  Future<bool> checkOut({required double latitude, required double longitude}) async {
     final detail = state.data.value;
-    if (detail == null) return;
+    if (detail == null) return false;
 
-    if (state.visitActivity == null) return;
+    if (state.visitActivity == null) return false;
 
     final now = DateTime.now();
     final checkOutTime = DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(now);
@@ -128,24 +128,29 @@ class AppointmentVisitViewModel extends StateNotifier<AppointmentVisitState> {
     );
 
     try {
-      await _appointmentService.checkOut(state.visitActivity!, ref);
+      final result = await _appointmentService.checkOut(state.visitActivity!, ref);
+      if (result) {
+        final filter = DateTime.tryParse(detail.appointmentDateTimeFrom) ?? DateTime.now();
 
-      final filter = DateTime.tryParse(detail.appointmentDateTimeFrom) ?? DateTime.now();
+        final now = DateTime.now();
+        final bool isSameDate = filter.year == now.year && filter.month == now.month && filter.day == now.day;
 
-      final now = DateTime.now();
-      final bool isSameDate = filter.year == now.year && filter.month == now.month && filter.day == now.day;
+        if (isSameDate) {
+          ref.invalidate(appointmentsProvider(DateTime(filter.year, filter.month, filter.day)));
+          ref.invalidate(appointmentSummaryProvider(DateTime(filter.year, filter.month, filter.day)));
+        }
 
-      if (isSameDate) {
-        ref.invalidate(appointmentsProvider(DateTime(filter.year, filter.month, filter.day)));
-        ref.invalidate(appointmentSummaryProvider(DateTime(filter.year, filter.month, filter.day)));
+        ref.read(appointmentMarkDateProvider(DateTime(filter.year, filter.month, 1)).notifier).refresh();
+        ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
+
+        return true;
       }
-
-      ref.read(appointmentMarkDateProvider(DateTime(filter.year, filter.month, 1)).notifier).refresh();
-      ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(filter)).notifier).refresh();
     } catch (e, st) {
       state = state.copyWith(data: AsyncError(e, st));
     } finally {
       state = state.copyWith(isLoading: false);
     }
+
+    return false;
   }
 }
