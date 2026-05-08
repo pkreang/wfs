@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/tag/views/widgets/form_tag_with_data_tile.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
@@ -165,6 +166,7 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
   }
 
   Widget buildContent(Client client, List<Company> companies) {
+    final authState = ref.read(authProvider);
     if (!isInit) {
       firstNameController.text = client.firstName ?? '';
       lastNameController.text = client.lastName ?? '';
@@ -223,16 +225,24 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                       onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setClientLevel(value),
                     ),
                   ),
-                  FormInfoTile(
-                    label: 'territory',
-                    value: AppText(label: client.salesTerritoryName ?? ''),
-                    onTap: () => AppSheet.openTerritorySheet(
-                      context: context,
-                      territoryID: client.salesTerritoryID ?? '',
-                      onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setTerritory(value),
+                  if (authState.isSales)
+                    FormInfoTile(
+                      label: 'territory',
+                      value: AppText(label: authState.territoryName ?? ''),
+                      isShowBorderBottom: true,
+                      isHideIcon: true,
                     ),
-                    isShowBorderBottom: true,
-                  ),
+                  if (!authState.isSales)
+                    FormInfoTile(
+                      label: 'territory',
+                      value: AppText(label: client.salesTerritoryName ?? ''),
+                      onTap: () => AppSheet.openTerritorySheet(
+                        context: context,
+                        territoryID: client.salesTerritoryID ?? '',
+                        onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setTerritory(value),
+                      ),
+                      isShowBorderBottom: true,
+                    ),
                 ],
               ),
               FormDatetimeRangePicker(
@@ -262,12 +272,20 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                 onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setCompany(value),
                 onRemove: (companyID) => ref.read(clientEditProvider(widget.clientID).notifier).removeCompany(companyID),
               ),
-              FormInfoTile(
-                label: 'sales',
-                value: AppText(label: client.saleName ?? ''),
-                onTap: () => AppSheet.openSaleSheet(context: context, salesID: client.saleID ?? '', onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setSales(value)),
-                isShowBorderBottom: true,
-              ),
+              if (authState.isSales)
+                FormInfoTile(
+                  label: 'sales',
+                  value: AppText(label: '${authState.firstName ?? ''} ${authState.lastName ?? ''}'),
+                  isShowBorderBottom: true,
+                  isHideIcon: true,
+                ),
+              if (!authState.isSales)
+                FormInfoTile(
+                  label: 'sales',
+                  value: AppText(label: client.saleName ?? ''),
+                  onTap: () => AppSheet.openSaleSheet(context: context, salesID: client.saleID ?? '', onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setSales(value)),
+                  isShowBorderBottom: true,
+                ),
               FormTagWithDataTile(selectedTags: client.tags ?? [], onSelected: (tags) => ref.read(clientEditProvider(widget.clientID).notifier).setTags(tags)),
             ],
           ),

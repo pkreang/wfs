@@ -10,6 +10,10 @@ class AuthState {
   final String? userID;
   final String? email;
   final String? pincode;
+  final String? territoryID;
+  final String? territoryName;
+  final String? firstName;
+  final String? lastName;
   final String? errorMessage;
 
   AuthState({
@@ -24,6 +28,10 @@ class AuthState {
     this.userID,
     this.email,
     this.pincode,
+    this.territoryID,
+    this.territoryName,
+    this.firstName,
+    this.lastName,
     this.errorMessage,
   });
 
@@ -39,6 +47,10 @@ class AuthState {
     String? userID,
     String? email,
     String? pincode,
+    String? territoryID,
+    String? territoryName,
+    String? firstName,
+    String? lastName,
     String? errorMessage,
   }) {
     return AuthState(
@@ -52,6 +64,10 @@ class AuthState {
       userID: userID ?? this.userID,
       email: email ?? this.email,
       pincode: pincode ?? this.pincode,
+      territoryID: territoryID ?? this.territoryID,
+      territoryName: territoryName ?? this.territoryName,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       errorMessage: errorMessage ?? this.errorMessage,
       error: error ?? this.error,
     );
@@ -61,4 +77,5 @@ class AuthState {
   bool get isAdmin => userRoleID == "91FA9057-F815-456C-8D7E-C8CCCBC2A805";
   bool get isSuperAdmin => userRoleID == "D9ACA4E5-7CC6-466E-B192-776037AD1A80" || userRoleID == "91FA9057-F815-456C-8D7E-C8CCCBC2A805";
   bool get isSupervisor => userRoleID == "8CFBD382-FA8B-459C-9BCF-6A3FDF66A8D6";
+  bool get isSales => userRoleID == "BBCC9574-F8F2-402A-8ED1-784934A04FA0";
 }

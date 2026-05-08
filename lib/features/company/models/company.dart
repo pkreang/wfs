@@ -1,5 +1,6 @@
 import 'package:wfs/features/company/models/client.dart';
 import 'package:wfs/features/company/models/company_address.dart';
+import 'package:wfs/models/auth_model.dart';
 
 class Company {
   final String? companyID;
@@ -56,10 +57,10 @@ class Company {
     'ModifiedBy': modifiedBy,
   };
 
-  Map<String, dynamic> toJsonCreate(String createdBy, modifiedBy) => {
+  Map<String, dynamic> toJsonCreate(String createdBy, modifiedBy, AuthState authState) => {
     "CompanyName": companyName,
     "TaxID": taxID,
-    "SalesTerritoryID": salesTerritoryID,
+    "SalesTerritoryID": authState.isSales ? authState.territoryID : salesTerritoryID,
     "Noted": noted ?? '',
     "IsActive": true,
     "CreatedBy": createdBy,
@@ -68,10 +69,10 @@ class Company {
     "Clients": null,
   };
 
-  Map<String, dynamic> toJsonUpdate(String modifiedBy) => {
+  Map<String, dynamic> toJsonUpdate(String modifiedBy, AuthState authState) => {
     "CompanyName": companyName,
     "TaxID": taxID,
-    "SalesTerritoryID": salesTerritoryID,
+    "SalesTerritoryID": authState.isSales ? authState.territoryID : salesTerritoryID,
     "Noted": noted,
     "IsActive": isActive,
     "CreatedBy": createdBy,

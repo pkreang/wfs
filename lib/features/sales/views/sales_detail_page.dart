@@ -89,6 +89,11 @@ class _SalesDetailPageState extends ConsumerState<SalesDetailPage> {
             fullWidth: true,
           ),
           AppDetailSectionCard(
+            title: 'Territory',
+            descWidget: AppText(label: user.territoryName ?? ''),
+            fullWidth: true,
+          ),
+          AppDetailSectionCard(
             title: 'Role',
             descWidget: AppText(label: user.userRole?.userRoleName ?? ''),
             fullWidth: true,

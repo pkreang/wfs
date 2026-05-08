@@ -2,7 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 
 class AppDialogs {
-  static void success(BuildContext context, {String? message, void Function()? btnOkOnPress}) {
+  static void success(BuildContext context, {String? title, message, void Function()? btnOkOnPress}) {
     AwesomeDialog(
       context: context,
       dialogType: DialogType.noHeader,
@@ -10,7 +10,7 @@ class AppDialogs {
       animType: AnimType.bottomSlide,
       dismissOnTouchOutside: false,
       dismissOnBackKeyPress: false,
-      title: 'สำเร็จ',
+      title: title ?? 'สำเร็จ',
       desc: message ?? 'บันทึกข้อมูลเรียบร้อยแล้ว',
       btnOkOnPress: btnOkOnPress,
     ).show();
@@ -30,11 +30,11 @@ class AppDialogs {
     ).show();
   }
 
-  static void alert(BuildContext context, {String? message, String? title}) {
+  static void alert(BuildContext context, {IconData? icon, String? message, String? title}) {
     AwesomeDialog(
       context: context,
       dialogType: DialogType.noHeader,
-      customHeader: Icon(Icons.warning_amber, color: Colors.red, size: 50),
+      customHeader: Icon(icon ?? Icons.warning_amber, color: Colors.red, size: 50),
       animType: AnimType.bottomSlide,
       title: title ?? "",
       desc: message ?? "",

@@ -12,6 +12,8 @@ import '../providers/auth_provider.dart';
 import '../screens/login_screen.dart';
 
 final userPinCheckProvider = FutureProvider.autoDispose<User?>((ref) async {
+  final authState = ref.watch(authProvider.select((state) => (isAuthenticated: state.isAuthenticated, pincode: state.pincode, userID: state.userID, accessToken: state.accessToken)));
+
   const storage = FlutterSecureStorage();
   final tokenExpiry = await storage.read(key: 'token_expiry');
   if (tokenExpiry != null) {
@@ -39,9 +41,8 @@ final userPinCheckProvider = FutureProvider.autoDispose<User?>((ref) async {
     return userStorage;
   }
 
-  final authState = ref.read(authProvider);
-
   // If not authenticated and no storage, return null (show login screen)
+  print('authState: $authState');
   if (!authState.isAuthenticated) {
     return null;
   }
@@ -68,14 +69,21 @@ class AuthChecker extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
+    final authState = ref.watch(authProvider.select((state) => (isAuthenticated: state.isAuthenticated, pincode: state.pincode)));
     print('AuthChecker build called');
 
     final userAsync = ref.watch(userPinCheckProvider);
     return userAsync.when(
       data: (user) {
+        print('user: ${user?.toJson()}');
+        print('check null user: ${user == null}');
+        print('authState.isAuthenticated: ${authState.isAuthenticated}');
         if (user == null && !authState.isAuthenticated) {
           return const LoginScreen();
+        }
+
+        if (authState.isAuthenticated && (authState.pincode ?? '').isNotEmpty) {
+          return const NavigationScreen();
         }
 
         if ((user?.pincode ?? '').isNotEmpty) {
@@ -98,10 +106,6 @@ class AuthChecker extends ConsumerWidget {
               Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const NavigationScreen()));
             },
           );
-        }
-
-        if (authState.isAuthenticated && (authState.pincode ?? '').isNotEmpty) {
-          return const NavigationScreen();
         }
 
         return const LoginScreen();

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/address.dart';
+import 'package:wfs/features/appointment/models/territory.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/company/models/company.dart';
-import 'package:wfs/features/company/widgets/company_status_capsule.dart';
 import 'package:wfs/widgets/form_address.dart';
 import 'package:wfs/widgets/form_info_tile.dart';
 import 'package:wfs/utility/app_utility.dart';
@@ -59,9 +60,12 @@ class _CreateCompanyPageState extends ConsumerState<CreateCompanyPage> {
       return;
     }
 
-    if (Validator.required(company.salesTerritoryID) != null) {
-      AppDialogs.error(context, message: "กรุณาเลือก Territory");
-      return;
+    final authState = ref.watch(authProvider);
+    if (!authState.isSales) {
+      if (Validator.required(company.salesTerritoryID) != null) {
+        AppDialogs.error(context, message: "กรุณาเลือก Territory");
+        return;
+      }
     }
 
     if (Validator.required(latitudeController.text) != null) {
@@ -165,6 +169,7 @@ class _CreateCompanyPageState extends ConsumerState<CreateCompanyPage> {
   }
 
   Widget buildContent(Company company) {
+    final authState = ref.read(authProvider);
     final address = company.addresses.isNotEmpty ? Address.fromJson(company.addresses.first.toJson()) : Address();
 
     return SingleChildScrollView(
@@ -194,13 +199,24 @@ class _CreateCompanyPageState extends ConsumerState<CreateCompanyPage> {
                   //   onTap: () =>
                   //       AppSheet.openCompanyStatusSheet(context: context, isActive: company.isActive ?? false, onSelected: (value) => ref.read(companyCreateProvider.notifier).setIsActive(value)),
                   // ),
-                  FormInfoTile(
-                    label: 'territory',
-                    value: AppText(label: company.salesTerritoryName ?? ''),
-                    onTap: () =>
-                        AppSheet.openTerritorySheet(context: context, territoryID: company.salesTerritoryID ?? '', onSelected: (value) => ref.read(companyCreateProvider.notifier).setTerritory(value)),
-                    isShowBorderBottom: true,
-                  ),
+                  if (authState.isSales)
+                    FormInfoTile(
+                      label: 'territory',
+                      value: AppText(label: authState.territoryName ?? ''),
+                      isShowBorderBottom: true,
+                      isHideIcon: true,
+                    ),
+                  if (!authState.isSales)
+                    FormInfoTile(
+                      label: 'territory',
+                      value: AppText(label: company.salesTerritoryName ?? ''),
+                      onTap: () => AppSheet.openTerritorySheet(
+                        context: context,
+                        territoryID: company.salesTerritoryID ?? '',
+                        onSelected: (value) => ref.read(companyCreateProvider.notifier).setTerritory(value),
+                      ),
+                      isShowBorderBottom: true,
+                    ),
                 ],
               ),
               Container(color: Color(0xFFEEEEEE), height: 5),

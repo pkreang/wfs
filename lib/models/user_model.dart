@@ -13,6 +13,8 @@ class User {
   String? email;
   String? managerID;
   String? managerName;
+  String? territoryID;
+  String? territoryName;
   bool? isActive;
   String? createdDate;
   String? modifiedDate;
@@ -33,6 +35,8 @@ class User {
     this.email,
     this.managerID,
     this.managerName,
+    this.territoryID,
+    this.territoryName,
     this.isActive,
     this.createdDate,
     this.modifiedDate,
@@ -54,6 +58,8 @@ class User {
     email = json['Email'];
     managerID = json['ManagerID'];
     managerName = json['ManagerName'];
+    territoryID = json['TerritoryID'];
+    territoryName = json['TerritoryName'];
     isActive = json['IsActive'];
     createdDate = json['CreatedDate'];
     modifiedDate = json['ModifiedDate'];
@@ -79,6 +85,8 @@ class User {
     data['Email'] = this.email;
     data['ManagerID'] = this.managerID;
     data['ManagerName'] = this.managerName;
+    data['TerritoryID'] = this.territoryID;
+    data['TerritoryName'] = this.territoryName;
     data['IsActive'] = this.isActive;
     data['CreatedDate'] = this.createdDate;
     data['ModifiedDate'] = this.modifiedDate;
@@ -104,6 +112,7 @@ class User {
     "Email": email,
     "ManagerID": managerID ?? userCreate,
     "ManagerName": managerName,
+    "SalesTerritoryID": territoryID,
     "IsActive": true,
     "CreatedDate": createdDate ?? DateTime.now().toIso8601String(),
     "ModifiedDate": modifiedDate ?? DateTime.now().toIso8601String(),
@@ -121,8 +130,9 @@ class User {
     "ModifiedBy": modifiedBy,
     "UserID": "1111111",
     "Email": email,
-    "ManagerID": managerID ?? userCreate,
+    "ManagerID": managerID,
     "ManagerName": managerName,
+    "SalesTerritoryID": territoryID,
     "IsActive": true,
     "CreatedDate": createdDate ?? DateTime.now().toIso8601String(),
     "ModifiedDate": modifiedDate ?? DateTime.now().toIso8601String(),
@@ -148,6 +158,8 @@ class User {
     String? email,
     String? managerID,
     String? managerName,
+    String? territoryID,
+    String? territoryName,
     bool? isActive,
     String? createdDate,
     String? modifiedDate,
@@ -168,6 +180,8 @@ class User {
       email: email ?? this.email,
       managerID: managerID ?? this.managerID,
       managerName: managerName ?? this.managerName,
+      territoryID: territoryID ?? this.territoryID,
+      territoryName: territoryName ?? this.territoryName,
       isActive: isActive ?? this.isActive,
       createdDate: createdDate ?? this.createdDate,
       modifiedDate: modifiedDate ?? this.modifiedDate,

@@ -18,7 +18,6 @@ import 'package:wfs/features/appointment/widgets/level_status.dart';
 import 'package:wfs/services/camera_service.dart';
 import 'package:wfs/services/location_service.dart';
 import 'package:wfs/utility/appdialogs.dart';
-import 'package:wfs/utility/validator.dart';
 
 class Location {
   final double lat;
@@ -95,7 +94,6 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
     //   _noteFocus.requestFocus();
     //   return;
     // }
-
     final permission = await handlePermissionLocation();
     if (!permission) return;
 
@@ -114,6 +112,13 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
     Navigator.pop(context, result);
   }
 
+  @override
+  void dispose() {
+    meetingNotedController.dispose();
+    _noteFocus.dispose();
+    super.dispose();
+  }
+
   Future<void> handleCheckOut() async {
     // final ok = _formKey.currentState?.validate() ?? true;
     // if (!ok) {
@@ -127,7 +132,6 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
     ref.read(appointmentVisitProvider(widget.appointmentID).notifier).loading(true);
 
     final pos = await locationService.getPosition();
-    if (pos == null) return;
 
     final isValidate = ref.read(appointmentVisitProvider(widget.appointmentID).notifier).validateOutcome();
     if (!isValidate) {

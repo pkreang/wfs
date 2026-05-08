@@ -4,14 +4,19 @@ import 'package:wfs/features/company/models/company.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class CompanyService {
-  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
 
   Future<List<Company>> fetchCompanies(Ref ref) async {
     final authState = ref.read(authProvider);
     final accessToken = authState.accessToken;
 
+    String url = "/company/?IsActive=true";
+    if (authState.isSales) {
+      url += "&SalesTerritoryID=${authState.territoryID}";
+    }
+
     final companies = await apiClient.get(
-      path: "/company/?IsActive=true",
+      path: url,
       decode: (json) {
         final map = json as Map<String, dynamic>;
         final list = map['companies'] as List? ?? const [];
@@ -52,7 +57,7 @@ class CompanyService {
 
     return await apiClient.post(
       path: "/company/",
-      body: company.toJsonCreate(userID, userID),
+      body: company.toJsonCreate(userID, userID, authState),
       decode: (json) {
         final map = json as Map<String, dynamic>;
         return (map['status'] as String?)?.toLowerCase() == "success";
@@ -66,7 +71,7 @@ class CompanyService {
     final accessToken = authState.accessToken;
 
     try {
-      return await apiClient.put(path: "/company/${company.companyID.toString()}", body: company.toJsonUpdate(authState.userID ?? ''), headers: {"Authorization": "Bearer $accessToken"});
+      return await apiClient.put(path: "/company/${company.companyID.toString()}", body: company.toJsonUpdate(authState.userID ?? '', authState), headers: {"Authorization": "Bearer $accessToken"});
     } catch (e) {
       print('updateCompany catch: $e');
     }

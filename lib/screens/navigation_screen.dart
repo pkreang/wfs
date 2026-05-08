@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/features/sales/views/sales_screen.dart';
 import 'package:wfs/features/team/views/team_screen.dart';
+import 'package:wfs/features/territory/views/territory_screen.dart';
 import 'package:wfs/providers/notification_provider.dart';
 import 'package:wfs/core/base_provider.dart';
 // import 'package:go_router/go_router.dart';
@@ -91,20 +92,22 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     final pages = <Widget>[
       const DashboardScreen(),
       const AppointmentScreen(),
-      if (authState.isSuperAdmin || authState.isSupervisor) const ClientScreen(),
-      if (authState.isSuperAdmin) const CompanyScreen(),
+      if (authState.isSuperAdmin || authState.isSupervisor || authState.isSales) const ClientScreen(),
+      if (authState.isSuperAdmin || authState.isSales) const CompanyScreen(),
       if (authState.isSuperAdmin || authState.isSupervisor) const SalesScreen(),
       if (authState.isSuperAdmin || authState.isSupervisor) const TeamScreen(),
+      if (authState.isSuperAdmin || authState.isSupervisor) const TerritoryScreen(),
       const SettingScreen(),
     ];
 
     final items = <BottomNavigationBarItem>[
       const BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
       const BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), label: 'Appointment'),
-      if (authState.isSuperAdmin || authState.isSupervisor) const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Clients'),
-      if (authState.isSuperAdmin) const BottomNavigationBarItem(icon: Icon(Icons.business_center_outlined), label: 'Company'),
-      if (authState.isSuperAdmin || authState.isSupervisor) const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'User'),
-      if (authState.isSuperAdmin || authState.isSupervisor) const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Team'),
+      if (authState.isSuperAdmin || authState.isSupervisor || authState.isSales) const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Clients'),
+      if (authState.isSuperAdmin || authState.isSales) const BottomNavigationBarItem(icon: Icon(Icons.business_center_outlined), label: 'Company'),
+      if (authState.isSuperAdmin || authState.isSupervisor) const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'User'),
+      if (authState.isSuperAdmin || authState.isSupervisor) const BottomNavigationBarItem(icon: Icon(Icons.groups_2_outlined), label: 'Team'),
+      if (authState.isSuperAdmin || authState.isSupervisor) const BottomNavigationBarItem(icon: Icon(Icons.map_outlined), label: 'Territory'),
       const BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
     ];
 

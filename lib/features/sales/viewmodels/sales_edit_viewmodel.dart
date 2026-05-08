@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/core/http/api_client.dart';
+import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/sales/services/sales_service.dart';
 import 'package:wfs/models/user_model.dart';
 import 'package:wfs/models/userrole_model.dart';
@@ -51,6 +52,14 @@ class SalesEditViewModel extends StateNotifier<SalesEditState> {
 
   void setPhoneNumber(String phoneNumber) {
     state = state.copyWith(data: state.data.whenData((v) => v.copyWith(phoneNumber: phoneNumber)), isDirty: true, clearErrorMessage: true);
+  }
+
+  void setTerritory(Territory status) {
+    state = state.copyWith(
+      data: state.data.whenData((v) => v.copyWith(territoryID: status.salesTerritoryID, territoryName: status.salesTerritoryName)),
+      isDirty: true,
+      clearErrorMessage: true,
+    );
   }
 
   void setUserRoleID(String userRoleID) {

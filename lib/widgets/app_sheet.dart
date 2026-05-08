@@ -217,6 +217,21 @@ class AppSheet {
     onSelected(selected);
   }
 
+  static Future<void> openStatusActiveSheet({required BuildContext context, required bool value, String title = 'Status', required void Function(bool) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.showWithData<bool, bool>(
+      context: context,
+      title: title,
+      items: const [true, false],
+      label: (p) => p ? 'Active' : 'Inactive',
+      initialKey: (p) => p,
+      initialValue: value,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
   static Future<void> openSaleSheet({required BuildContext context, required String salesID, required void Function(User) onSelected}) async {
     final selected = await CupertinoOptionsPicker.show<User>(
       context: context,

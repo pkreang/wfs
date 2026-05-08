@@ -132,6 +132,10 @@ class PinViewModel extends StateNotifier<PinState> {
             userRoleName: userResponse.userRoleName,
             email: userResponse.email,
             pincode: userResponse.pincode,
+            territoryID: userResponse.territoryID,
+            territoryName: userResponse.territoryName,
+            firstName: userResponse.firstName ?? '',
+            lastName: userResponse.lastName ?? '',
           );
 
       return true;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/widgets/app_text_form_field.dart';
 import 'package:wfs/models/user_model.dart';
 import 'package:wfs/utility/app_utility.dart';
@@ -39,6 +40,14 @@ class _SalesEditScreenState extends ConsumerState<SalesEditScreen> {
   }
 
   void _handleSave() async {
+    final asyncSale = ref.read(salesEditProvider(widget.userID)).data;
+    final sale = asyncSale.value;
+
+    if (sale == null) {
+      AppDialogs.error(context, message: "ไม่พบข้อมูล User");
+      return;
+    }
+
     if (Validator.required(_firstNameController.text) != null) {
       AppDialogs.error(context, message: "กรุณากรอก FirstName");
       return;
@@ -165,6 +174,15 @@ class _SalesEditScreenState extends ConsumerState<SalesEditScreen> {
                     label: 'Phone',
                     value: AppTextFormField(controller: _phoneNumberController, isNumberOnly: true, onChanged: (value) => ref.watch(salesEditProvider(widget.userID).notifier).setPhoneNumber(value)),
                     isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'territory',
+                    value: AppText(label: user.territoryName ?? ''),
+                    onTap: () => AppSheet.openTerritorySheet(
+                      context: context,
+                      territoryID: user.territoryID ?? '',
+                      onSelected: (value) => ref.read(salesEditProvider(widget.userID).notifier).setTerritory(value),
+                    ),
                   ),
                   FormInfoTile(
                     label: 'Role',

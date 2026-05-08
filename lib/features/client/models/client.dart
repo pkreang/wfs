@@ -4,6 +4,7 @@ import 'package:wfs/features/client/models/client_company.dart';
 import 'package:wfs/features/client/models/client_level.dart';
 import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/features/tag/models/tag.dart';
+import 'package:wfs/models/auth_model.dart';
 
 extension TimeFormat on String {
   String toHHmm() {
@@ -85,7 +86,7 @@ class Client {
     );
   }
 
-  Map<String, dynamic> toJsonCreate(String userID) {
+  Map<String, dynamic> toJsonCreate(String userID, AuthState authState) {
     if ((companies ?? []).isEmpty) return {};
 
     String address = "";
@@ -104,7 +105,7 @@ class Client {
       "Address": address,
       "Phone": phone,
       "Email": email,
-      "SalesTerritoryID": salesTerritoryID,
+      "SalesTerritoryID": authState.isSales ? authState.territoryID : salesTerritoryID,
       "ClientStatusID": clientStatusID,
       "ClientLevelID": clientLevelID,
       "Noted": "",
@@ -116,19 +117,19 @@ class Client {
       "ClientAddresses": null,
       "ClientProducts": null,
       "ClientCompanies": (companies ?? []).map((v) => v.toJson()).toList(),
-      "ClientSales": [saleID],
+      "ClientSales": [authState.isSales ? authState.userID : saleID],
       "Tags": (tags ?? []).map((v) => v.toJson()).toList(),
     };
   }
 
-  Map<String, dynamic> toJsonUpdate(String modifiedBy) {
+  Map<String, dynamic> toJsonUpdate(String modifiedBy, AuthState authState) {
     return {
       "FirstName": firstName,
       "LastName": lastName,
       // "Address": "123 Bangkok",
       "Phone": phone,
       "Email": email,
-      "SalesTerritoryID": salesTerritoryID,
+      "SalesTerritoryID": authState.isSales ? authState.territoryID : salesTerritoryID,
       "ClientStatusID": clientStatusID,
       "ClientLevelID": clientLevelID,
       "Noted": noted,

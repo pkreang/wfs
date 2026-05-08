@@ -33,7 +33,12 @@ import 'package:wfs/features/sales/viewmodels/sales_list_viewmodel.dart';
 import 'package:wfs/features/sales/viewmodels/sales_create_viewmodel.dart';
 import 'package:wfs/features/sales/viewmodels/sales_detail_viewmodel.dart';
 import 'package:wfs/features/sales/viewmodels/sales_edit_viewmodel.dart';
-import 'package:wfs/features/team/models/team_member.dart';
+import 'package:wfs/features/territory/models/territory_model.dart';
+import 'package:wfs/features/territory/services/territory_service.dart';
+import 'package:wfs/features/territory/viewmodels/territory_create_viewmodel.dart';
+import 'package:wfs/features/territory/viewmodels/territory_detail_viewmodel.dart';
+import 'package:wfs/features/territory/viewmodels/territory_edit_viewmodel.dart';
+import 'package:wfs/features/territory/viewmodels/territory_list_viewmodel.dart';
 import 'package:wfs/features/team/services/team_service.dart';
 import 'package:wfs/features/team/viewmodels/team_list_viewmodel.dart';
 import 'package:wfs/features/team/viewmodels/team_create_viewmodel.dart';
@@ -233,6 +238,25 @@ final salesDetailProvider = StateNotifierProvider.autoDispose.family<SalesDetail
 
 final salesEditProvider = StateNotifierProvider.autoDispose.family<SalesEditViewModel, SalesEditState, String>((ref, id) {
   return SalesEditViewModel(ref, id);
+});
+
+//* Territory
+final territoryServiceProvider = Provider<TerritoryService>((ref) => TerritoryService());
+
+final territoryListProvider = StateNotifierProvider.autoDispose<TerritoryListViewModel, TerritoryListState>((ref) {
+  return TerritoryListViewModel(ref);
+});
+
+final territoryCreateProvider = StateNotifierProvider.autoDispose<TerritoryCreateViewModel, TerritoryCreateState>((ref) {
+  return TerritoryCreateViewModel(ref);
+});
+
+final territoryDetailProvider = StateNotifierProvider.autoDispose.family<TerritoryDetailViewModel, AsyncValue<TerritoryModel>, String>((ref, id) {
+  return TerritoryDetailViewModel(ref, id);
+});
+
+final territoryEditProvider = StateNotifierProvider.autoDispose.family<TerritoryEditViewModel, TerritoryEditState, String>((ref, id) {
+  return TerritoryEditViewModel(ref, id);
 });
 
 //* Team

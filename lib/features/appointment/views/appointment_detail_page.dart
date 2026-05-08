@@ -52,13 +52,13 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
   void callVisitPage(bool isCheckIn) async {
     final result = await Navigator.push(context, MaterialPageRoute<bool>(builder: (BuildContext context) => AppointmentVisitPage(appointmentID: widget.appointmentID)));
     if (result == true && mounted) {
-      AppDialogs.successCustom(context, title: isCheckIn ? "Check In สำเร็จ" : "Check Out สำเร็จ", btnOkOnPress: () {});
+      AppDialogs.successCustom(context, title: isCheckIn ? "Check In" : "Check Out", btnOkOnPress: () {});
 
       await ref.read(appointmentDetailProvider(widget.appointmentID).notifier).refresh();
       return;
     }
 
-    AppDialogs.alert(context, title: isCheckIn ? "Check In ไม่สำเร็จ" : "Check Out ไม่สำเร็จ", message: "กรุณาลองใหม่อีกครั้ง");
+    AppDialogs.alert(context, icon: Icons.cancel, title: isCheckIn ? "Check In" : "Check Out", message: "Please try again");
   }
 
   Future<void> showCompleteConfirmDialog({required BuildContext context, required WidgetRef ref, required DateTime currentDate, required String appointmentID}) async {

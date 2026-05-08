@@ -11,18 +11,43 @@ import '../services/auth_service.dart';
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.watch(authServiceProvider));
+  return AuthNotifier(ref.watch(authServiceProvider), ref);
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
+  final Ref _ref;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   static const String _userKey = 'user_data';
 
-  AuthNotifier(this._authService) : super(AuthState());
+  AuthNotifier(this._authService, this._ref) : super(AuthState());
 
-  void updateAuthState({required String accessToken, required String foundUserId, String? userRoleID, String? userRoleName, String? email, String? pincode}) {
-    state = state.copyWith(isLoading: false, isAuthenticated: true, accessToken: accessToken, userID: foundUserId, userRoleID: userRoleID, userRoleName: userRoleName, email: email, pincode: pincode);
+  void updateAuthState({
+    required String accessToken,
+    required String foundUserId,
+    required String firstName,
+    required String lastName,
+    String? userRoleID,
+    String? userRoleName,
+    String? email,
+    String? pincode,
+    String? territoryID,
+    String? territoryName,
+  }) {
+    state = state.copyWith(
+      isLoading: false,
+      isAuthenticated: true,
+      accessToken: accessToken,
+      userID: foundUserId,
+      firstName: firstName,
+      lastName: lastName,
+      userRoleID: userRoleID,
+      userRoleName: userRoleName,
+      email: email,
+      pincode: pincode,
+      territoryID: territoryID,
+      territoryName: territoryName,
+    );
   }
 
   Future<void> login(String username, String password) async {
@@ -57,6 +82,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       String? userRoleName;
       String? email;
       String? pincode;
+      String? territoryID;
+      String? territoryName;
+      String? firstName;
+      String? lastName;
       for (var user in userMap.values) {
         if (user['Email'] == username) {
           foundUserId = user['UserID'];
@@ -65,6 +94,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
           userRoleName = userRole['UserRoleName'];
           email = user['Email'];
           pincode = user['Pincode'];
+          territoryID = user['TerritoryID'];
+          territoryName = user['TerritoryName'];
+          firstName = user['FirstName'];
+          lastName = user['LastName'];
           break;
         }
       }
@@ -80,7 +113,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _storage.write(key: 'token_expiry', value: tokentExp.toString());
       await _storage.write(key: _userKey, value: json.encode(userMap[foundUserId]));
 
-      updateAuthState(accessToken: accessToken, foundUserId: foundUserId, userRoleID: userRoleID, userRoleName: userRoleName, email: email, pincode: pincode);
+      updateAuthState(
+        accessToken: accessToken,
+        foundUserId: foundUserId,
+        userRoleID: userRoleID,
+        userRoleName: userRoleName,
+        email: email,
+        pincode: pincode,
+        territoryID: territoryID,
+        territoryName: territoryName,
+        firstName: firstName ?? '',
+        lastName: lastName ?? '',
+      );
     } catch (e) {
       String errorMessage = e.toString();
 
@@ -92,6 +136,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         errorMessage = 'Invalid username or password';
       } else if (errorMessage.contains('403')) {
         errorMessage = 'Access forbidden - Please try again later';
+      } else if (errorMessage.toLowerCase().contains('timed out')) {
+        errorMessage = 'Connection timed out. Please try again.';
       }
 
       state = state.copyWith(isLoading: false, error: errorMessage);
@@ -120,7 +166,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: true, error: null);
 
       return await _authService.forgotPassword(email);
-    } catch (e, st) {
+    } catch (e) {
       state = state.copyWith(errorMessage: e is ApiException ? e.message : 'Request failed');
 
       return false;
@@ -134,7 +180,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: true, error: null);
 
       return await _authService.changePassword(ref, oldPassword, newPassword);
-    } catch (e, st) {
+    } catch (e) {
       state = state.copyWith(errorMessage: e is ApiException ? e.message : 'Request failed');
 
       return false;

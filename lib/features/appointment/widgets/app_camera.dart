@@ -1,7 +1,9 @@
 // camera_page.dart
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class AppCamera extends StatefulWidget {
   const AppCamera({super.key});
@@ -13,6 +15,16 @@ class AppCamera extends StatefulWidget {
 class _AppCameraState extends State<AppCamera> with WidgetsBindingObserver {
   CameraController? _controller;
   bool _isCapturing = false;
+
+  Future<Uint8List> _compressImage(Uint8List bytes) async {
+    final compressedBytes = await FlutterImageCompress.compressWithList(bytes, format: CompressFormat.jpeg, quality: 85, minWidth: 1600, minHeight: 1600, keepExif: true);
+
+    if (compressedBytes.isEmpty) {
+      return bytes;
+    }
+
+    return compressedBytes;
+  }
 
   @override
   void initState() {
@@ -68,9 +80,10 @@ class _AppCameraState extends State<AppCamera> with WidgetsBindingObserver {
 
       final xfile = await c.takePicture();
       final bytes = await xfile.readAsBytes();
+      final compressedBytes = await _compressImage(bytes);
       if (!mounted) return;
 
-      Navigator.pop(context, base64Encode(bytes));
+      Navigator.pop(context, base64Encode(compressedBytes));
     } catch (e) {
       try {
         await c.resumePreview();
@@ -88,7 +101,10 @@ class _AppCameraState extends State<AppCamera> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final c = _controller;
     if (c == null || !c.value.isInitialized) {
-      return const Scaffold(backgroundColor: Colors.black, body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Scaffold(
@@ -96,7 +112,17 @@ class _AppCameraState extends State<AppCamera> with WidgetsBindingObserver {
       body: Stack(
         children: [
           Positioned.fill(child: CameraPreview(c)),
-          SafeArea(child: Row(children: [IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white)), const Spacer()])),
+          SafeArea(
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+                const Spacer(),
+              ],
+            ),
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: SafeArea(
@@ -108,7 +134,11 @@ class _AppCameraState extends State<AppCamera> with WidgetsBindingObserver {
                   child: Container(
                     width: 78,
                     height: 78,
-                    decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 4)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 4),
+                    ),
                     alignment: Alignment.center,
                     child: Icon(Icons.camera_alt_outlined, color: Colors.black, size: 40),
                   ),

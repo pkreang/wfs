@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/address.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/company/models/company.dart';
@@ -154,6 +155,7 @@ class _CompanyEditPageState extends ConsumerState<CompanyEditPage> {
   }
 
   Widget buildContent(Company company, List<Company> companies) {
+    final authState = ref.read(authProvider);
     final address = company.addresses.isNotEmpty ? Address.fromJson(company.addresses.first.toJson()) : Address();
 
     if (isInit) {
@@ -199,16 +201,24 @@ class _CompanyEditPageState extends ConsumerState<CompanyEditPage> {
                   //     onSelected: (value) => ref.read(companyEditProvider(widget.companyID).notifier).setIsActive(value),
                   //   ),
                   // ),
-                  FormInfoTile(
-                    label: 'territory',
-                    value: AppText(label: company.salesTerritoryName ?? ''),
-                    onTap: () => AppSheet.openTerritorySheet(
-                      context: context,
-                      territoryID: company.salesTerritoryID ?? '',
-                      onSelected: (value) => ref.read(companyEditProvider(widget.companyID).notifier).setTerritory(value),
+                  if (authState.isSales)
+                    FormInfoTile(
+                      label: 'territory',
+                      value: AppText(label: authState.territoryName ?? ''),
+                      isShowBorderBottom: true,
+                      isHideIcon: true,
                     ),
-                    isShowBorderBottom: true,
-                  ),
+                  if (!authState.isSales)
+                    FormInfoTile(
+                      label: 'territory',
+                      value: AppText(label: company.salesTerritoryName ?? ''),
+                      onTap: () => AppSheet.openTerritorySheet(
+                        context: context,
+                        territoryID: company.salesTerritoryID ?? '',
+                        onSelected: (value) => ref.read(companyEditProvider(widget.companyID).notifier).setTerritory(value),
+                      ),
+                      isShowBorderBottom: true,
+                    ),
                 ],
               ),
               Column(

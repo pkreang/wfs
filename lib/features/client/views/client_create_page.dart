@@ -5,6 +5,7 @@ import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/widgets/client_level_capsule.dart';
 import 'package:wfs/features/client/widgets/client_status_capsule.dart';
 import 'package:wfs/features/tag/views/widgets/form_tag_with_data_tile.dart';
+import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
@@ -47,6 +48,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   }
 
   void handleSave() async {
+    final authState = ref.watch(authProvider);
     final asyncClient = ref.read(clientCreateProvider).data;
     final client = asyncClient.value;
 
@@ -78,9 +80,11 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       return;
     }
 
-    if (Validator.required(client.salesTerritoryID) != null) {
-      AppDialogs.error(context, message: "กรุณาเลือก Territory");
-      return;
+    if (!authState.isSales) {
+      if (Validator.required(client.salesTerritoryID) != null) {
+        AppDialogs.error(context, message: "กรุณาเลือก Territory");
+        return;
+      }
     }
 
     if (Validator.required(mobileController.text) != null) {
@@ -98,9 +102,11 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       return;
     }
 
-    if (Validator.required(asyncClient.value?.saleID) != null) {
-      AppDialogs.error(context, message: "กรุณาเลือก Sales");
-      return;
+    if (!authState.isSales) {
+      if (Validator.required(asyncClient.value?.saleID) != null) {
+        AppDialogs.error(context, message: "กรุณาเลือก Sales");
+        return;
+      }
     }
 
     // if (tags.isEmpty) {
@@ -183,6 +189,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   }
 
   Widget buildContent(Client client) {
+    final authState = ref.read(authProvider);
     String companyID = '';
     String companyName = '';
     if ((client.companies ?? []).isNotEmpty) {
@@ -231,13 +238,21 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                       onSelected: (value) => ref.read(clientCreateProvider.notifier).setClientLevel(value),
                     ),
                   ),
-                  FormInfoTile(
-                    label: 'territory',
-                    value: AppText(label: client.salesTerritoryName ?? ''),
-                    onTap: () =>
-                        AppSheet.openTerritorySheet(context: context, territoryID: client.salesTerritoryID ?? '', onSelected: (value) => ref.read(clientCreateProvider.notifier).setTerritory(value)),
-                    isShowBorderBottom: true,
-                  ),
+                  if (authState.isSales)
+                    FormInfoTile(
+                      label: 'territory',
+                      value: AppText(label: authState.territoryName ?? ''),
+                      isShowBorderBottom: true,
+                      isHideIcon: true,
+                    ),
+                  if (!authState.isSales)
+                    FormInfoTile(
+                      label: 'territory',
+                      value: AppText(label: client.salesTerritoryName ?? ''),
+                      onTap: () =>
+                          AppSheet.openTerritorySheet(context: context, territoryID: client.salesTerritoryID ?? '', onSelected: (value) => ref.read(clientCreateProvider.notifier).setTerritory(value)),
+                      isShowBorderBottom: true,
+                    ),
                 ],
               ),
               FormDatetimeRangePicker(
@@ -268,12 +283,20 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 onSelected: (value) => ref.read(clientCreateProvider.notifier).setCompany(value),
                 onRemove: (companyID) => ref.read(clientCreateProvider.notifier).removeCompany(companyID),
               ),
-              FormInfoTile(
-                label: 'sales',
-                value: AppText(label: client.saleName ?? ''),
-                onTap: () => AppSheet.openSaleSheet(context: context, salesID: client.saleID ?? '', onSelected: (value) => ref.read(clientCreateProvider.notifier).setSales(value)),
-                isShowBorderBottom: true,
-              ),
+              if (authState.isSales)
+                FormInfoTile(
+                  label: 'sales',
+                  value: AppText(label: '${authState.firstName ?? ''} ${authState.lastName ?? ''}'),
+                  isShowBorderBottom: true,
+                  isHideIcon: true,
+                ),
+              if (!authState.isSales)
+                FormInfoTile(
+                  label: 'sales',
+                  value: AppText(label: client.saleName ?? ''),
+                  onTap: () => AppSheet.openSaleSheet(context: context, salesID: client.saleID ?? '', onSelected: (value) => ref.read(clientCreateProvider.notifier).setSales(value)),
+                  isShowBorderBottom: true,
+                ),
               FormTagWithDataTile(selectedTags: client.tags ?? [], onSelected: (tags) => ref.read(clientCreateProvider.notifier).setTags(tags)),
             ],
           ),

@@ -64,7 +64,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     });
 
-    final authState = ref.read(authProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       body: Stack(
@@ -117,6 +117,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
+    // email = "systemadmin@mail.com";
+    // password = "sFe25win\$100%";
+
     // email = "noppakan.j@extend-it-resource.com";
     // password = "fE89nj32#";
 
@@ -133,6 +136,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // email = "Sup01@mail.com";
     // // email = "sale01@mail.com";
     // password = "abcd1234";
+
+    // email = "achara.w@extend-it-resource.com";
+    // password = "dC53aw218!";
 
     //email = "john@mail.com";
     //password = "abcd1234";

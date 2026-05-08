@@ -125,7 +125,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
     final result = await ref.read(appointmentCreateProvider(widget.clientId).notifier).saveAppointment();
     if (!result) return;
 
-    AppDialogs.success(context, btnOkOnPress: () => Navigator.of(context).popUntil((route) => route.isFirst));
+    AppDialogs.success(context, title: "SUCCESS", message: "Data saved successfully", btnOkOnPress: () => Navigator.of(context).popUntil((route) => route.isFirst));
   }
 
   @override
