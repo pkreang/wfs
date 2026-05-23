@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -8,6 +10,7 @@ import '../config/api_config.dart';
 
 class AuthService {
   final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
+  static const Duration _requestTimeout = Duration(seconds: 20);
 
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
@@ -16,7 +19,7 @@ class AuthService {
 
       final body = kIsWeb ? json.encode({'username': username, 'password': password}) : {'username': username, 'password': password};
 
-      final response = await http.post(Uri.parse(ApiConfig.loginUrl), headers: headers, body: body);
+      final response = await http.post(Uri.parse(ApiConfig.loginUrl), headers: headers, body: body).timeout(_requestTimeout);
 
       print('Login response status: ${response.statusCode}');
       print('Login response body: ${response.body}');
@@ -30,6 +33,12 @@ class AuthService {
       } else {
         throw Exception('Failed to login: ${response.statusCode} - ${response.body}');
       }
+    } on TimeoutException {
+      throw Exception('Login request timed out. Please try again.');
+    } on SocketException {
+      throw Exception('Network error - Please check your internet connection');
+    } on HandshakeException {
+      throw Exception('Secure connection failed on this device. Please check device date/time or update Android System WebView and Chrome.');
     } catch (e) {
       print('Login error: $e');
       if (e.toString().contains('XMLHttpRequest')) {
@@ -65,6 +74,12 @@ class AuthService {
       } else {
         throw Exception('Failed to get user ID: ${response.statusCode}');
       }
+    } on TimeoutException {
+      throw Exception('Get user ID timed out. Please try again.');
+    } on SocketException {
+      throw Exception('Network error - Please check your internet connection');
+    } on HandshakeException {
+      throw Exception('Secure connection failed on this device. Please check device date/time or update Android System WebView and Chrome.');
     } catch (e) {
       rethrow;
     }

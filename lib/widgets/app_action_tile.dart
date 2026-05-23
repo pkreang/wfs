@@ -14,6 +14,8 @@ class AppActionTile extends StatelessWidget {
   final Color iconColor;
   final Color textColor;
   final Color splashColor;
+  final int? titleMaxLines;
+  final TextOverflow? titleOverflow;
 
   const AppActionTile({
     super.key,
@@ -28,6 +30,8 @@ class AppActionTile extends StatelessWidget {
     this.iconColor = AppUtility.colorPrimary,
     this.textColor = AppUtility.colorPrimary,
     this.splashColor = const Color(0x33007AFF),
+    this.titleMaxLines = 1,
+    this.titleOverflow,
   });
 
   @override
@@ -50,7 +54,7 @@ class AppActionTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(icon, color: iconColor, size: 24),
-                AppText(label: title, textColor: textColor, fontSize: 12, lineHeight: 16),
+                AppText(label: title, textColor: textColor, fontSize: 12, lineHeight: 16, maxLines: titleMaxLines, overflow: titleOverflow),
               ],
             ),
           ),
@@ -59,4 +63,3 @@ class AppActionTile extends StatelessWidget {
     );
   }
 }
-

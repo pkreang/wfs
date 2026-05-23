@@ -8,6 +8,7 @@ class AppText extends StatelessWidget {
   final int lineHeight;
   final TextAlign textAlign;
   final int? maxLines;
+  final TextOverflow? overflow;
 
   const AppText({
     required this.label,
@@ -17,6 +18,7 @@ class AppText extends StatelessWidget {
     this.lineHeight = 22,
     this.textAlign = TextAlign.left,
     this.maxLines = 1,
+    this.overflow,
     super.key,
   });
 
@@ -30,7 +32,7 @@ class AppText extends StatelessWidget {
         textAlign: textAlign,
         textScaler: TextScaler.noScaling,
         maxLines: maxLines,
-        overflow: maxLines != null ? TextOverflow.ellipsis : null,
+        overflow: overflow ?? (maxLines != null ? TextOverflow.ellipsis : null),
       ),
     );
   }

@@ -42,13 +42,13 @@ class AppDialogs {
     ).show();
   }
 
-  static void error(BuildContext context, {String? message}) {
+  static void error(BuildContext context, {String? title, message}) {
     AwesomeDialog(
       context: context,
       dialogType: DialogType.noHeader,
       customHeader: Icon(Icons.cancel, color: Colors.green, size: 50),
       animType: AnimType.leftSlide,
-      title: 'กรอกข้อมูลไม่ครบ',
+      title: title ?? 'กรอกข้อมูลไม่ครบ',
       desc: message ?? 'ไม่สามารถบันทึกข้อมูลได้',
       btnOkOnPress: () {},
     ).show();

@@ -8,7 +8,7 @@ import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class ClientService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<List<Client>> fetchClients(Ref ref) async {
     final authState = ref.read(authProvider);
@@ -145,7 +145,7 @@ class ClientService {
     final authState = ref.read(authProvider);
     final accessToken = authState.accessToken;
 
-    final url = Uri.parse('https://sfe-api-test.appnormalthink.com/notification/');
+    final url = Uri.parse('https://sfe-api.appnormalthink.com/notification/');
 
     await http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'}, body: json.encode({'RefID': clientID, 'NotificationType': 'Client'}));
   }

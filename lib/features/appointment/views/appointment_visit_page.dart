@@ -135,7 +135,7 @@ class _AppointmentVisitPageState extends ConsumerState<AppointmentVisitPage> {
 
     final isValidate = ref.read(appointmentVisitProvider(widget.appointmentID).notifier).validateOutcome();
     if (!isValidate) {
-      AppDialogs.error(context, message: "กรุณาเลือก outcome");
+      AppDialogs.error(context, title: "Incomplete information", message: "Please select an outcome");
 
       ref.read(appointmentVisitProvider(widget.appointmentID).notifier).loading(false);
 

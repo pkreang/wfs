@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wfs/widgets/app_text.dart';
 import 'package:flutter/services.dart';
+import 'package:wfs/widgets/app_text.dart';
 
 class AppTextFormField extends StatelessWidget {
   final FocusNode? focusNode;
@@ -20,7 +20,10 @@ class AppTextFormField extends StatelessWidget {
   final bool allowDecimal;
   final bool obscureText;
   final Widget? suffixIcon;
+  final TextAlignVertical? textAlignVertical;
+  final EdgeInsetsGeometry? contentPadding;
   final ValueChanged<String>? onFieldSubmitted;
+  final List<TextInputFormatter>? inputFormatters;
 
   const AppTextFormField({
     super.key,
@@ -41,7 +44,10 @@ class AppTextFormField extends StatelessWidget {
     this.allowDecimal = false,
     this.obscureText = false,
     this.suffixIcon,
+    this.textAlignVertical,
+    this.contentPadding,
     this.onFieldSubmitted,
+    this.inputFormatters,
   });
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -72,18 +78,20 @@ class AppTextFormField extends StatelessWidget {
       controller: controller,
       onChanged: isDisabled ? null : onChanged,
       onFieldSubmitted: onFieldSubmitted,
+      textAlignVertical: textAlignVertical,
       obscureText: obscureText,
       validator: effectiveValidator,
       maxLines: maxLines,
       enabled: enabled,
       autovalidateMode: autovalidateMode,
       keyboardType: isNumberOnly ? (allowDecimal ? const TextInputType.numberWithOptions(decimal: true, signed: false) : TextInputType.number) : TextInputType.text,
-      inputFormatters: isNumberOnly ? [allowDecimal ? _SingleDotDecimalTextInputFormatter() : FilteringTextInputFormatter.digitsOnly] : null,
+      inputFormatters: inputFormatters ?? (isNumberOnly ? [allowDecimal ? _SingleDotDecimalTextInputFormatter() : FilteringTextInputFormatter.digitsOnly] : null),
       cursorColor: const Color(0xFF007AFF),
       decoration: InputDecoration(
         hint: AppText(label: hintText ?? '', textColor: Colors.grey.shade400),
         isDense: true,
         suffixIcon: suffixIcon,
+        contentPadding: contentPadding,
         border: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
         enabledBorder: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
         focusedBorder: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
