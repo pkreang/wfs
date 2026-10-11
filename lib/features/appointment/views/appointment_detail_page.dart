@@ -17,6 +17,7 @@ import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/client_status.dart';
 import 'package:wfs/features/appointment/widgets/level_status.dart';
 import 'package:wfs/features/client/views/client_detail_page.dart';
+import 'package:wfs/features/survey/widgets/survey_list_picker.dart';
 import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/utility/app_utility.dart';
@@ -177,10 +178,20 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     final state = ref.watch(appointmentDetailProvider(widget.appointmentID));
 
     return state.when(
-      loading: () => Center(child: CircularProgressIndicator(color: colorPrimary)),
-      error: (e, _) {
-        return Center(
-          child: AppText(label: "Appointment Not Found", textColor: Colors.red),
+      loading: () => Scaffold(
+        backgroundColor: const Color(0xFFEEEEEE),
+        body: Center(child: CircularProgressIndicator(color: colorPrimary)),
+      ),
+      error: (e, stackTrace) {
+        debugPrint('AppointmentDetailPage (${widget.appointmentID}): $e');
+        debugPrintStack(stackTrace: stackTrace);
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFEEEEEE),
+          appBar: AppBar(backgroundColor: const Color(0xFFEEEEEE)),
+          body: Center(
+            child: AppText(label: "Unable to load appointment", textColor: Colors.red),
+          ),
         );
       },
       data: (appointmentDetail) {
@@ -243,8 +254,10 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
     bool isCanceled = appointmentDetail.appointmentStatusID.isCanceled;
 
     //* appointmentType = visit, appointmentStatus != complete
-    final isShowIconCheckIn = isVisit && !isCanceled;
-    final isShowIconComplete = (isOnline || isOnCall) && !isComplete && !isCanceled;
+    // final isShowIconCheckIn = isVisit && !isCanceled;
+    // final isShowIconComplete = (isOnline || isOnCall) && !isComplete && !isCanceled;
+    final isShowIconCheckIn = appointmentDetail.isShowIconCheckIn;
+    final isShowIconComplete = appointmentDetail.isShowIconComplete;
 
     final visitActivities = appointmentDetail.visitActivities;
     final isCheckIn = visitActivities.isEmpty;
@@ -311,6 +324,23 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                         appointmentID: appointmentDetail.appointmentID,
                       ),
                     ),
+                  AppActionTile(
+                    icon: Icons.assignment_outlined,
+                    title: 'survey',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => SurveyListPicker(
+                          isPreviewOnly: true,
+                          isSendEmailOnly: true,
+                          email: appointmentDetail.email,
+                          clientID: appointmentDetail.clientID,
+                          clientFirstName: client.firstName,
+                          clientLastName: client.lastName,
+                          appointmentID: appointmentDetail.appointmentID,
+                        ),
+                      ),
+                    ),
+                  ),
                   // AppActionTile(icon: Icons.history, title: 'history', onTap: () => print('history page')),
                 ],
               ),

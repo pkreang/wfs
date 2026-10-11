@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/client/models/client.dart';
@@ -35,6 +36,30 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final closeProbabilityController = TextEditingController();
+  final budgetController = TextEditingController();
+  final jobTitleController = TextEditingController();
+  final lineIDController = TextEditingController();
+  final reportLineController = TextEditingController();
+  final noOfSubordinateController = TextEditingController();
+
+  static final List<TextInputFormatter> _closeProbabilityInputFormatters = [
+    FilteringTextInputFormatter.digitsOnly,
+    TextInputFormatter.withFunction((oldValue, newValue) {
+      final text = newValue.text;
+      if (text.isEmpty) return newValue;
+      if (text.length > 1 && text.startsWith('0')) {
+        return oldValue;
+      }
+
+      final probability = int.tryParse(text);
+      if (probability == null || probability > 100) {
+        return oldValue;
+      }
+
+      return newValue;
+    }),
+  ];
 
   DateTime _todayWithTime(String hhmmOrHhmmss) {
     final now = DateTime.now();
@@ -87,6 +112,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       }
     }
 
+    final closeProbability = int.tryParse(closeProbabilityController.text);
+    if (closeProbability == null || closeProbability < 0) {
+      AppDialogs.error(context, message: "กรุณากรอก Close Probability");
+      return;
+    }
+
     if (Validator.required(mobileController.text) != null) {
       AppDialogs.error(context, message: "กรุณากรอก Mobile");
       return;
@@ -99,6 +130,26 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
 
     if (companies.isEmpty) {
       AppDialogs.error(context, message: "กรุณาเลือก Company");
+      return;
+    }
+
+    if (Validator.required(jobTitleController.text) != null) {
+      AppDialogs.error(context, message: 'กรุณากรอก Job Title');
+      return;
+    }
+
+    if (Validator.required(lineIDController.text) != null) {
+      AppDialogs.error(context, message: 'กรุณากรอก Line ID');
+      return;
+    }
+
+    if (Validator.required(reportLineController.text) != null) {
+      AppDialogs.error(context, message: 'กรุณากรอก Report Line');
+      return;
+    }
+
+    if (Validator.required(noOfSubordinateController.text) != null) {
+      AppDialogs.error(context, message: 'กรุณากรอก No. of subordinate');
       return;
     }
 
@@ -133,6 +184,12 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     lastNameController.dispose();
     mobileController.dispose();
     emailController.dispose();
+    closeProbabilityController.dispose();
+    budgetController.dispose();
+    jobTitleController.dispose();
+    lineIDController.dispose();
+    reportLineController.dispose();
+    noOfSubordinateController.dispose();
     super.dispose();
   }
 
@@ -221,7 +278,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     isHideIcon: true,
                   ),
                   FormInfoTile(
-                    label: 'status',
+                    label: 'Status',
                     value: ClientStatusCapsule(clientStatusName: client.clientStatus?.clientStatusName ?? ''),
                     onTap: () => AppSheet.openClientStatusSheet(
                       context: context,
@@ -230,7 +287,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                     ),
                   ),
                   FormInfoTile(
-                    label: 'level',
+                    label: 'Level',
                     value: ClientLevelCapsule(clientLevelName: client.clientLevel?.clientLevelName ?? ''),
                     onTap: () => AppSheet.openClientLevelSheet(
                       context: context,
@@ -240,14 +297,14 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                   ),
                   if (authState.isSales)
                     FormInfoTile(
-                      label: 'territory',
+                      label: 'Territory',
                       value: AppText(label: authState.territoryName ?? ''),
                       isShowBorderBottom: true,
                       isHideIcon: true,
                     ),
                   if (!authState.isSales)
                     FormInfoTile(
-                      label: 'territory',
+                      label: 'Territory',
                       value: AppText(label: client.salesTerritoryName ?? ''),
                       onTap: () =>
                           AppSheet.openTerritorySheet(context: context, territoryID: client.salesTerritoryID ?? '', onSelected: (value) => ref.read(clientCreateProvider.notifier).setTerritory(value)),
@@ -262,37 +319,91 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 onStartTimeSelected: (value) => ref.read(clientCreateProvider.notifier).setAvailableTimeStart(value),
                 onEndTimeSelected: (value) => ref.read(clientCreateProvider.notifier).setAvailableTimeEnd(value),
               ),
-
               Column(
                 children: [
                   FormInfoTile(
-                    label: 'mobile',
-                    value: AppTextFormField(controller: mobileController, onChanged: (value) => ref.read(clientCreateProvider.notifier).setMobile(value)),
+                    label: 'Close Probability',
+                    value: AppTextFormField(
+                      controller: closeProbabilityController,
+                      isNumberOnly: true,
+                      inputFormatters: _closeProbabilityInputFormatters,
+                      textAlignVertical: TextAlignVertical.center,
+                      contentPadding: EdgeInsets.zero,
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Center(
+                          widthFactor: 1,
+                          child: AppText(label: '%', textColor: AppUtility.textGray),
+                        ),
+                      ),
+                      onChanged: (value) => ref.read(clientCreateProvider.notifier).setCloseProbability(value),
+                    ),
                     isHideIcon: true,
                   ),
                   FormInfoTile(
-                    label: 'email',
+                    label: 'Purchasing Power',
+                    value: AppTextFormField(controller: budgetController, isNumberOnly: true, onChanged: (value) => ref.read(clientCreateProvider.notifier).setBudget(value)),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'Mobile',
+                    value: AppTextFormField(controller: mobileController, isNumberOnly: true, onChanged: (value) => ref.read(clientCreateProvider.notifier).setMobile(value)),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'Email',
                     value: AppTextFormField(controller: emailController, onChanged: (value) => ref.read(clientCreateProvider.notifier).setEmail(value)),
                     isHideIcon: true,
                   ),
                 ],
               ),
-              FormCompanyTile(
-                companyID: companyID,
-                companyName: companyName,
-                onSelected: (value) => ref.read(clientCreateProvider.notifier).setCompany(value),
-                onRemove: (companyID) => ref.read(clientCreateProvider.notifier).removeCompany(companyID),
+
+              Column(
+                children: [
+                  FormCompanyTile(
+                    companyID: companyID,
+                    companyName: companyName,
+                    onSelected: (value) => ref.read(clientCreateProvider.notifier).setCompany(value),
+                    onRemove: (companyID) => ref.read(clientCreateProvider.notifier).removeCompany(companyID),
+                    isShowBorderBottom: false,
+                  ),
+                  FormInfoTile(
+                    label: 'Job Title',
+                    value: AppTextFormField(controller: jobTitleController, onChanged: (value) => ref.read(clientCreateProvider.notifier).setJobTitle(value)),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'Line ID',
+                    value: AppTextFormField(controller: lineIDController, onChanged: (value) => ref.read(clientCreateProvider.notifier).setLineID(value)),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'Report Line',
+                    value: AppTextFormField(controller: reportLineController, onChanged: (value) => ref.read(clientCreateProvider.notifier).setReportLine(value)),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'No. of subordinate',
+                    value: AppTextFormField(
+                      controller: noOfSubordinateController,
+                      isNumberOnly: true,
+                      onChanged: (value) => ref.read(clientCreateProvider.notifier).setNoOfSubordinate(int.tryParse(value)),
+                    ),
+                    isHideIcon: true,
+                  ),
+                ],
               ),
+
               if (authState.isSales)
                 FormInfoTile(
-                  label: 'sales',
+                  label: 'Sales',
                   value: AppText(label: '${authState.firstName ?? ''} ${authState.lastName ?? ''}'),
                   isShowBorderBottom: true,
                   isHideIcon: true,
                 ),
               if (!authState.isSales)
                 FormInfoTile(
-                  label: 'sales',
+                  label: 'Sales',
                   value: AppText(label: client.saleName ?? ''),
                   onTap: () => AppSheet.openSaleSheet(context: context, salesID: client.saleID ?? '', onSelected: (value) => ref.read(clientCreateProvider.notifier).setSales(value)),
                   isShowBorderBottom: true,

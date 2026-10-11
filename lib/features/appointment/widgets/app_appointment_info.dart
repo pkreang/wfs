@@ -12,6 +12,7 @@ import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/widgets/app_text.dart';
+import 'package:wfs/widgets/capsule_widget.dart';
 
 class AppointmentInfo extends ConsumerWidget {
   final Appointment appointment;
@@ -92,9 +93,9 @@ class AppointmentInfo extends ConsumerWidget {
 
     final authState = ref.watch(authProvider);
 
-    double height = 125;
+    double height = 127;
     if (authState.isSupervisor) {
-      height = 153;
+      height = 155;
     }
 
     return GestureDetector(
@@ -114,7 +115,13 @@ class AppointmentInfo extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 6,
                 children: [
-                  AppText(label: appointment.clientName ?? '', fontSize: 17),
+                  Row(
+                    spacing: 8,
+                    children: [
+                      CapsuleWidget(label: 'Appointment', capsuleStyle: CapsuleStyle(Color.fromARGB(255, 87, 88, 89), Color.fromRGBO(74, 75, 75, 0.2))),
+                      Expanded(child: AppText(label: appointment.clientName ?? '', fontSize: 17)),
+                    ],
+                  ),
                   Row(
                     spacing: 6,
                     children: [

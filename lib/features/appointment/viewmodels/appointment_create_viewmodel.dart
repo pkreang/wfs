@@ -42,51 +42,85 @@ class AppointmentCreateState {
 }
 
 class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
-  AppointmentCreateViewModel(this.ref, this.id) : super(AppointmentCreateState(appointment: AsyncValue.loading())) {
+  AppointmentCreateViewModel(this.ref, this.id, this.clientType) : super(AppointmentCreateState(appointment: AsyncValue.loading())) {
     fetchClientById();
   }
 
   final Ref ref;
   final String id;
+  final String clientType;
 
   ClientService get _cleintService => ClientService();
   client_service.ClientService get _clientService => client_service.ClientService();
   AppointmentService get _appointmentService => ref.read(appointmentServiceProvider);
 
   Future<void> fetchClientById() async {
-    final res = await AsyncValue.guard(() => _cleintService.getById(ref, id));
-    res.whenData((client) {
-      final salesTerritory = client.salesTerritory;
-      final now = roundedNow;
+    if (clientType.toLowerCase() == "lead") {
+      final result = await AsyncValue.guard(() => ref.read(leadServiceProvider).getById(ref, id));
+      result.whenData((lead) {
+        final now = roundedNow;
+        final company = (lead.companyID ?? '').isNotEmpty ? Company(companyID: lead.companyID, companyName: lead.companyName, addresses: lead.company?.addresses ?? const []) : null;
+        final companyAddress = company != null && company.addresses.isNotEmpty ? company.addresses.first : null;
 
-      List<Company> companies = (client.companies ?? [])
-          .map((cc) => cc.company)
-          .where((c) => (c?.companyID ?? '').isNotEmpty)
-          .map((c) => Company(companyID: c!.companyID, companyName: c.companyName, addresses: c.addresses))
-          .toList();
-
-      state = state.copyWith(
-        appointment: AsyncValue.data(
-          Appointment(
-            appointmentTitle: 'นัดพบลูกค้า',
-            appointmentStatusID: '4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B',
-            appointmentStatusName: 'Scheduled',
-            clientID: client.clientID,
-            clientName: client.clientName,
-            tags: client.tags,
-            phone: client.phone,
-            email: client.email,
-            salesTerritoryID: salesTerritory?.salesTerritoryID,
-            salesTerritoryName: salesTerritory?.salesTerritoryName,
-            appointmentDateTimeFrom: now,
-            appointmentDateTimeTo: now.add(const Duration(minutes: 30)),
-            isActive: true,
+        state = state.copyWith(
+          appointment: AsyncValue.data(
+            Appointment(
+              appointmentTitle: 'นัดพบลูกค้า',
+              appointmentStatusID: '4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B',
+              appointmentStatusName: 'Scheduled',
+              clientID: lead.leadID,
+              clientName: '${lead.firstName ?? ''} ${lead.lastName ?? ''}'.trim(),
+              phone: lead.phone,
+              email: lead.email,
+              companyID: company?.companyID,
+              companyName: company?.companyName,
+              appointmentAddress: companyAddress == null ? null : Address.fromJson(companyAddress.toJson()),
+              appointmentDateTimeFrom: now,
+              appointmentDateTimeTo: now.add(const Duration(minutes: 30)),
+              isActive: true,
+              salesTerritoryID: lead.salesTerritoryID,
+              salesTerritoryName: lead.salesTerritoryName,
+            ),
           ),
-        ),
-        isDirty: false,
-        companies: companies,
-      );
-    });
+          isDirty: false,
+          companies: company == null ? const [] : [company],
+        );
+      });
+    } else {
+      final res = await AsyncValue.guard(() => _cleintService.getById(ref, id));
+      res.whenData((client) {
+        final salesTerritory = client.salesTerritory;
+        final now = roundedNow;
+
+        List<Company> companies = (client.companies ?? [])
+            .map((cc) => cc.company)
+            .where((c) => (c?.companyID ?? '').isNotEmpty)
+            .map((c) => Company(companyID: c!.companyID, companyName: c.companyName, addresses: c.addresses))
+            .toList();
+
+        state = state.copyWith(
+          appointment: AsyncValue.data(
+            Appointment(
+              appointmentTitle: 'นัดพบลูกค้า',
+              appointmentStatusID: '4E2DC36E-53E6-4E9B-BAC2-1F2629BD745B',
+              appointmentStatusName: 'Scheduled',
+              clientID: client.clientID,
+              clientName: client.clientName,
+              tags: client.tags,
+              phone: client.phone,
+              email: client.email,
+              salesTerritoryID: salesTerritory?.salesTerritoryID,
+              salesTerritoryName: salesTerritory?.salesTerritoryName,
+              appointmentDateTimeFrom: now,
+              appointmentDateTimeTo: now.add(const Duration(minutes: 30)),
+              isActive: true,
+            ),
+          ),
+          isDirty: false,
+          companies: companies,
+        );
+      });
+    }
   }
 
   void setTags(List<Tag> tags) {
@@ -209,7 +243,7 @@ class AppointmentCreateViewModel extends StateNotifier<AppointmentCreateState> {
       if (!result) return result;
 
       final tagNames = appointment.tags?.map((t) => t.tagName).toList() ?? [];
-      if (tagNames.isNotEmpty) {
+      if (clientType.toLowerCase() != 'lead' && tagNames.isNotEmpty) {
         await _clientService.updateTags(appointment.clientID ?? '', tagNames, ref);
       }
 

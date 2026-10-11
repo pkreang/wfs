@@ -5,6 +5,15 @@ import 'package:wfs/screens/appointment_screen.dart';
 import 'package:wfs/screens/navigation_screen.dart'; // สมมติว่า MainScaffold อยู่ในไฟล์นี้
 import 'package:wfs/features/client/views/client_list_page.dart';
 import 'package:wfs/features/company/views/company_list_page.dart';
+import 'package:wfs/features/lead/views/lead_detail_page.dart';
+import 'package:wfs/features/lead/views/lead_list_page.dart';
+import 'package:wfs/features/salepepeline/views/sales_pipeline_page.dart';
+import 'package:wfs/features/survey/pages/survey_answer_page.dart';
+import 'package:wfs/features/survey/pages/survey_dashboard_page.dart';
+import 'package:wfs/features/survey/pages/survey_detail_page.dart';
+import 'package:wfs/features/survey/pages/survey_list_page.dart';
+import 'package:wfs/features/task/views/task_detail_page.dart';
+import 'package:wfs/features/task/views/task_list_page.dart';
 import 'package:wfs/screens/dashboard_screen.dart';
 import 'package:wfs/screens/test_screen.dart';
 import 'package:wfs/features/appointment/views/appointment_detail_page.dart';
@@ -18,18 +27,86 @@ final routerProvider = Provider<GoRouter>((ref) {
           return MainScaffold(child: child);
         },
         routes: [
-          GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
-          GoRoute(path: '/Appointments', builder: (context, state) => const AppointmentScreen()),
           GoRoute(
-            path: '/appointmentDetail/:appointmentId', // กำหนด parameter สำหรับ appointmentId
+            path: '/dashboard',
+            builder: (context, state) => const DashboardScreen(),
+          ),
+          GoRoute(
+            path: '/Appointments',
+            builder: (context, state) => const AppointmentScreen(),
+          ),
+          GoRoute(
+            path:
+                '/appointmentDetail/:appointmentId', // กำหนด parameter สำหรับ appointmentId
             builder: (context, state) {
-              final appointmentId = state.pathParameters['appointmentId'].toString();
+              final appointmentId = state.pathParameters['appointmentId']
+                  .toString();
               return AppointmentDetailPage(appointmentID: appointmentId);
             },
           ),
-          GoRoute(path: '/clients', builder: (context, state) => const ClientScreen()),
-          GoRoute(path: '/company', builder: (context, state) => const CompanyScreen()),
-          GoRoute(path: '/test', builder: (context, state) => const TestScreen()),
+          GoRoute(
+            path: '/clients',
+            builder: (context, state) => const ClientScreen(),
+          ),
+          GoRoute(
+            path: '/leads',
+            builder: (context, state) => const LeadScreen(),
+          ),
+          GoRoute(
+            path: '/salesPipeline',
+            builder: (context, state) => const SalesPipelinePage(),
+          ),
+          GoRoute(
+            path: '/tasks',
+            builder: (context, state) => const TaskScreen(),
+          ),
+          GoRoute(
+            path: '/surveys',
+            builder: (context, state) => const SurveyListPage(),
+          ),
+          GoRoute(
+            path: '/surveyDetail/:surveyId',
+            builder: (context, state) {
+              final surveyId = state.pathParameters['surveyId'].toString();
+              return SurveyDetailPage(surveyID: surveyId);
+            },
+          ),
+          GoRoute(
+            path: '/survey/dashboard/:surveyId',
+            builder: (context, state) {
+              final surveyID = state.pathParameters['surveyId'].toString();
+              return SurveyDashboardPage(surveyID: surveyID);
+            },
+          ),
+          GoRoute(
+            path: '/survey/answer',
+            builder: (context, state) {
+              final refCode = state.uri.queryParameters['ref_code'] ?? '';
+              return SurveyAnswerPage(refCode: refCode);
+            },
+          ),
+          GoRoute(
+            path: '/taskDetail/:taskId',
+            builder: (context, state) {
+              final taskId = state.pathParameters['taskId'].toString();
+              return TaskDetailPage(taskID: taskId);
+            },
+          ),
+          GoRoute(
+            path: '/leadDetail/:leadId',
+            builder: (context, state) {
+              final leadId = state.pathParameters['leadId'].toString();
+              return LeadDetailPage(leadID: leadId);
+            },
+          ),
+          GoRoute(
+            path: '/company',
+            builder: (context, state) => const CompanyScreen(),
+          ),
+          GoRoute(
+            path: '/test',
+            builder: (context, state) => const TestScreen(),
+          ),
         ],
       ),
     ],
@@ -54,10 +131,17 @@ class PlaceholderScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 title,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
               ),
               const SizedBox(height: 8),
-              const Text('Coming Soon', style: TextStyle(fontSize: 16, color: Colors.grey)),
+              const Text(
+                'Coming Soon',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
             ],
           ),
         ),

@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/tag/views/widgets/form_tag_with_data_tile.dart';
 import 'package:wfs/providers/auth_provider.dart';
 import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
-import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
+
 import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/widgets/client_level_capsule.dart';
 import 'package:wfs/features/client/widgets/client_status_capsule.dart';
 import 'package:wfs/features/company/models/company.dart';
 import 'package:wfs/widgets/form_company_tile.dart';
-import 'package:wfs/widgets/form_company_with_data_tile.dart';
 import 'package:wfs/widgets/form_datetime_range_picker.dart';
 import 'package:wfs/widgets/form_info_tile.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/utility/appdialogs.dart';
 import 'package:wfs/utility/validator.dart';
+
+import '../../../widgets/app_text_form_field.dart';
 
 class ClientEditPage extends ConsumerStatefulWidget {
   final String clientID;
@@ -32,6 +34,30 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final closeProbabilityController = TextEditingController();
+  final budgetController = TextEditingController();
+  final jobTitleController = TextEditingController();
+  final lineIDController = TextEditingController();
+  final reportLineController = TextEditingController();
+  final noOfSubordinateController = TextEditingController();
+
+  static final List<TextInputFormatter> _closeProbabilityInputFormatters = [
+    FilteringTextInputFormatter.digitsOnly,
+    TextInputFormatter.withFunction((oldValue, newValue) {
+      final text = newValue.text;
+      if (text.isEmpty) return newValue;
+      if (text.length > 1 && text.startsWith('0')) {
+        return oldValue;
+      }
+
+      final probability = int.tryParse(text);
+      if (probability == null || probability > 100) {
+        return oldValue;
+      }
+
+      return newValue;
+    }),
+  ];
 
   DateTime _todayWithTime(String hhmmOrHhmmss) {
     final now = DateTime.now();
@@ -65,6 +91,12 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
       return;
     }
 
+    final closeProbability = int.tryParse(closeProbabilityController.text);
+    if (closeProbability == null || closeProbability < 0) {
+      AppDialogs.error(context, message: "กรุณากรอก Close Probability");
+      return;
+    }
+
     if (Validator.required(mobileController.text) != null) {
       AppDialogs.error(context, message: "กรุณากรอก Mobile");
       return;
@@ -77,6 +109,26 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
 
     if (companies.isEmpty) {
       AppDialogs.error(context, message: "กรุณาเลือก Company");
+      return;
+    }
+
+    if (Validator.required(jobTitleController.text) != null) {
+      AppDialogs.error(context, message: 'กรุณากรอก Job Title');
+      return;
+    }
+
+    if (Validator.required(lineIDController.text) != null) {
+      AppDialogs.error(context, message: 'กรุณากรอก Line ID');
+      return;
+    }
+
+    if (Validator.required(reportLineController.text) != null) {
+      AppDialogs.error(context, message: 'กรุณากรอก Report Line');
+      return;
+    }
+
+    if (Validator.required(noOfSubordinateController.text) != null) {
+      AppDialogs.error(context, message: 'กรุณากรอก No. of subordinate');
       return;
     }
 
@@ -109,6 +161,12 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
     lastNameController.dispose();
     mobileController.dispose();
     emailController.dispose();
+    closeProbabilityController.dispose();
+    budgetController.dispose();
+    jobTitleController.dispose();
+    lineIDController.dispose();
+    reportLineController.dispose();
+    noOfSubordinateController.dispose();
     super.dispose();
   }
 
@@ -172,7 +230,12 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
       lastNameController.text = client.lastName ?? '';
       mobileController.text = client.phone ?? '';
       emailController.text = client.email ?? '';
-
+      closeProbabilityController.text = (client.closeProbability ?? 0).toString();
+      budgetController.text = (client.budget ?? 0).toString();
+      jobTitleController.text = client.jobTitle ?? '';
+      lineIDController.text = client.lineID ?? '';
+      reportLineController.text = client.reportLine ?? '';
+      noOfSubordinateController.text = (client.noOfSubordinate ?? 0).toString();
       isInit = true;
     }
 
@@ -208,7 +271,7 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                     isHideIcon: true,
                   ),
                   FormInfoTile(
-                    label: 'status',
+                    label: 'Status',
                     value: ClientStatusCapsule(clientStatusName: client.clientStatus?.clientStatusName ?? ''),
                     onTap: () => AppSheet.openClientStatusSheet(
                       context: context,
@@ -217,7 +280,7 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                     ),
                   ),
                   FormInfoTile(
-                    label: 'level',
+                    label: 'Level',
                     value: ClientLevelCapsule(clientLevelName: client.clientLevel?.clientLevelName ?? ''),
                     onTap: () => AppSheet.openClientLevelSheet(
                       context: context,
@@ -227,14 +290,14 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
                   ),
                   if (authState.isSales)
                     FormInfoTile(
-                      label: 'territory',
+                      label: 'Territory',
                       value: AppText(label: authState.territoryName ?? ''),
                       isShowBorderBottom: true,
                       isHideIcon: true,
                     ),
                   if (!authState.isSales)
                     FormInfoTile(
-                      label: 'territory',
+                      label: 'Territory',
                       value: AppText(label: client.salesTerritoryName ?? ''),
                       onTap: () => AppSheet.openTerritorySheet(
                         context: context,
@@ -255,23 +318,77 @@ class _ClientEditPageState extends ConsumerState<ClientEditPage> {
               Column(
                 children: [
                   FormInfoTile(
-                    label: 'mobile',
+                    label: 'Close Probability',
+                    value: AppTextFormField(
+                      controller: closeProbabilityController,
+                      isNumberOnly: true,
+                      inputFormatters: _closeProbabilityInputFormatters,
+                      textAlignVertical: TextAlignVertical.center,
+                      contentPadding: EdgeInsets.zero,
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Center(
+                          widthFactor: 1,
+                          child: AppText(label: '%', textColor: AppUtility.textGray),
+                        ),
+                      ),
+                      onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setCloseProbability(value),
+                    ),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'Purchasing Power',
+                    value: AppTextFormField(controller: budgetController, isNumberOnly: true, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setBudget(value)),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'Mobile',
                     value: AppTextFormField(controller: mobileController, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setMobile(value)),
                     isHideIcon: true,
                   ),
                   FormInfoTile(
-                    label: 'email',
+                    label: 'Email',
                     value: AppTextFormField(controller: emailController, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setEmail(value)),
                     isHideIcon: true,
                   ),
                 ],
               ),
-              FormCompanyTile(
-                companyID: companyID,
-                companyName: companyName,
-                onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setCompany(value),
-                onRemove: (companyID) => ref.read(clientEditProvider(widget.clientID).notifier).removeCompany(companyID),
+              Column(
+                children: [
+                  FormCompanyTile(
+                    companyID: companyID,
+                    companyName: companyName,
+                    onSelected: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setCompany(value),
+                    onRemove: (companyID) => ref.read(clientEditProvider(widget.clientID).notifier).removeCompany(companyID),
+                    isShowBorderBottom: false,
+                  ),
+                  FormInfoTile(
+                    label: 'Job Title',
+                    value: AppTextFormField(controller: jobTitleController, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setJobTitle(value)),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'Line ID',
+                    value: AppTextFormField(controller: lineIDController, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setLineID(value)),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'Report Line',
+                    value: AppTextFormField(controller: reportLineController, onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setReportLine(value)),
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'No. of subordinate',
+                    value: AppTextFormField(
+                      controller: noOfSubordinateController,
+                      isNumberOnly: true,
+                      onChanged: (value) => ref.read(clientEditProvider(widget.clientID).notifier).setNoOfSubordinate(int.tryParse(value)),
+                    ),
+                    isHideIcon: true,
+                  ),
+                ],
               ),
+
               if (authState.isSales)
                 FormInfoTile(
                   label: 'sales',

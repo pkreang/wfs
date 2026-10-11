@@ -2,6 +2,7 @@ import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/tag/models/tag.dart';
 
 class Appointment {
+  String? type;
   String? appointmentID;
   String? appointmentTitle;
   String? appointmentTypeID;
@@ -36,6 +37,7 @@ class Appointment {
   List<Tag>? tags;
 
   Appointment({
+    this.type,
     this.appointmentID,
     this.appointmentTitle,
     this.appointmentTypeID,
@@ -72,13 +74,14 @@ class Appointment {
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
+      type: (json['Type'] ?? json['type'])?.toString(),
       appointmentID: json['AppointmentID'] ?? '',
       appointmentTitle: json['AppointmentTitle'] ?? '',
       appointmentTypeID: json['AppointmentTypeID'] ?? '',
       appointmentTypeName: json['AppointmentTypeName'] ?? '',
       userID: json['UserID'] ?? '',
       clientID: json['ClientID'] ?? '',
-      clientName: json['ClientName'] ?? '',
+      clientName: json['ClientName'] ?? json['client_name'] ?? '',
       companyID: json['CompanyID'] ?? '',
       companyName: json['CompanyName'] ?? '',
       appointmentDateTimeFrom: DateTime.parse(json['AppointmentDateTimeFrom'] ?? ''),
@@ -88,13 +91,13 @@ class Appointment {
       appointmentStatusID: json['AppointmentStatusID'] ?? '',
       appointmentStatusName: json['AppointmentStatusName'] ?? '',
       purposeTypeID: json['PurposeTypeID'] ?? '',
-      purposeTypeName: json['PurposeTypeName'] ?? '',
+      purposeTypeName: json['PurposeTypeName'] ?? json['PurposeName'] ?? json['purpose_name'] ?? '',
       salesTerritoryID: json['SalesTerritoryID'] ?? '',
       salesTerritoryName: json['SalesTerritoryName'] ?? '',
       noted: json['Noted'] ?? '',
       assignedBy: json['AssignedBy'] ?? '',
-      phone: json['Phone'] ?? '',
-      email: json['Email'] ?? '',
+      phone: json['Phone'] ?? json['ClientPhone'] ?? '',
+      email: json['Email'] ?? json['ClientEmail'] ?? '',
       purposeOther: json['PurposeOther'] ?? '',
       address: json['Address'] ?? '',
       appointmentAddress: json['AppointmentAddress'] != null ? Address.fromJson(json['AppointmentAddress']) : null,
@@ -145,6 +148,7 @@ class Appointment {
   // }
 
   Appointment copyWith({
+    String? type,
     String? appointmentTitle,
     String? appointmentTypeID,
     String? appointmentTypeName,
@@ -178,6 +182,7 @@ class Appointment {
     bool isRemoveAddress = false,
   }) {
     return Appointment(
+      type: type ?? this.type,
       appointmentTitle: appointmentTitle ?? this.appointmentTitle,
       appointmentTypeID: appointmentTypeID ?? this.appointmentTypeID,
       appointmentTypeName: appointmentTypeName ?? this.appointmentTypeName,

@@ -10,20 +10,34 @@ class FormCompanyWithDataTile extends StatelessWidget {
   final String companyName;
   final void Function(Company company) onSelected;
   final void Function(String companyID) onRemove;
+  final bool isShowBorderBottom;
 
-  const FormCompanyWithDataTile({required this.companyID, required this.companyName, required this.companies, required this.onSelected, required this.onRemove, super.key});
+  const FormCompanyWithDataTile({
+    required this.companyID,
+    required this.companyName,
+    required this.companies,
+    required this.onSelected,
+    required this.onRemove,
+    this.isShowBorderBottom = true,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return FormInfoTile(
-      label: 'company',
+      label: 'Company',
       value: companyID == ""
           ? GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => AppSheet.openCompanyWithDataSheet(context: context, companyID: companyID, companyies: companies, onSelected: onSelected),
-              child: const SizedBox(
-                height: 44,
-                child: Row(
+              onTap: () => AppSheet.openCompanyWithDataSheet(
+                context: context,
+                companyID: companyID,
+                companyies: companies,
+                onSelected: onSelected,
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: const Row(
                   spacing: 16,
                   children: [
                     Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
@@ -36,11 +50,20 @@ class FormCompanyWithDataTile extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: () => onRemove(companyID),
-                  child: Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 24),
+                  child: Icon(
+                    Icons.remove_circle,
+                    color: Color(0xFFFF382B),
+                    size: 24,
+                  ),
                 ),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => AppSheet.openCompanyWithDataSheet(context: context, companyID: companyID, companyies: companies, onSelected: onSelected),
+                    onTap: () => AppSheet.openCompanyWithDataSheet(
+                      context: context,
+                      companyID: companyID,
+                      companyies: companies,
+                      onSelected: onSelected,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: AppText(label: companyName),
@@ -49,7 +72,7 @@ class FormCompanyWithDataTile extends StatelessWidget {
                 ),
               ],
             ),
-      isShowBorderBottom: true,
+      isShowBorderBottom: isShowBorderBottom,
       isHideIcon: true,
     );
   }

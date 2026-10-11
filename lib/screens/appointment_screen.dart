@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:wfs/core/base_provider.dart';
+import 'package:wfs/features/appointment/models/appointment.dart';
 import 'package:wfs/features/appointment/widgets/app_appointment_info.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
+import 'package:wfs/features/task/models/task.dart';
+import 'package:wfs/features/task/views/task_detail_page.dart';
+import 'package:wfs/features/task/widgets/task_info.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/screens/clientaddappointment_screen.dart';
 
@@ -26,7 +30,8 @@ class AppointmentScreen extends ConsumerWidget {
             centerTitle: true,
             leadingWidth: 98,
             leading: GestureDetector(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ClientAddAppointmentScreen(), fullscreenDialog: true)),
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _showCreateOptions(context),
               child: Row(
                 children: [
                   IconButton(
@@ -44,7 +49,7 @@ class AppointmentScreen extends ConsumerWidget {
             ),
             title: Column(
               children: [
-                AppText(label: 'Appointments', fontSize: 17, fontWeight: FontWeight.w600),
+                AppText(label: 'Tasks', fontSize: 17, fontWeight: FontWeight.w600),
                 Consumer(
                   builder: (context, ref, child) {
                     final countText = appointmentsAsync.when(data: (appointments) => '${appointments.length} Entry', loading: () => 'Loading...', error: (err, stack) => 'Error');
@@ -81,8 +86,24 @@ class AppointmentScreen extends ConsumerWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
-                        final appointment = appointments[index];
-                        return AppointmentInfo(appointment: appointment, currentDate: currentDate);
+                        final item = appointments[index];
+
+                        if (item is Appointment && item.type == 'appointment') {
+                          return AppointmentInfo(appointment: item, currentDate: currentDate);
+                        }
+
+                        if (item is Task && item.type == 'task') {
+                          return TaskInfo(
+                            task: item,
+                            onTap: () async {
+                              await Navigator.of(context).push(MaterialPageRoute(builder: (context) => TaskDetailPage(taskID: item.taskID ?? '')));
+                              if (!context.mounted) return;
+                              await ref.read(appointmentsByDateProvider(DateFormat("yyyy-MM-dd").format(currentDate)).notifier).refresh();
+                            },
+                          );
+                        }
+
+                        return const SizedBox.shrink();
                       },
                       itemCount: appointments.length,
                     );
@@ -96,6 +117,45 @@ class AppointmentScreen extends ConsumerWidget {
         if (state.isLoading) ...[const ModalBarrier(color: Color(0x66000000), dismissible: false), const Center(child: CircularProgressIndicator(color: AppUtility.colorPrimary))],
       ],
     );
+  }
+
+  Future<void> _showCreateOptions(BuildContext context) async {
+    final option = await showModalBottomSheet<CreateOption>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Padding(
+              //   padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              //   child: Text('Create', style: Theme.of(sheetContext).textTheme.titleLarge),
+              // ),
+              ListTile(
+                leading: const Icon(Icons.calendar_today_outlined),
+                title: const Text('Appointment'),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                onTap: () => Navigator.of(sheetContext).pop(CreateOption.appointment),
+              ),
+              ListTile(
+                leading: const Icon(Icons.checklist_outlined),
+                title: const Text('Task'),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                onTap: () => Navigator.of(sheetContext).pop(CreateOption.task),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (option == null || !context.mounted) return;
+
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => ClientAddAppointmentScreen(option: option), fullscreenDialog: true));
   }
 
   Widget _buildCalendarHeader(BuildContext context, WidgetRef ref, Map<String, bool> appointmentMarkDate, DateTime currentMonth, DateTime selectedDate) {

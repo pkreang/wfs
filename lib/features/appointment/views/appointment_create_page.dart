@@ -10,6 +10,7 @@ import 'package:wfs/widgets/app_sheet.dart';
 import 'package:wfs/features/appointment/widgets/app_text_form_field.dart';
 import 'package:wfs/features/appointment/widgets/appointment_status_capsule.dart';
 import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
+import 'package:wfs/widgets/capsule_widget.dart';
 import 'package:wfs/widgets/form_address.dart';
 import 'package:wfs/widgets/form_company_with_data_tile.dart';
 import 'package:wfs/widgets/form_datetime_range_picker.dart';
@@ -21,7 +22,8 @@ import 'package:wfs/widgets/app_text.dart';
 
 class CreateAppointmentScreen extends ConsumerStatefulWidget {
   final String clientId;
-  const CreateAppointmentScreen({required this.clientId, super.key});
+  final String clientType;
+  const CreateAppointmentScreen({required this.clientId, required this.clientType, super.key});
 
   @override
   ConsumerState<CreateAppointmentScreen> createState() => _CreateAppointmentScreenState();
@@ -36,13 +38,15 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
   final TextEditingController notedController = TextEditingController();
   bool isShowPurposeOtherTextField = false;
 
+  ({String id, String clientType}) get _providerParams => (id: widget.clientId, clientType: widget.clientType);
+
   void handlePurposeChange(Purpose value) {
-    ref.read(appointmentCreateProvider(widget.clientId).notifier).setPurpose(value);
+    ref.read(appointmentCreateProvider(_providerParams).notifier).setPurpose(value);
     isShowPurposeOtherTextField = value.purposeTypeName.toLowerCase() == "other";
   }
 
   void handleSave() async {
-    final asyncAppointment = ref.read(appointmentCreateProvider(widget.clientId)).appointment;
+    final asyncAppointment = ref.read(appointmentCreateProvider(_providerParams)).appointment;
     final appointment = asyncAppointment.value;
 
     if (appointment == null) {
@@ -122,7 +126,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
       return;
     }
 
-    final result = await ref.read(appointmentCreateProvider(widget.clientId).notifier).saveAppointment();
+    final result = await ref.read(appointmentCreateProvider(_providerParams).notifier).saveAppointment();
     if (!result) return;
 
     AppDialogs.success(context, title: "SUCCESS", message: "Data saved successfully", btnOkOnPress: () => Navigator.of(context).popUntil((route) => route.isFirst));
@@ -140,7 +144,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(appointmentCreateProvider(widget.clientId));
+    final state = ref.watch(appointmentCreateProvider(_providerParams));
 
     return Stack(
       children: [
@@ -213,37 +217,43 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
               Column(
                 children: [
                   FormInfoTile(
-                    label: 'Client Name',
-                    value: AppText(label: appointment.clientName ?? ''),
+                    label: 'Name',
+                    value: Row(
+                      spacing: 8,
+                      children: [
+                        if (widget.clientType != "") CapsuleWidget(label: widget.clientType, capsuleStyle: CapsuleStyle(Color(0xFF2F80ED), Color.fromRGBO(47, 128, 237, 0.2))),
+                        Expanded(child: AppText(label: appointment.clientName ?? '')),
+                      ],
+                    ),
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
-                  FormTagWithDataTile(selectedTags: appointment.tags ?? [], onSelected: (tags) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setTags(tags), isEnableRemove: false),
+                  FormTagWithDataTile(selectedTags: appointment.tags ?? [], onSelected: (tags) => ref.read(appointmentCreateProvider(_providerParams).notifier).setTags(tags), isEnableRemove: false),
                   FormInfoTile(
-                    label: 'meeting',
+                    label: 'Type',
                     value: AppointmentTypeCapsule(appointmentTypeName: appointment.appointmentTypeName ?? ''),
                     onTap: () => AppSheet.openMeetingSheet(
                       context: context,
                       appointmentTypeID: appointment.appointmentTypeID ?? '',
-                      onSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentType(value),
+                      onSelected: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setAppointmentType(value),
                     ),
                     isShowBorderBottom: true,
                   ),
                   FormInfoTile(
-                    label: 'status',
-                    value: AppointmentStatusCapsule(appointmentStatusName: appointment.appointmentStatusName ?? ''),
-                    isShowBorderBottom: true,
-                    isHideIcon: true,
-                  ),
-                  FormInfoTile(
-                    label: 'purpose',
+                    label: 'Purpose',
                     value: AppText(label: appointment.purposeTypeName ?? ''),
                     onTap: () => AppSheet.openPurposeSheet(context: context, purposeTypeID: appointment.purposeTypeID ?? '', onSelected: (value) => handlePurposeChange(value)),
                     isShowBorderBottom: true,
                   ),
                   FormInfoTile(
-                    label: 'territory',
+                    label: 'Territory',
                     value: AppText(label: appointment.salesTerritoryName ?? ''),
+                    isShowBorderBottom: true,
+                    isHideIcon: true,
+                  ),
+                  FormInfoTile(
+                    label: 'Status',
+                    value: AppointmentStatusCapsule(appointmentStatusName: appointment.appointmentStatusName ?? ''),
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
@@ -256,7 +266,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                       label: 'purpose other',
                       value: AppTextFormField(
                         controller: purposeOtherController,
-                        onChanged: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setPurposeOther(value),
+                        onChanged: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setPurposeOther(value),
                         maxLines: 5,
                       ),
                       height: 126,
@@ -268,22 +278,22 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
               FormDatetimeRangePicker(
                 start: appointment.appointmentDateTimeFrom,
                 end: appointment.appointmentDateTimeTo,
-                onStartDateSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentFromDate(value),
-                onStartTimeSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentFromTime(value),
-                onEndDateSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentToDate(value),
-                onEndTimeSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentToTime(value),
+                onStartDateSelected: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setAppointmentFromDate(value),
+                onStartTimeSelected: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setAppointmentFromTime(value),
+                onEndDateSelected: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setAppointmentToDate(value),
+                onEndTimeSelected: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setAppointmentToTime(value),
               ),
               Column(
                 children: [
                   FormInfoTile(
                     label: 'mobile',
-                    value: AppTextFormField(controller: mobileController, onChanged: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setMobile(value)),
+                    value: AppTextFormField(controller: mobileController, onChanged: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setMobile(value)),
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
                   FormInfoTile(
                     label: 'email',
-                    value: AppTextFormField(controller: emailController, onChanged: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setEmail(value)),
+                    value: AppTextFormField(controller: emailController, onChanged: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setEmail(value)),
                     isShowBorderBottom: true,
                     isHideIcon: true,
                   ),
@@ -291,21 +301,21 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                     companyID: appointment.companyID ?? '',
                     companyName: appointment.companyName ?? '',
                     companies: companies,
-                    onSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setCompany(value),
-                    onRemove: (_) => ref.read(appointmentCreateProvider(widget.clientId).notifier).removeCompany(),
+                    onSelected: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setCompany(value),
+                    onRemove: (_) => ref.read(appointmentCreateProvider(_providerParams).notifier).removeCompany(),
                   ),
                 ],
               ),
               FormAddress(
                 addressController: addressController,
                 address: appointmentAddress,
-                onSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAddress(address: value),
+                onSelected: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setAddress(address: value),
               ),
             ],
           ),
           FormInfoTile(
             label: 'note',
-            value: AppTextFormField(controller: notedController, onChanged: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setNoted(value), maxLines: 5),
+            value: AppTextFormField(controller: notedController, onChanged: (value) => ref.read(appointmentCreateProvider(_providerParams).notifier).setNoted(value), maxLines: 5),
             height: 126,
             isShowBorderBottom: true,
             isHideIcon: true,

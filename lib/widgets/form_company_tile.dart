@@ -9,13 +9,14 @@ class FormCompanyTile extends StatelessWidget {
   final String companyName;
   final void Function(Company company) onSelected;
   final void Function(String companyID) onRemove;
+  final bool isShowBorderBottom;
 
-  const FormCompanyTile({required this.companyID, required this.companyName, required this.onSelected, required this.onRemove, super.key});
+  const FormCompanyTile({required this.companyID, required this.companyName, required this.onSelected, required this.onRemove, this.isShowBorderBottom = true, super.key});
 
   @override
   Widget build(BuildContext context) {
     return FormInfoTile(
-      label: 'company',
+      label: 'Company',
       value: companyID == ""
           ? GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -48,7 +49,7 @@ class FormCompanyTile extends StatelessWidget {
                 ),
               ],
             ),
-      isShowBorderBottom: true,
+      isShowBorderBottom: isShowBorderBottom,
       isHideIcon: true,
     );
   }

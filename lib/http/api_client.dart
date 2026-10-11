@@ -5,12 +5,10 @@ typedef Decoder<T> = T Function(Object json);
 
 class ApiClient {
   ApiClient(this._baseUrl);
-  
 
   final String _baseUrl;
 
-  static ApiException _error({required String message, int? httpStatus, String? status, Object? body}) =>
-      ApiException(message: message, httpStatus: httpStatus, status: status, body: body);
+  static ApiException _error({required String message, int? httpStatus, String? status, Object? body}) => ApiException(message: message, httpStatus: httpStatus, status: status, body: body);
 
   String _extractErrorMessage(Object raw) {
     if (raw is Map) {
@@ -22,21 +20,10 @@ class ApiClient {
     return 'Request failed';
   }
 
-  Future<T> get<T>({
-    required String path,
-    required Decoder<T> decode,
-    Map<String, String>? query,
-    Map<String, String>? headers,
-  }) async {
+  Future<T> get<T>({required String path, required Decoder<T> decode, Map<String, String>? query, Map<String, String>? headers}) async {
     final uri = Uri.parse('$_baseUrl$path').replace(queryParameters: query);
 
-    final res = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (headers != null) ...headers,
-      },
-    );
+    final res = await http.get(uri, headers: {'Content-Type': 'application/json', if (headers != null) ...headers});
 
     if (res.statusCode != 200) {
       throw _error(message: 'HTTP ${res.statusCode}', httpStatus: res.statusCode, body: res.body);
@@ -57,18 +44,12 @@ class ApiClient {
     }
   }
 
-  Future<T> post<T>({
-    required String path,
-    required Map<String, dynamic> body,
-    required Decoder<T> decode,
-  }) async {
+  Future<T> post<T>({required String path, required Map<String, dynamic> body, required Decoder<T> decode}) async {
     final uri = Uri.parse('$_baseUrl$path');
 
-    final res = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+    final res = await http.post(uri, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
+
+    print('res: ${res.body}');
 
     if (res.statusCode != 200) {
       throw _error(message: 'HTTP ${res.statusCode}', httpStatus: res.statusCode, body: res.body);
@@ -91,23 +72,12 @@ class ApiClient {
     }
   }
 
-  Future<bool> put({
-    required String path,
-    required Map<String, dynamic> body,
-    Map<String, String>? headers,
-  }) async {
+  Future<bool> put({required String path, required Map<String, dynamic> body, Map<String, String>? headers}) async {
     final uri = Uri.parse('$_baseUrl$path');
 
     print('data json: ${jsonEncode(body)}');
 
-    final res = await http.put(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (headers != null) ...headers,
-      },
-      body: jsonEncode(body),
-    );
+    final res = await http.put(uri, headers: {'Content-Type': 'application/json', if (headers != null) ...headers}, body: jsonEncode(body));
 
     if (res.statusCode != 200) {
       throw _error(message: 'HTTP ${res.statusCode}', httpStatus: res.statusCode, body: res.body);
@@ -128,19 +98,10 @@ class ApiClient {
     return true;
   }
 
-  Future<bool> delete({
-    required String path,
-    Map<String, String>? headers,
-  }) async {
+  Future<bool> delete({required String path, Map<String, String>? headers}) async {
     final uri = Uri.parse('$_baseUrl$path');
 
-    final res = await http.delete(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (headers != null) ...headers,
-      },
-    );
+    final res = await http.delete(uri, headers: {'Content-Type': 'application/json', if (headers != null) ...headers});
 
     if (res.statusCode != 200) {
       throw _error(message: 'HTTP ${res.statusCode}', httpStatus: res.statusCode, body: res.body);

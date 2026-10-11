@@ -126,7 +126,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // email = "danusorn.t@extend-it-resource.com";
     // password = "dA49dt984\$";
 
-    // Sale
+    // supervisor
     // email = "panu.t@extend-it-resource.com";
     // password = "cF49pt457\$";
 
@@ -137,11 +137,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // // email = "sale01@mail.com";
     // password = "abcd1234";
 
+    // Sale
     // email = "achara.w@extend-it-resource.com";
     // password = "dC53aw218!";
 
     //email = "john@mail.com";
     //password = "abcd1234";
+
+    //supervisor
+    // email = "panu.t@extend-it-resource.com";
+    // password = "cF49pt457\$";
+
+    // email = "supdemo@mail.com";
+    // password = "abcd1234";
+
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter both email and password'), backgroundColor: Colors.orange));
       return;

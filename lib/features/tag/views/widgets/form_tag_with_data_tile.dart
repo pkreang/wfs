@@ -29,7 +29,7 @@ class FormTagWithDataTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FormInfoTile(
-      label: 'tags',
+      label: 'Tags',
       value: selectedTags.isEmpty
           ? GestureDetector(
               behavior: HitTestBehavior.opaque,

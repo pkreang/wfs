@@ -3,23 +3,45 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:wfs/config/api_config.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
+import 'package:wfs/features/task/models/task.dart';
 import 'package:wfs/models/appointment_summary_model.dart';
 
 class AppointmentService {
-  Future<List<Appointment>> fetchAppointments(String accessToken, String userID, String appointmentDateFrom, String appointmentDateTo) async {
+  Future<List<dynamic>> fetchAppointments(String accessToken, String appointmentDate, {String? appointmentDateTo, String? appointmentStatusName}) async {
     if (accessToken.isEmpty) {
       throw Exception('Authentication token is not available.');
     }
 
-    final uri = Uri.parse('${ApiConfig.appointmentUrl}/bydate/').replace(queryParameters: {'AppointmentDateFrom': appointmentDateFrom, 'AppointmentDateTo': appointmentDateTo});
+    final queryParameters = <String, String>{
+      if (appointmentDateTo == null) 'AppointmentDate': appointmentDate,
+      if (appointmentDateTo != null) ...{'AppointmentDateFrom': appointmentDate, 'AppointmentDateTo': appointmentDateTo},
+    };
+
+    if (appointmentStatusName?.trim().isNotEmpty ?? false) {
+      queryParameters['AppointmentStatusName'] = appointmentStatusName!.trim();
+    }
+
+    final uri = Uri.parse('${ApiConfig.appointmentUrl}/bydate/').replace(queryParameters: queryParameters);
 
     final response = await http.get(uri, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'});
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      final List<dynamic> appointmentListJson = data['appointments'];
+      final items = <dynamic>[];
+      final appointmentListJson = (data['appointments'] as List? ?? const []).whereType<Map>().map(Map<String, dynamic>.from);
 
-      return appointmentListJson.map((json) => Appointment.fromJson(json)).toList();
+      for (final item in appointmentListJson) {
+        switch ((item['Type'] ?? item['type'])?.toString().toLowerCase()) {
+          case 'appointment':
+            items.add(Appointment.fromJson(item));
+            break;
+          case 'task':
+            items.add(Task.fromJson(item));
+            break;
+        }
+      }
+
+      return items;
     } else {
       throw Exception('Failed to load appointments. Status code: ${response.statusCode}');
     }

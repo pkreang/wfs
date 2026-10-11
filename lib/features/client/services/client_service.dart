@@ -8,7 +8,7 @@ import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class ClientService {
-  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
 
   Future<List<Client>> fetchClients(Ref ref) async {
     final authState = ref.read(authProvider);
@@ -21,6 +21,24 @@ class ClientService {
         final list = map['clients'] as List? ?? const [];
 
         return list.map((e) => Client.fromJson(e as Map<String, dynamic>)).toList();
+      },
+      headers: {"Authorization": "Bearer $accessToken"},
+    );
+
+    return clients;
+  }
+
+  Future<List<Client>> fetchTaskClients(Ref ref) async {
+    final authState = ref.read(authProvider);
+    final accessToken = authState.accessToken;
+
+    final clients = await apiClient.get(
+      path: "/task/clients/active-lookup",
+      decode: (json) {
+        final map = json as Map<String, dynamic>;
+        final list = map['clients'] as List? ?? const [];
+
+        return list.map((e) => Client.fromTaskLookupJson(e as Map<String, dynamic>)).toList();
       },
       headers: {"Authorization": "Bearer $accessToken"},
     );
@@ -145,7 +163,7 @@ class ClientService {
     final authState = ref.read(authProvider);
     final accessToken = authState.accessToken;
 
-    final url = Uri.parse('https://sfe-api.appnormalthink.com/notification/');
+    final url = Uri.parse('https://sfe-api-test.appnormalthink.com/notification/');
 
     await http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'}, body: json.encode({'RefID': clientID, 'NotificationType': 'Client'}));
   }

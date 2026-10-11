@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/widgets/capsule_widget.dart';
 
 class AppointmentStatus extends StatelessWidget {
@@ -15,7 +16,7 @@ class AppointmentStatus extends StatelessWidget {
       'Completed': CapsuleStyle(Color(0xFF219653), Color.fromRGBO(36, 151, 86, 0.2)),
     };
 
-    final capsuleStyle = capsuleStyles[appointmentStatusName] ?? CapsuleStyle(Color(0xFFEEEEEE), Color(0xFFEEEEEE));
+    final capsuleStyle = capsuleStyles[appointmentStatusName] ?? CapsuleStyle(AppUtility.colorPrimary, Color(0xFFFFFFFF));
     return CapsuleWidget(label: appointmentStatusName, capsuleStyle: capsuleStyle);
   }
 }

@@ -35,6 +35,8 @@ class AppointmentDetail {
   final bool isActive;
   final String saleName;
   final List<Tag> tags;
+  final bool isShowIconCheckIn;
+  final bool isShowIconComplete;
 
   AppointmentDetail({
     required this.userID,
@@ -66,6 +68,8 @@ class AppointmentDetail {
     required this.isActive,
     required this.saleName,
     required this.tags,
+    this.isShowIconCheckIn = false,
+    this.isShowIconComplete = false,
   });
 
   factory AppointmentDetail.fromJson(Map<String, dynamic> json) => AppointmentDetail(
@@ -87,7 +91,7 @@ class AppointmentDetail {
     appointmentDateTimeFrom: json["AppointmentDateTimeFrom"],
     appointmentDateTimeTo: json["AppointmentDateTimeTo"],
     purposeOther: json["PurposeOther"] ?? '',
-    address: Address.fromJson((json["addresses"] as List).isNotEmpty ? json["addresses"][0] : null),
+    address: _addressFromJson(json["addresses"]),
     phone: json["Phone"] ?? '',
     email: json["Email"] ?? '',
     products: (json["products"] as List).map((e) => Product.fromJson(e)).toList(),
@@ -98,6 +102,8 @@ class AppointmentDetail {
     isActive: json["IsActive"],
     saleName: json["SaleName"] ?? '',
     tags: (json["tags"] as List? ?? []).map((e) => Tag.fromJson(e)).toList(),
+    isShowIconCheckIn: json['isShowIconCheckIn'] ?? false,
+    isShowIconComplete: json['isShowIconComplete'] ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -199,6 +205,8 @@ class AppointmentDetail {
     bool isClearPurposeOther = false,
     bool isRemoveCompany = false,
     bool isRemoveAddress = false,
+    bool? isShowIconCheckIn,
+    bool? isShowIconComplete,
   }) {
     return AppointmentDetail(
       userID: userID ?? this.userID,
@@ -232,8 +240,18 @@ class AppointmentDetail {
       isActive: isActive ?? this.isActive,
       saleName: saleName ?? this.saleName,
       tags: tags ?? this.tags,
+      isShowIconCheckIn: isShowIconCheckIn ?? this.isShowIconCheckIn,
+      isShowIconComplete: isShowIconComplete ?? this.isShowIconComplete,
     );
   }
+}
+
+Address _addressFromJson(Object? value) {
+  if (value is! List || value.isEmpty || value.first is! Map) {
+    return Address();
+  }
+
+  return Address.fromJson(Map<String, dynamic>.from(value.first as Map));
 }
 
 extension Status on String {

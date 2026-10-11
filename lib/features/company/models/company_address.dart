@@ -45,8 +45,8 @@ class CompanyAddress {
       districtID: json['DistrictID'] as int?,
       provinceID: json['ProvinceID'] as int?,
       countryID: json['CountryID'] as int?,
-      latitude: json['Latitude'],
-      longitude: json['Longitude'],
+      latitude: double.tryParse(json['Latitude']?.toString() ?? ''),
+      longitude: double.tryParse(json['Longitude']?.toString() ?? ''),
       isPrimary: (json['IsPrimary'] as bool?) ?? false,
       isActive: (json['IsActive'] as bool?) ?? false,
       subDistrictName: json['SubDistrictName'] as String?,
@@ -113,7 +113,9 @@ class CompanyAddress {
   //   },
   // ],
 
-  static List<CompanyAddress> listFromJson(List<dynamic> jsonList) => jsonList.map((e) => CompanyAddress.fromJson(e as Map<String, dynamic>)).toList();
+  static List<CompanyAddress> listFromJson(List<dynamic> jsonList) => jsonList
+      .map((e) => CompanyAddress.fromJson(e as Map<String, dynamic>))
+      .toList();
 
   // Address copyWith({
   //   Object? latitude = _noValue,
@@ -166,10 +168,14 @@ class CompanyAddress {
     Object? postCode = _noValue,
   }) {
     return CompanyAddress(
-      companyAddressID: companyAddressID == _noValue ? this.companyAddressID : companyAddressID as String?,
+      companyAddressID: companyAddressID == _noValue
+          ? this.companyAddressID
+          : companyAddressID as String?,
       companyID: companyID == _noValue ? this.companyID : companyID as String?,
       address: address == _noValue ? this.address : address as String?,
-      subDistrictID: subDistrictID == _noValue ? this.subDistrictID : subDistrictID as int?,
+      subDistrictID: subDistrictID == _noValue
+          ? this.subDistrictID
+          : subDistrictID as int?,
       districtID: districtID == _noValue ? this.districtID : districtID as int?,
       provinceID: provinceID == _noValue ? this.provinceID : provinceID as int?,
       countryID: countryID == _noValue ? this.countryID : countryID as int?,
@@ -177,10 +183,18 @@ class CompanyAddress {
       longitude: longitude == _noValue ? this.longitude : longitude as double?,
       isPrimary: isPrimary == _noValue ? this.isPrimary : isPrimary as bool,
       isActive: isActive == _noValue ? this.isActive : isActive as bool,
-      subDistrictName: subDistrictName == _noValue ? this.subDistrictName : subDistrictName as String?,
-      districtName: districtName == _noValue ? this.districtName : districtName as String?,
-      provinceName: provinceName == _noValue ? this.provinceName : provinceName as String?,
-      countryName: countryName == _noValue ? this.countryName : countryName as String?,
+      subDistrictName: subDistrictName == _noValue
+          ? this.subDistrictName
+          : subDistrictName as String?,
+      districtName: districtName == _noValue
+          ? this.districtName
+          : districtName as String?,
+      provinceName: provinceName == _noValue
+          ? this.provinceName
+          : provinceName as String?,
+      countryName: countryName == _noValue
+          ? this.countryName
+          : countryName as String?,
       postCode: postCode == _noValue ? this.postCode : postCode as String?,
     );
   }
@@ -190,7 +204,14 @@ class CompanyAddress {
 
 extension AddressFormatter on CompanyAddress {
   String get fullAddress {
-    final parts = [address, subDistrictName, districtName, provinceName, postCode, countryName].where((e) => (e ?? '').isNotEmpty).join(' ');
+    final parts = [
+      address,
+      subDistrictName,
+      districtName,
+      provinceName,
+      postCode,
+      countryName,
+    ].where((e) => (e ?? '').isNotEmpty).join(' ');
     return parts;
   }
 }

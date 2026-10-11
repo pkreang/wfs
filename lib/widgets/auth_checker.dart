@@ -5,9 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/models/user_model.dart';
+import 'package:wfs/features/phase3/lead_workflow/views/lead_workflow_page.dart';
 import 'package:wfs/screens/navigation_screen.dart';
 import 'package:wfs/features/pin/views/pin_code_screen.dart';
 import 'package:wfs/features/pin/viewmodels/pin_viewmodel.dart';
+import 'package:wfs/screens/phase2.dart';
+import 'package:wfs/screens/phase3.dart';
 import '../providers/auth_provider.dart';
 import '../screens/login_screen.dart';
 
@@ -83,7 +86,7 @@ class AuthChecker extends ConsumerWidget {
         }
 
         if (authState.isAuthenticated && (authState.pincode ?? '').isNotEmpty) {
-          return const NavigationScreen();
+          return const Phase2Screen();
         }
 
         if ((user?.pincode ?? '').isNotEmpty) {
@@ -92,7 +95,7 @@ class AuthChecker extends ConsumerWidget {
             title: 'กรอก PIN ของคุณ',
             subtitle: 'กรอก PIN 6 หลัก เพื่อเข้าถึงแอปพลิเคชัน',
             onSuccess: () {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const NavigationScreen()));
+              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const Phase2Screen()));
             },
           );
         }
@@ -103,7 +106,7 @@ class AuthChecker extends ConsumerWidget {
             title: 'สร้าง PIN ของคุณ',
             subtitle: 'ตั้งค่า PIN 6 หลัก เพื่อความปลอดภัย',
             onSuccess: () {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const NavigationScreen()));
+              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const Phase2Screen()));
             },
           );
         }

@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:intl/intl.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
-import 'package:wfs/providers/date_picker_provider.dart';
+import 'package:wfs/features/task/models/task.dart';
+import 'package:wfs/providers/dashboard_filter_provider.dart';
 import '../services/appointment_service.dart';
 import 'auth_provider.dart';
 import '../models/appointment_summary_model.dart';
@@ -11,15 +12,14 @@ final appointmentServiceProvider2 = Provider<AppointmentService>((ref) {
   return AppointmentService();
 });
 
-final appointmentsProvider = FutureProvider.autoDispose.family<List<Appointment>, DateTime>((ref, date) async {
+final appointmentsProvider = FutureProvider.autoDispose.family<List<dynamic>, DateTime>((ref, date) async {
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 
-  // ใช้ watch แทน read เพื่อให้ฟังการเปลี่ยนแปลง
-  final selectedRange = ref.watch(selectedDateRangeProvider);
+  final filter = ref.watch(dashboardAppliedFilterProvider);
 
-  final formattedStartDate = DateFormat('yyyy-MM-dd').format(selectedRange.start);
-  final formattedEndDate = selectedRange.end != null ? DateFormat('yyyy-MM-dd').format(selectedRange.end!) : formattedStartDate;
+  final formattedStartDate = DateFormat('yyyy-MM-dd').format(filter.startDate);
+  final formattedEndDate = filter.endDate != null ? DateFormat('yyyy-MM-dd').format(filter.endDate!) : formattedStartDate;
 
   if (accessToken == null || accessToken.isEmpty) {
     throw Exception('User is not authenticated.');
@@ -27,24 +27,37 @@ final appointmentsProvider = FutureProvider.autoDispose.family<List<Appointment>
 
   final appointmentService = ref.read(appointmentServiceProvider2);
 
+  final appointments = await appointmentService.fetchAppointments(
+    accessToken,
+    formattedStartDate,
+    appointmentDateTo: formattedEndDate,
+    appointmentStatusName: filter.status == 'all' ? null : filter.status,
+  );
+
   const statusOrder = <String, int>{'Scheduled': 0, 'Completed': 1, 'Canceled': 2};
-
-  final appointments = await appointmentService.fetchAppointments(accessToken, authState.userID!, formattedStartDate, formattedEndDate);
-
-  final sorted = [...appointments];
-  sorted.sort((a, b) {
-    final ra = statusOrder[(a.appointmentStatusName ?? '').trim()] ?? 999;
-    final rb = statusOrder[(b.appointmentStatusName ?? '').trim()] ?? 999;
+  final rows = [...appointments];
+  rows.sort((a, b) {
+    final ra = statusOrder[_statusNameOf(a).trim()] ?? 999;
+    final rb = statusOrder[_statusNameOf(b).trim()] ?? 999;
     if (ra != rb) return ra - rb;
 
-    final sa = (a.appointmentTimeFrom ?? a.appointmentDateTimeFrom.toIso8601String()).trim();
-    final sb = (b.appointmentTimeFrom ?? b.appointmentDateTimeFrom.toIso8601String()).trim();
-
-    return sa.compareTo(sb);
+    return _startDateOf(a).compareTo(_startDateOf(b));
   });
 
-  return sorted;
+  return rows;
 });
+
+String _statusNameOf(Object row) {
+  if (row is Appointment) return row.appointmentStatusName ?? '';
+  if (row is Task) return row.appointmentStatusName ?? '';
+  return '';
+}
+
+DateTime _startDateOf(Object row) {
+  if (row is Appointment) return row.appointmentDateTimeFrom;
+  if (row is Task) return row.appointmentDateTimeFrom ?? row.scheduledStartDate;
+  return DateTime.fromMillisecondsSinceEpoch(0);
+}
 
 // final appointmentGetByIdProvider = FutureProvider.autoDispose.family<Appointment, String>((ref, guid) async {
 //   final authState = ref.watch(authProvider);
@@ -77,10 +90,10 @@ final appointmentSummaryProvider = FutureProvider.autoDispose.family<Appointment
   final authState = ref.watch(authProvider);
   final accessToken = authState.accessToken;
 
-  final selectedRange = ref.watch(selectedDateRangeProvider);
+  final selectedRange = ref.watch(dashboardAppliedFilterProvider);
 
-  final formattedStartDate = DateFormat('yyyy-MM-dd').format(selectedRange.start);
-  final formattedEndDate = selectedRange.end != null ? DateFormat('yyyy-MM-dd').format(selectedRange.end!) : formattedStartDate;
+  final formattedStartDate = DateFormat('yyyy-MM-dd').format(selectedRange.startDate);
+  final formattedEndDate = selectedRange.endDate != null ? DateFormat('yyyy-MM-dd').format(selectedRange.endDate!) : formattedStartDate;
 
   if (accessToken == null || accessToken.isEmpty) {
     throw Exception('User is not authenticated.');

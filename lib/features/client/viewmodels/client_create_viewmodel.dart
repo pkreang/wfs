@@ -122,6 +122,14 @@ class ClientCreateViewModel extends StateNotifier<ClientCreateState> {
     state = state.copyWith(data: state.data.whenData((v) => v.copyWith(availableTimeEnd: DateFormat('HH:mm').format(updated))), isDirty: true, clearErrorMessage: true);
   }
 
+  void setCloseProbability(String value) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(closeProbability: int.tryParse(value))), isDirty: true);
+  }
+
+  void setBudget(String value) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(budget: double.tryParse(value))), isDirty: true);
+  }
+
   void setCompany(Company company) {
     state = state.copyWith(
       data: state.data.whenData((v) {
@@ -140,6 +148,22 @@ class ClientCreateViewModel extends StateNotifier<ClientCreateState> {
       }),
       isDirty: true,
     );
+  }
+
+  void setJobTitle(String jobTitle) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(jobTitle: jobTitle)), isDirty: true);
+  }
+
+  void setLineID(String lineID) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(lineID: lineID)), isDirty: true);
+  }
+
+  void setReportLine(String reportLine) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(reportLine: reportLine)), isDirty: true);
+  }
+
+  void setNoOfSubordinate(int? noOfSubordinate) {
+    state = state.copyWith(data: state.data.whenData((v) => v.copyWith(noOfSubordinate: noOfSubordinate)), isDirty: true);
   }
 
   void setSales(User sale) {

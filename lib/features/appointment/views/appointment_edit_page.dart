@@ -289,9 +289,13 @@ class _AppointmentEditPageState extends ConsumerState<AppointmentEditPage> {
             ),
             body: state.data.when(
               loading: () => const Center(child: CircularProgressIndicator(color: colorPrimary)),
-              error: (e, _) => Center(
-                child: AppText(label: "Appointment Not Found", textColor: Colors.red),
-              ),
+              error: (e, stackTrace) {
+                debugPrint('AppointmentEditPage (${widget.appointmentID}): $e');
+                debugPrintStack(stackTrace: stackTrace);
+                return Center(
+                  child: AppText(label: "Unable to load appointment", textColor: Colors.red),
+                );
+              },
               data: (detail) => buildContent(detail, state.companies),
             ),
           ),

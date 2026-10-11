@@ -9,7 +9,8 @@ class AppTextFormField extends StatelessWidget {
   final bool isValidate;
   final String? Function(String?)? validator;
   final String? requiredMessage;
-  final int maxLines;
+  final int? maxLines;
+  final int? minLines;
   final bool enabled;
   final AutovalidateMode? autovalidateMode;
   final TextStyle? textStyle;
@@ -24,6 +25,8 @@ class AppTextFormField extends StatelessWidget {
   final EdgeInsetsGeometry? contentPadding;
   final ValueChanged<String>? onFieldSubmitted;
   final List<TextInputFormatter>? inputFormatters;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
 
   const AppTextFormField({
     super.key,
@@ -34,6 +37,7 @@ class AppTextFormField extends StatelessWidget {
     this.validator,
     this.requiredMessage,
     this.maxLines = 1,
+    this.minLines,
     this.enabled = true,
     this.autovalidateMode,
     this.textStyle,
@@ -48,6 +52,8 @@ class AppTextFormField extends StatelessWidget {
     this.contentPadding,
     this.onFieldSubmitted,
     this.inputFormatters,
+    this.keyboardType,
+    this.textInputAction,
   });
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -82,10 +88,29 @@ class AppTextFormField extends StatelessWidget {
       obscureText: obscureText,
       validator: effectiveValidator,
       maxLines: maxLines,
+      minLines: minLines,
       enabled: enabled,
       autovalidateMode: autovalidateMode,
-      keyboardType: isNumberOnly ? (allowDecimal ? const TextInputType.numberWithOptions(decimal: true, signed: false) : TextInputType.number) : TextInputType.text,
-      inputFormatters: inputFormatters ?? (isNumberOnly ? [allowDecimal ? _SingleDotDecimalTextInputFormatter() : FilteringTextInputFormatter.digitsOnly] : null),
+      textInputAction: textInputAction,
+      keyboardType:
+          keyboardType ??
+          (isNumberOnly
+              ? (allowDecimal
+                    ? const TextInputType.numberWithOptions(
+                        decimal: true,
+                        signed: false,
+                      )
+                    : TextInputType.number)
+              : TextInputType.text),
+      inputFormatters:
+          inputFormatters ??
+          (isNumberOnly
+              ? [
+                  allowDecimal
+                      ? _SingleDotDecimalTextInputFormatter()
+                      : FilteringTextInputFormatter.digitsOnly,
+                ]
+              : null),
       cursorColor: const Color(0xFF007AFF),
       decoration: InputDecoration(
         hint: AppText(label: hintText ?? '', textColor: Colors.grey.shade400),
@@ -93,8 +118,12 @@ class AppTextFormField extends StatelessWidget {
         suffixIcon: suffixIcon,
         contentPadding: contentPadding,
         border: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
-        enabledBorder: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
-        focusedBorder: isShowBorder ? _border(Colors.grey.shade400) : InputBorder.none,
+        enabledBorder: isShowBorder
+            ? _border(Colors.grey.shade400)
+            : InputBorder.none,
+        focusedBorder: isShowBorder
+            ? _border(Colors.grey.shade400)
+            : InputBorder.none,
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
         disabledBorder: InputBorder.none,
@@ -111,7 +140,10 @@ class AlwaysDisabledFocusNode extends FocusNode {
 
 class _SingleDotDecimalTextInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final text = newValue.text;
     if (text.isEmpty) return newValue;
 

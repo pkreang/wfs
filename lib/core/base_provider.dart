@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wfs/features/appointment/models/appointment.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
 import 'package:wfs/features/appointment/models/appointment_status.dart';
 import 'package:wfs/features/appointment/models/appointment_type.dart';
@@ -27,12 +26,41 @@ import 'package:wfs/features/company/viewmodels/company_create_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_edit_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_detail_viewmodel.dart';
 import 'package:wfs/features/company/viewmodels/company_list_viewmodel.dart';
+import 'package:wfs/features/lead/models/lead_status.dart';
+import 'package:wfs/features/lead/services/lead_service.dart';
+import 'package:wfs/features/lead/viewmodels/lead_create_viewmodel.dart';
+import 'package:wfs/features/lead/viewmodels/lead_detail_viewmodel.dart';
+import 'package:wfs/features/lead/viewmodels/lead_edit_viewmodel.dart';
+import 'package:wfs/features/lead/viewmodels/lead_list_viewmodel.dart';
+import 'package:wfs/features/leaddashboard2/services/lead_dashboard2_service.dart';
+import 'package:wfs/features/leaddashboard2/providers/lead_dashboard2_date_range_provider.dart';
+import 'package:wfs/features/leaddashboard2/viewmodels/lead_dashboard2_viewmodel.dart';
+import 'package:wfs/features/phase3/lead_workflow/models/lead_workflow_model.dart';
+import 'package:wfs/features/phase3/lead_workflow/repositories/lead_workflow_repository.dart';
+import 'package:wfs/features/phase3/lead_workflow/services/lead_workflow_service.dart';
+import 'package:wfs/features/salepepeline/viewmodels/sales_pipeline_viewmodel.dart';
+import 'package:wfs/features/salesconversionfunnel/services/sales_conversion_funnel_service.dart';
+import 'package:wfs/features/salesconversionfunnel/viewmodels/sales_conversion_funnel_viewmodel.dart';
 import 'package:wfs/features/tag/services/tag_service.dart';
 import 'package:wfs/features/sales/services/sales_service.dart';
 import 'package:wfs/features/sales/viewmodels/sales_list_viewmodel.dart';
 import 'package:wfs/features/sales/viewmodels/sales_create_viewmodel.dart';
 import 'package:wfs/features/sales/viewmodels/sales_detail_viewmodel.dart';
 import 'package:wfs/features/sales/viewmodels/sales_edit_viewmodel.dart';
+import 'package:wfs/features/survey/models/survey_model.dart';
+import 'package:wfs/features/survey/models/survey_recipient.dart';
+import 'package:wfs/features/survey/models/survey_recipient_filter.dart';
+import 'package:wfs/features/survey/models/survey_dashboard_model.dart';
+import 'package:wfs/features/survey/services/survey_dashboard_service.dart';
+import 'package:wfs/features/survey/services/survey_service.dart';
+import 'package:wfs/features/survey/viewmodels/survey_dashboard_viewmodel.dart';
+import 'package:wfs/features/survey/viewmodels/survey_list_viewmodel.dart';
+import 'package:wfs/features/task/services/task_service.dart';
+import 'package:wfs/features/task/models/task_appointment_type.dart';
+import 'package:wfs/features/task/models/task_purpose.dart';
+import 'package:wfs/features/task/viewmodels/task_create_viewmodel.dart';
+import 'package:wfs/features/task/viewmodels/task_detail_viewmodel.dart';
+import 'package:wfs/features/task/viewmodels/task_list_viewmodel.dart';
 import 'package:wfs/features/territory/models/territory_model.dart';
 import 'package:wfs/features/territory/services/territory_service.dart';
 import 'package:wfs/features/territory/viewmodels/territory_create_viewmodel.dart';
@@ -62,12 +90,12 @@ final selectedDateProvider = NotifierProvider<SelectedDateViewModel, DateTime>(S
 final appointmentMarkDateProvider = StateNotifierProvider.autoDispose.family<AppointmentMarkDateViewModel, AsyncValue<Map<String, bool>>, DateTime>(
   (ref, date) => AppointmentMarkDateViewModel(ref, date),
 );
-final appointmentsByDateProvider = StateNotifierProvider.autoDispose.family<AppointmentsByDateViewModel, AsyncValue<List<Appointment>>, String>((ref, date) => AppointmentsByDateViewModel(ref, date));
+final appointmentsByDateProvider = StateNotifierProvider.autoDispose.family<AppointmentsByDateViewModel, AsyncValue<List<dynamic>>, String>((ref, date) => AppointmentsByDateViewModel(ref, date));
 
 final companiesOfClentProvider = StateProvider<List<Company>>((ref) => []);
 
-final appointmentCreateProvider = StateNotifierProvider.autoDispose.family<AppointmentCreateViewModel, AppointmentCreateState, String>((ref, id) {
-  return AppointmentCreateViewModel(ref, id);
+final appointmentCreateProvider = StateNotifierProvider.autoDispose.family<AppointmentCreateViewModel, AppointmentCreateState, ({String id, String clientType})>((ref, params) {
+  return AppointmentCreateViewModel(ref, params.id, params.clientType);
 });
 final appointmentDetailProvider = StateNotifierProvider.autoDispose.family<AppointmentDetailViewModel, AsyncValue<AppointmentDetail>, String>((ref, id) {
   return AppointmentDetailViewModel(ref, id);
@@ -198,8 +226,121 @@ final clientStatusProvider = FutureProvider.autoDispose<List<ClientStatus>>((ref
   return await ref.read(clientServiceProvider).fetchClientStatus(ref);
 });
 
+final clientsProvider = FutureProvider.autoDispose<List<Client>>((ref) async {
+  return await ref.read(clientServiceProvider).fetchClients(ref);
+});
+
+final clientForLeadProvider = FutureProvider.autoDispose<List<Client>>((ref) async {
+  return await ref.read(clientServiceProvider).fetchTaskClients(ref);
+});
+
 final clientLevelProvider = FutureProvider.autoDispose<List<ClientLevel>>((ref) async {
   return await ref.read(clientServiceProvider).fetchClientLevel(ref);
+});
+
+//* Lead
+final leadServiceProvider = Provider<LeadService>((ref) => LeadService());
+
+final leadListProvider = StateNotifierProvider.autoDispose<LeadListViewModel, LeadListState>((ref) {
+  final service = ref.read(leadServiceProvider);
+  return LeadListViewModel(ref, service: service);
+});
+
+final leadCreateProvider = StateNotifierProvider.autoDispose<LeadCreateViewModel, LeadCreateState>((ref) {
+  return LeadCreateViewModel(ref);
+});
+
+final leadDetailProvider = StateNotifierProvider.autoDispose.family<LeadDetailViewModel, LeadDetailState, String>((ref, id) {
+  final workflowService = ref.read(leadWorkflowServiceProvider);
+  return LeadDetailViewModel(ref, id, workflowService: workflowService);
+});
+
+final leadEditProvider = StateNotifierProvider.autoDispose.family<LeadEditViewModel, LeadEditState, String>((ref, id) {
+  return LeadEditViewModel(ref, id);
+});
+
+final leadStatusProvider = FutureProvider.autoDispose<List<LeadStatus>>((ref) async {
+  return await ref.read(leadServiceProvider).fetchLeadStatus(ref);
+});
+
+//* Lead Workflow
+final leadWorkflowServiceProvider = Provider<LeadWorkflowService>((ref) => LeadWorkflowService());
+
+final leadWorkflowRepositoryProvider = StateNotifierProvider.autoDispose<LeadWorkflowRepository, LeadWorkflowRepositoryState>((ref) {
+  return LeadWorkflowRepository(ref: ref, service: ref.read(leadWorkflowServiceProvider));
+});
+
+final leadWorkflowProvider = FutureProvider.autoDispose<LeadWorkflowModel>((ref) async {
+  return await ref.read(leadWorkflowServiceProvider).getDefaultWorkflow(ref);
+});
+
+//* Sales Pipeline
+final salesPipelineProvider = StateNotifierProvider.autoDispose<SalesPipelineViewModel, SalesPipelineState>((ref) {
+  final service = ref.read(leadServiceProvider);
+  final workflowService = ref.read(leadWorkflowServiceProvider);
+  return SalesPipelineViewModel(ref, service: service, workflowService: workflowService);
+});
+
+//* Sales Conversion Funnel
+final salesConversionFunnelServiceProvider = Provider<SalesConversionFunnelService>((ref) {
+  return SalesConversionFunnelService();
+});
+
+final salesConversionFunnelProvider = StateNotifierProvider.autoDispose<SalesConversionFunnelViewModel, SalesConversionFunnelState>((ref) {
+  return SalesConversionFunnelViewModel(ref, leadService: ref.read(leadServiceProvider), funnelService: ref.read(salesConversionFunnelServiceProvider));
+});
+
+//* Task
+final taskServiceProvider = Provider<TaskService>((ref) => TaskService());
+
+final taskListProvider = StateNotifierProvider.autoDispose<TaskListViewModel, TaskListState>((ref) {
+  final service = ref.read(taskServiceProvider);
+  return TaskListViewModel(ref, service: service);
+});
+
+final taskCreateProvider = StateNotifierProvider.autoDispose.family<TaskCreateViewModel, TaskCreateState, ({String? clientID, String clientType})>((ref, params) {
+  return TaskCreateViewModel(ref, params.clientID, params.clientType);
+});
+
+final taskDetailProvider = StateNotifierProvider.autoDispose.family<TaskDetailViewModel, TaskDetailState, String>((ref, id) {
+  return TaskDetailViewModel(ref, id);
+});
+
+final taskTypeProvider = FutureProvider.autoDispose<List<TaskAppointmentType>>((ref) async {
+  return ref.read(taskServiceProvider).fetchTaskTypes(ref);
+});
+
+final taskPurposeProvider = FutureProvider.autoDispose<List<TaskPurpose>>((ref) async {
+  return ref.read(taskServiceProvider).fetchTaskPurposes(ref);
+});
+
+//* Survey
+final surveyServiceProvider = Provider<SurveyService>((ref) => SurveyService());
+
+final surveyDashboardServiceProvider = Provider<SurveyDashboardService>((ref) => SurveyDashboardService());
+
+final surveyListProvider = StateNotifierProvider.autoDispose<SurveyListViewModel, SurveyListState>((ref) {
+  return SurveyListViewModel(ref, service: ref.read(surveyServiceProvider));
+});
+
+final surveyDetailProvider = FutureProvider.autoDispose.family<Survey, String>((ref, id) async {
+  return ref.read(surveyServiceProvider).getSurveyById(ref, id);
+});
+
+final surveyRecipientAnswerProvider = FutureProvider.autoDispose.family<SurveyResponse, String>((ref, surveyResponseID) async {
+  return ref.read(surveyServiceProvider).getResponseById(ref, surveyResponseID);
+});
+
+final surveyRecipientListProvider = FutureProvider.autoDispose.family<List<SurveyRecipient>, ({String surveyTemplateID, String sText, SurveyRecipientFilter filter})>((ref, params) {
+  return ref.watch(surveyServiceProvider).searchAnswers(ref, params.surveyTemplateID, sText: params.sText, filter: params.filter);
+});
+
+final surveyByRefCodeProvider = FutureProvider.autoDispose.family<Survey, String>((ref, refCode) async {
+  return ref.read(surveyServiceProvider).getSurveyByRefCode(ref, refCode);
+});
+
+final surveyDashboardProvider = StateNotifierProvider.autoDispose.family<SurveyDashboardViewModel, SurveyDashboardState, String>((ref, surveyID) {
+  return SurveyDashboardViewModel(ref, surveyID, service: ref.read(surveyDashboardServiceProvider));
 });
 
 //* Company
@@ -219,6 +360,14 @@ final companyDetailProvider = StateNotifierProvider.autoDispose.family<CompanyDe
 
 final companyEditProvider = StateNotifierProvider.autoDispose.family<CompanyEditViewModel, CompanyEditState, String>((ref, id) {
   return CompanyEditViewModel(ref, id);
+});
+
+//* Lead Dashboard 2
+final leadDashboard2ServiceProvider = Provider<LeadDashboard2Service>((ref) => LeadDashboard2Service());
+
+final leadDashboard2Provider = StateNotifierProvider.autoDispose<LeadDashboard2ViewModel, LeadDashboard2State>((ref) {
+  final selectedRange = ref.watch(leadDashboard2SelectedDateRangeProvider);
+  return LeadDashboard2ViewModel(ref, selectedRange);
 });
 
 //* Sales

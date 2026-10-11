@@ -5,10 +5,14 @@ import 'package:wfs/features/appointment/models/appointment_type.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
 import 'package:wfs/features/appointment/models/territory.dart';
 import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
+import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/models/client_level.dart';
 import 'package:wfs/features/client/models/client_status.dart';
 import 'package:wfs/features/company/models/company.dart';
 import 'package:wfs/features/company/models/company_status.dart';
+import 'package:wfs/features/lead/models/lead_status.dart';
+import 'package:wfs/features/task/models/task_appointment_type.dart';
+import 'package:wfs/features/task/models/task_purpose.dart';
 import 'package:wfs/models/district_model.dart';
 import 'package:wfs/models/province_model.dart';
 import 'package:wfs/models/subdistrict_model.dart';
@@ -17,6 +21,44 @@ import 'package:wfs/models/userrole_model.dart';
 import 'package:wfs/providers/district_provider.dart';
 import 'package:wfs/providers/province_provider.dart';
 import 'package:wfs/providers/subdistrict_provider.dart';
+
+class AppSheetTaskType {
+  AppSheetTaskType._();
+
+  static Future<void> show({required BuildContext context, required String appointmentTypeID, required void Function(TaskAppointmentType) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<TaskAppointmentType>(
+      context: context,
+      title: 'Task Type',
+      provider: taskTypeProvider,
+      label: (type) => type.appointmentTypeName,
+      initialKey: (type) => type.appointmentTypeID,
+      initialValue: appointmentTypeID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+}
+
+class AppSheetTaskPurpose {
+  AppSheetTaskPurpose._();
+
+  static Future<void> show({required BuildContext context, required String purposeTypeID, required void Function(TaskPurpose) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<TaskPurpose>(
+      context: context,
+      title: 'Task Purpose',
+      provider: taskPurposeProvider,
+      label: (purpose) => purpose.purposeTypeName,
+      initialKey: (purpose) => purpose.purposeTypeID,
+      initialValue: purposeTypeID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+}
 
 class AppSheet {
   static Future<void> openMeetingSheet({required BuildContext context, required String appointmentTypeID, required void Function(AppointmentType) onSelected}) async {
@@ -27,6 +69,40 @@ class AppSheet {
       label: (p) => p.appointmentTypeName,
       initialKey: (p) => p.appointmentTypeID,
       initialValue: appointmentTypeID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openAppointmnetPurposeSheet({required BuildContext context, required String purposeTypeID, required void Function(Purpose) onSelected}) async {
+    final items = [
+      Purpose(purposeTypeID: 'Initial Meeting', purposeTypeName: 'Initial Meeting'),
+      Purpose(purposeTypeID: 'Requirement Gathering', purposeTypeName: 'Requirement Gathering'),
+      Purpose(purposeTypeID: 'Business Discussion', purposeTypeName: 'Business Discussion'),
+      Purpose(purposeTypeID: 'Technical Discussion', purposeTypeName: 'Technical Discussion'),
+      Purpose(purposeTypeID: 'Presentation / Demo', purposeTypeName: 'Presentation / Demo'),
+      Purpose(purposeTypeID: 'Proposal Discussion', purposeTypeName: 'Proposal Discussion'),
+      Purpose(purposeTypeID: 'Quotation / Negotiation', purposeTypeName: 'Quotation / Negotiation'),
+      Purpose(purposeTypeID: 'Follow-up Meeting', purposeTypeName: 'Follow-up Meeting'),
+      Purpose(purposeTypeID: 'Candidate Screening', purposeTypeName: 'Candidate Screening'),
+      Purpose(purposeTypeID: 'Candidate Interview', purposeTypeName: 'Candidate Interview'),
+      Purpose(purposeTypeID: 'Candidate Discussion', purposeTypeName: 'Candidate Discussion'),
+      Purpose(purposeTypeID: 'Candidate Follow-up', purposeTypeName: 'Candidate Follow-up'),
+      Purpose(purposeTypeID: 'Site Visit', purposeTypeName: 'Site Visit'),
+      Purpose(purposeTypeID: 'Contract Discussion', purposeTypeName: 'Contract Discussion'),
+      Purpose(purposeTypeID: 'Relationship Management', purposeTypeName: 'Relationship Management'),
+      Purpose(purposeTypeID: 'Other', purposeTypeName: 'Other'),
+    ];
+
+    final selected = await CupertinoOptionsPicker.showWithData<Purpose, String>(
+      context: context,
+      title: 'Purpose',
+      items: items,
+      label: (p) => p.purposeTypeName,
+      initialKey: (p) => p.purposeTypeID,
+      initialValue: purposeTypeID,
     );
 
     if (selected == null) return;
@@ -184,6 +260,21 @@ class AppSheet {
     onSelected(selected);
   }
 
+  static Future<void> openClientSheet({required BuildContext context, required String clientID, required void Function(Client) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<Client>(
+      context: context,
+      title: 'Client',
+      provider: clientForLeadProvider,
+      label: (p) => '${p.firstName ?? ''} ${p.lastName ?? ''}'.trim(),
+      initialKey: (p) => p.clientID ?? '',
+      initialValue: clientID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
   static Future<void> openClientLevelSheet({required BuildContext context, required String clientLevelID, required void Function(ClientLevel) onSelected}) async {
     final selected = await CupertinoOptionsPicker.show<ClientLevel>(
       context: context,
@@ -193,6 +284,48 @@ class AppSheet {
       initialKey: (p) => p.clientLevelID,
       initialValue: clientLevelID,
     );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openLeadStatusSheet({required BuildContext context, required String leadStatusID, required void Function(LeadStatus) onSelected}) async {
+    final selected = await CupertinoOptionsPicker.show<LeadStatus>(
+      context: context,
+      title: 'Status',
+      provider: leadStatusProvider,
+      label: (p) => p.leadStatusName,
+      initialKey: (p) => p.leadStatusID,
+      initialValue: leadStatusID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openLeadQualificationSheet({required BuildContext context, required String leadStatusID, required void Function(LeadStatus) onSelected}) async {
+    const items = [LeadStatus(leadStatusID: 'Qualify', leadStatusName: 'Qualify'), LeadStatus(leadStatusID: 'UnQualify', leadStatusName: 'UnQualify')];
+
+    final selected = await CupertinoOptionsPicker.showWithData<LeadStatus, String>(
+      context: context,
+      title: 'Status',
+      items: items,
+      label: (p) => p.leadStatusName,
+      initialKey: (p) => p.leadStatusID,
+      initialValue: leadStatusID,
+    );
+
+    if (selected == null) return;
+
+    onSelected(selected);
+  }
+
+  static Future<void> openCloseDealSheet({required BuildContext context, required void Function(String) onSelected}) async {
+    const items = ['Yes, Close Won', 'No, Close Lost'];
+
+    final selected = await CupertinoOptionsPicker.showWithData<String, String>(context: context, title: 'Close Deal', items: items, label: (p) => p, initialKey: (p) => p, initialValue: items.first);
 
     if (selected == null) return;
 

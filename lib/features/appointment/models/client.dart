@@ -46,23 +46,33 @@ class Client {
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
+    final companies = json['companies'];
+
     return Client(
-      clientID: json['ClientID'],
-      clientLevelID: json['ClientLevelID'],
-      clientLevelName: json['ClientLevelName'] ?? '',
-      clientStatusID: json['ClientStatusID'],
-      clientStatusName: json['ClientStatusName'] ?? '',
-      firstName: json['FirstName'],
-      lastName: json['LastName'],
-      noted: json['Noted'],
-      phone: json['Phone'],
-      email: json['Email'],
-      availableTimeStart: (json['AvailableTimeStart'] ?? "").toString().toHHmm(),
+      clientID: (json['ClientID'] ?? '').toString(),
+      clientLevelID: (json['ClientLevelID'] ?? '').toString(),
+      clientLevelName: (json['ClientLevelName'] ?? '').toString(),
+      clientStatusID: (json['ClientStatusID'] ?? '').toString(),
+      clientStatusName: (json['ClientStatusName'] ?? '').toString(),
+      firstName: (json['FirstName'] ?? '').toString(),
+      lastName: (json['LastName'] ?? '').toString(),
+      noted: json['Noted']?.toString(),
+      phone: (json['Phone'] ?? '').toString(),
+      email: (json['Email'] ?? '').toString(),
+      availableTimeStart: (json['AvailableTimeStart'] ?? "")
+          .toString()
+          .toHHmm(),
       availableTimeEnd: (json['AvailableTimeEnd'] ?? "").toString().toHHmm(),
-      salesTerritory: (json['SalesTerritory'] != null) ? SalesTerritory.fromJson(json['SalesTerritory'] as Map<String, dynamic>) : null,
-      salesTerritoryID: json['SalesTerritoryID'],
-      salesTerritoryName: json['SalesTerritoryName'],
-      companies: ClientCompany.listFromJson(json['companies'] ?? []),
+      salesTerritory: (json['SalesTerritory'] != null)
+          ? SalesTerritory.fromJson(
+              json['SalesTerritory'] as Map<String, dynamic>,
+            )
+          : null,
+      salesTerritoryID: json['SalesTerritoryID']?.toString(),
+      salesTerritoryName: json['SalesTerritoryName']?.toString(),
+      companies: companies is List
+          ? ClientCompany.listFromJson(companies)
+          : const [],
     );
   }
 

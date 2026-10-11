@@ -12,6 +12,7 @@ class FormInfoTile extends StatelessWidget {
   final bool isShowBorderMiddle;
   final bool isShowBorderBottom;
   final bool isHideIcon;
+  final bool isAlignLeft;
 
   const FormInfoTile({
     required this.label,
@@ -23,6 +24,7 @@ class FormInfoTile extends StatelessWidget {
     this.isShowBorderMiddle = true,
     this.isShowBorderBottom = false,
     this.isHideIcon = false,
+    this.isAlignLeft = false,
     super.key,
   });
 
@@ -31,7 +33,10 @@ class FormInfoTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: height,
+        // `height` is a minimum, rather than a fixed constraint.  This keeps
+        // the compact 44px rows at the default text scale while allowing the
+        // row to grow when Accessibility text scaling makes its child taller.
+        constraints: BoxConstraints(minHeight: height),
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
           border: Border(top: isHideBorderTop ? BorderSide.none : AppUtility.borderSide, bottom: isShowBorderBottom ? AppUtility.borderSide : BorderSide.none),

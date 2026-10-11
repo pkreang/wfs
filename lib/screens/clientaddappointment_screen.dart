@@ -4,6 +4,7 @@ import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/widgets/client_list_item.dart';
+import 'package:wfs/features/task/views/task_create_page.dart';
 // import 'package:wfs/models/client_model.dart';
 // import 'package:wfs/providers/client_provider.dart';
 import 'package:wfs/features/appointment/views/appointment_create_page.dart';
@@ -102,11 +103,15 @@ import 'package:wfs/features/appointment/views/appointment_create_page.dart';
 
 // เพิ่มฟังก์ชันสำหรับ refresh client list
 Future<void> refreshClients(WidgetRef ref) async {
-  ref.invalidate(clientListProvider(const ['Active', 'Lead']));
+  ref.invalidate(clientForLeadProvider);
 }
 
+enum CreateOption { appointment, task }
+
 class ClientAddAppointmentScreen extends ConsumerStatefulWidget {
-  const ClientAddAppointmentScreen({super.key});
+  final CreateOption? option;
+
+  const ClientAddAppointmentScreen({this.option, super.key});
 
   @override
   ConsumerState<ClientAddAppointmentScreen> createState() => _ClientAddAppointmentScreenState();
@@ -134,7 +139,6 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
   }
 
   void _onSearchChanged() {
-    ref.read(clientListProvider(const ['Active', 'Lead']).notifier).setSearchQuery(_searchController.text);
     setState(() {
       _showSearchOptions = _searchFocusNode.hasFocus && _searchController.text.isNotEmpty;
     });
@@ -150,7 +154,7 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(clientListProvider(const ['Active', 'Lead']));
+    final clientsAsync = ref.watch(clientForLeadProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -159,7 +163,7 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: const AppText(label: 'Select Client', fontSize: 17, fontWeight: FontWeight.bold),
+        title: const AppText(label: 'Select', fontSize: 17, fontWeight: FontWeight.bold),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.blue),
           onPressed: () => Navigator.of(context).pop(),
@@ -174,7 +178,7 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async => refreshClients(ref), // ใช้ refreshClients
-                child: state.clients.when(
+                child: clientsAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(child: Text('Error: $error')),
                   data: (clients) {
@@ -182,7 +186,7 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
                       return const Center(child: AppText(label: 'No clients found.'));
                     }
 
-                    return _buildClientList(state.sections); // เปลี่ยนเป็น _buildClientList
+                    return _buildClientList(_sectionsFor(clients));
                   },
                 ),
               ),
@@ -260,6 +264,30 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
     );
   }
 
+  Map<String, List<Client>> _sectionsFor(List<Client> clients) {
+    final search = _searchController.text.trim().toLowerCase();
+    final filtered = clients.where((client) {
+      if (search.isEmpty) return true;
+
+      final name = client.clientName.toLowerCase();
+      final phone = (client.phone ?? '').toLowerCase();
+      return name.contains(search) || phone.contains(search);
+    });
+
+    final sections = <String, List<Client>>{};
+    for (final client in filtered) {
+      final name = client.clientName;
+      if (name.isEmpty) continue;
+      sections.putIfAbsent(name[0].toUpperCase(), () => []).add(client);
+    }
+
+    for (final clients in sections.values) {
+      clients.sort((a, b) => a.clientName.compareTo(b.clientName));
+    }
+
+    return sections;
+  }
+
   Widget _buildClientList(Map<String, List<Client>> sections) {
     if (_showSearchOptions) {
       return Container(); // ไม่แสดงรายการ Client เมื่อ search options เปิดอยู่
@@ -295,7 +323,24 @@ class _ClientAddAppointmentScreenState extends ConsumerState<ClientAddAppointmen
 
                 return ClientListItem(
                   client: client,
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => CreateAppointmentScreen(clientId: client.clientID ?? ''))),
+                  onTap: () {
+                    if (widget.option == CreateOption.task) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskCreatePage(clientID: client.clientID ?? '', clientType: client.clientType ?? ''),
+                        ),
+                      );
+                      return;
+                    }
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateAppointmentScreen(clientId: client.clientID ?? '', clientType: client.clientType ?? ''),
+                      ),
+                    );
+                  },
                 );
               },
             ),

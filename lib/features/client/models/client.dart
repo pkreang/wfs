@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:wfs/features/appointment/models/address.dart';
 import 'package:wfs/features/appointment/models/sales_territory.dart';
 import 'package:wfs/features/client/models/client_company.dart';
@@ -10,6 +12,46 @@ extension TimeFormat on String {
   String toHHmm() {
     final parts = split(":");
     return (parts.length >= 2) ? "${parts[0]}:${parts[1]}" : this;
+  }
+}
+
+class DealValue {
+  final String? dealValueItemID;
+  final String detail;
+  final num? saleAmount;
+
+  const DealValue({this.dealValueItemID, required this.detail, this.saleAmount});
+
+  factory DealValue.fromJson(Map<String, dynamic> json) {
+    return DealValue(
+      dealValueItemID: (json['DealValueItemID'] ?? json['DealValueItemID'] ?? '').toString(),
+      detail: (json['Detail'] ?? json['Detail'] ?? '').toString(),
+      saleAmount: num.tryParse((json['SaleAmount'] ?? json['SaleAmount'] ?? '').toString()),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {'detail': detail, 'sale_amount': saleAmount, 'note': null};
+
+  static List<DealValue> listFromJson(Object? value) {
+    if (value == null) return const [];
+    if (value is String) {
+      if (value.trim().isEmpty) return const [];
+      try {
+        final decoded = jsonDecode(value);
+        return listFromJson(decoded);
+      } catch (_) {
+        return const [];
+      }
+    }
+    if (value is List) {
+      return value.whereType<Map>().map((item) => DealValue.fromJson(Map<String, dynamic>.from(item))).where((item) => item.detail.trim().isNotEmpty).toList();
+    }
+    return const [];
+  }
+
+  static String? encodeList(List<DealValue>? values) {
+    if (values == null || values.isEmpty) return null;
+    return jsonEncode(values.map((item) => item.toJson()).toList());
   }
 }
 
@@ -35,6 +77,14 @@ class Client {
   final String? saleID;
   final String? saleName;
   final List<Tag>? tags;
+  final int? closeProbability;
+  final double? budget;
+  final String? jobTitle;
+  final String? lineID;
+  final String? reportLine;
+  final int? noOfSubordinate;
+  final String? clientType;
+  final List<DealValue>? dealValues;
 
   Client({
     this.clientID,
@@ -58,9 +108,19 @@ class Client {
     this.saleID,
     this.saleName,
     this.tags,
+    this.closeProbability,
+    this.budget,
+    this.jobTitle,
+    this.lineID,
+    this.reportLine,
+    this.noOfSubordinate,
+    this.clientType,
+    this.dealValues,
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
+    final closeProbabilityValue = json['close_probability'] ?? json['closeProbability'] ?? json['CloseProbability'];
+
     return Client(
       clientID: json['ClientID'],
       clientLevelID: json['ClientLevelID'],
@@ -83,7 +143,19 @@ class Client {
       saleID: json['SaleID'],
       saleName: json['SaleName'],
       tags: Tag.listFromJson(json['tags'] ?? []),
+      closeProbability: closeProbabilityValue is num ? closeProbabilityValue.toInt() : int.tryParse((closeProbabilityValue ?? '').toString()),
+      budget: double.tryParse((json['Budget'] ?? json['budget'] ?? '').toString()),
+      jobTitle: json['JobTitle'],
+      lineID: json['LineID'],
+      reportLine: json['ReportingLine'],
+      noOfSubordinate: json['NumberOfSubordinates'],
+      clientType: json['clientType'],
+      dealValues: DealValue.listFromJson(json['DealValueTracking']),
     );
+  }
+
+  factory Client.fromTaskLookupJson(Map<String, dynamic> json) {
+    return Client(clientID: json['ClientID']?.toString(), firstName: json['ClientName']?.toString() ?? '', lastName: '', phone: json['Phone']?.toString(), email: json['Email']?.toString(), clientType: json['ClientType']?.toString());
   }
 
   Map<String, dynamic> toJsonCreate(String userID, AuthState authState) {
@@ -119,6 +191,12 @@ class Client {
       "ClientCompanies": (companies ?? []).map((v) => v.toJson()).toList(),
       "ClientSales": [authState.isSales ? authState.userID : saleID],
       "Tags": (tags ?? []).map((v) => v.toJson()).toList(),
+      "CloseProbability": closeProbability,
+      "Budget": budget,
+      "JobTitle": jobTitle,
+      "LineID": lineID,
+      "ReportingLine": reportLine,
+      "NumberOfSubordinates": noOfSubordinate,
     };
   }
 
@@ -142,6 +220,12 @@ class Client {
       "ClientProducts": null,
       "ClientCompanies": (companies ?? []).map((v) => v.toJson()).toList(),
       "ClientSales": [saleID],
+      "CloseProbability": 99.99,
+      "Budget": 100,
+      "JobTitle": jobTitle,
+      "LineID": lineID,
+      "ReportingLine": reportLine,
+      "NumberOfSubordinates": noOfSubordinate,
     };
   }
 
@@ -167,6 +251,12 @@ class Client {
     String? saleID,
     String? saleName,
     List<Tag>? tags,
+    final int? closeProbability,
+    final double? budget,
+    String? jobTitle,
+    String? lineID,
+    String? reportLine,
+    int? noOfSubordinate,
   }) {
     return Client(
       clientID: clientID ?? this.clientID,
@@ -190,6 +280,12 @@ class Client {
       saleID: saleID ?? this.saleID,
       saleName: saleName ?? this.saleName,
       tags: tags ?? this.tags,
+      closeProbability: closeProbability ?? this.closeProbability,
+      budget: budget ?? this.budget,
+      jobTitle: jobTitle ?? this.jobTitle,
+      lineID: lineID ?? this.lineID,
+      reportLine: reportLine ?? this.reportLine,
+      noOfSubordinate: noOfSubordinate ?? this.noOfSubordinate,
     );
   }
 

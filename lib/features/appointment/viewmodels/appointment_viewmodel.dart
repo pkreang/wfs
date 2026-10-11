@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
 import 'package:wfs/features/appointment/services/appointment_service.dart';
+import 'package:wfs/features/task/models/task.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -96,7 +97,7 @@ class AppointmentMarkDateViewModel extends StateNotifier<AsyncValue<Map<String, 
   Future<void> refresh() => fetch();
 }
 
-class AppointmentsByDateViewModel extends StateNotifier<AsyncValue<List<Appointment>>> {
+class AppointmentsByDateViewModel extends StateNotifier<AsyncValue<List<dynamic>>> {
   AppointmentsByDateViewModel(this.ref, this.date) : super(const AsyncValue.loading()) {
     fetch();
   }
@@ -112,22 +113,31 @@ class AppointmentsByDateViewModel extends StateNotifier<AsyncValue<List<Appointm
 
     const statusOrder = <String, int>{'Scheduled': 0, 'Completed': 1, 'Canceled': 2};
 
-    state = res.whenData((list) {
-      final sorted = [...list];
-      sorted.sort((a, b) {
-        final ra = statusOrder[(a.appointmentStatusName ?? '').trim()] ?? 999;
-        final rb = statusOrder[(b.appointmentStatusName ?? '').trim()] ?? 999;
+    state = res.whenData((response) {
+      final rows = [...response.rows];
+      rows.sort((a, b) {
+        final ra = statusOrder[_statusNameOf(a).trim()] ?? 999;
+        final rb = statusOrder[_statusNameOf(b).trim()] ?? 999;
         if (ra != rb) return ra - rb;
 
-        final sa = (a.appointmentTimeFrom ?? a.appointmentDateTimeFrom.toIso8601String()).trim();
-        final sb = (b.appointmentTimeFrom ?? b.appointmentDateTimeFrom.toIso8601String()).trim();
-
-        return sa.compareTo(sb);
+        return _startDateOf(a).compareTo(_startDateOf(b));
       });
 
-      return sorted;
+      return rows;
     });
   }
 
   Future<void> refresh() => fetch();
+}
+
+String _statusNameOf(Object row) {
+  if (row is Appointment) return row.appointmentStatusName ?? '';
+  if (row is Task) return row.appointmentStatusName ?? '';
+  return '';
+}
+
+DateTime _startDateOf(Object row) {
+  if (row is Appointment) return row.appointmentDateTimeFrom;
+  if (row is Task) return row.appointmentDateTimeFrom ?? row.scheduledStartDate;
+  return DateTime.fromMillisecondsSinceEpoch(0);
 }

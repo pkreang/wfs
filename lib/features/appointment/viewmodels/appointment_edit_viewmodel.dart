@@ -52,25 +52,36 @@ class AppointmentEditViewModel extends StateNotifier<AppointmentEditState> {
   }
 
   Future<void> fetch() async {
+    state = state.copyWith(data: const AsyncLoading());
     final res = await AsyncValue.guard(() => _appointmentService.fetchAppointmentById(ref, id));
-    res.whenData((appointment) async {
-      final clientAsync = await AsyncValue.guard(() => _clientService.getById(ref, appointment.clientID));
+    if (!mounted) return;
 
-      List<Company> companies = (appointment.client.companies)
-          .map((cc) => cc.company)
-          .where((c) => (c?.companyID ?? '').isNotEmpty)
-          .map((c) => Company(companyID: c!.companyID, companyName: c.companyName, addresses: c.addresses))
-          .toList();
+    final appointment = res.asData?.value;
+    if (appointment == null) {
+      state = state.copyWith(data: res);
+      return;
+    }
 
-      final updatedData = res.whenData((value) {
-        return clientAsync.whenData((client) {
-              return value.copyWith(tags: client.tags ?? []);
-            }).value ??
-            value;
-      });
+    final companies = appointment.client.companies
+        .map((cc) => cc.company)
+        .where((c) => (c?.companyID ?? '').isNotEmpty)
+        .map((c) => Company(companyID: c!.companyID, companyName: c.companyName, addresses: c.addresses))
+        .toList();
+    state = state.copyWith(data: res, companies: companies, isDirty: false, isChangeTag: false);
 
-      state = state.copyWith(data: updatedData, companies: companies, isDirty: false);
-    });
+    final clientAsync = await AsyncValue.guard(() => _clientService.getById(ref, appointment.clientID));
+    if (!mounted) return;
+
+    if (clientAsync.hasError) {
+      debugPrint('AppointmentEditViewModel ($id) client tags: ${clientAsync.error}');
+      debugPrint(clientAsync.stackTrace?.toString());
+      return;
+    }
+
+    final client = clientAsync.asData?.value;
+    if (client != null && !state.isChangeTag) {
+      state = state.copyWith(data: state.data.whenData((value) => value.copyWith(tags: client.tags ?? [])));
+    }
   }
 
   void setTags(List<Tag> tags) {

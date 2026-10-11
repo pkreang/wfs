@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/widgets/capsule_widget.dart';
 
 class AppointmentTypeCapsule extends StatelessWidget {
@@ -14,7 +15,7 @@ class AppointmentTypeCapsule extends StatelessWidget {
       'On Call': CapsuleStyle(Color(0xFF2F80ED), Color.fromRGBO(47, 128, 237, 0.2)),
     };
 
-    final capsuleStyle = capsuleStyles[appointmentTypeName] ?? CapsuleStyle(Color(0xFFEEEEEE), Color(0xFFFFFFFF));
+    final capsuleStyle = capsuleStyles[appointmentTypeName] ?? CapsuleStyle(Color(0xFF0689FF), Color.fromRGBO(47, 128, 237, 0.2));
 
     return CapsuleWidget(label: appointmentTypeName, capsuleStyle: capsuleStyle);
   }

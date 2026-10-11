@@ -20,7 +20,9 @@ class TeamClientDetailViewModel extends StateNotifier<AsyncValue<List<Client>>> 
     try {
       for (final id in ids) {
         final client = await _teamService.getClientById(ref, id);
-        clients.add(client);
+        if (client != null) {
+          clients.add(client);
+        }
       }
       state = AsyncValue.data(clients);
     } catch (error, stackTrace) {

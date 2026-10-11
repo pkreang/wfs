@@ -21,7 +21,11 @@ class _TeamClientDetailPageState extends ConsumerState<TeamClientDetailPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(teamClientDetailProvider(widget.clientIDs));
     final clientList = state;
-    final countText = clientList.when(data: (clients) => '${widget.clientIDs.length} clients', loading: () => 'Loading...', error: (err, stack) => 'Error');
+    final countText = clientList.when(
+      data: (clients) => '${clients.length} clients',
+      loading: () => 'Loading...',
+      error: (err, stack) => 'Error',
+    );
 
     return Scaffold(
       appBar: AppBar(

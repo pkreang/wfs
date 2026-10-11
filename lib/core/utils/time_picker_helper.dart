@@ -46,7 +46,9 @@ class _CupertinoDialogHeader extends StatelessWidget {
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: CupertinoColors.separator, width: 0.0)),
+        border: Border(
+          bottom: BorderSide(color: CupertinoColors.separator, width: 0.0),
+        ),
         color: CupertinoColors.systemGrey6,
       ),
       child: Row(

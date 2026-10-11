@@ -55,7 +55,7 @@ class Address {
     "ProvinceID": provinceID,
     "ProvinceName": provinceName,
     "PostCode": postCode,
-    "CountryID": countryID,
+    "CountryID": countryID ?? 1,
     "CountryName": countryName,
   };
 

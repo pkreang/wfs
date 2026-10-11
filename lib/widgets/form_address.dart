@@ -67,7 +67,7 @@ class FormAddress extends StatelessWidget {
               const SizedBox(
                 width: 100,
                 child: Center(
-                  child: AppText(label: 'address', textColor: Color(0xFF007AFF)),
+                  child: AppText(label: 'Address', textColor: Color(0xFF007AFF)),
                 ),
               ),
               Expanded(

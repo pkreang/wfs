@@ -8,7 +8,7 @@ class AppDatePicker extends StatefulWidget {
 
   final Map<String, bool> appointmentMarkDate;
   final DateTime currentMonth;
-  final DateTime selectedDate;
+  final DateTime? selectedDate;
   final ValueChanged<DateTime>? onSelectMonth;
   final VoidCallback? onClose;
   final ValueChanged<DateTime>? onConfirm;
@@ -192,7 +192,7 @@ class _AppDatePickerState extends State<AppDatePicker> {
     for (int i = 1; i <= daysInMonth; i++) {
       final day = DateTime(_currentMonth.year, _currentMonth.month, i);
       final selectedDate = _tempSelectedDate ?? widget.selectedDate;
-      final isSelected = _isSameDay(day, selectedDate);
+      final isSelected = _isSameDayNullable(day, selectedDate);
       final isHasAppointment = widget.appointmentMarkDate[DateFormat('yyyy-MM-dd').format(day)] ?? false;
 
       dayWidgets.add(

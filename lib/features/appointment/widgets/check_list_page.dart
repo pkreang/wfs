@@ -10,8 +10,8 @@ enum SelectionMode { single, multiple }
 
 class CheckListPage<T, K> extends ConsumerStatefulWidget {
   final String title;
-  final AutoDisposeFutureProvider <List<T>> items;
-  
+  final AutoDisposeFutureProvider<List<T>> items;
+
   final ItemLabel<T> label;
   final ItemKeyOf<T, K> keyOf;
   final Iterable<K> initial;
@@ -65,13 +65,22 @@ class _CheckListPageState<T, K> extends ConsumerState<CheckListPage<T, K>> {
           onTap: () => Navigator.pop(context),
           child: Row(
             children: [
-              IconButton(icon: const Icon(Icons.chevron_left), onPressed: null, style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary))),
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: null,
+                style: ButtonStyle(iconColor: WidgetStateProperty.all(colorPrimary)),
+              ),
               AppText(label: 'Back', textColor: colorPrimary),
             ],
           ),
         ),
         title: AppText(label: widget.title, fontSize: 17, fontWeight: FontWeight.w600),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('Done', style: TextStyle(color: colorPrimary)))],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Done', style: TextStyle(color: colorPrimary)),
+          ),
+        ],
       ),
       body: itemsState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -87,10 +96,9 @@ class _CheckListPageState<T, K> extends ConsumerState<CheckListPage<T, K>> {
 
               return ListTile(
                 onTap: () => _toggle(item),
-                leading:
-                    _isMulti
-                        ? (selected ? const Icon(Icons.check_circle_outline, color: Color(0xFF31C859)) : null)
-                        : Icon(selected ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: selected ? colorPrimary : null),
+                leading: _isMulti
+                    ? (selected ? const Icon(Icons.check_circle_outline, color: Color(0xFF31C859)) : null)
+                    : Icon(selected ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: selected ? colorPrimary : null),
                 title: AppText(label: widget.label(item)),
                 // trailing:
                 //     _isMulti

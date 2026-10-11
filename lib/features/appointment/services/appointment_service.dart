@@ -6,10 +6,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:wfs/config/api_config.dart';
 import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/features/appointment/models/appointment.dart';
+import 'package:wfs/features/appointment/models/appointment_by_date_response.dart';
 import 'package:wfs/features/appointment/models/appointment_detail.dart';
 import 'package:wfs/features/appointment/models/appointment_status.dart';
 import 'package:wfs/features/appointment/models/appointment_type.dart';
-import 'package:wfs/features/appointment/models/company.dart';
 import 'package:wfs/features/appointment/models/outcome.dart';
 import 'package:wfs/features/appointment/models/product.dart';
 import 'package:wfs/features/appointment/models/purpose.dart';
@@ -19,9 +19,9 @@ import 'package:wfs/providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
 
 class AppointmentService {
-  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
 
-  Future<List<Appointment>> fetchAppointmentsByDate(Ref ref, String date) async {
+  Future<AppointmentByDateResponse> fetchAppointmentsByDate(Ref ref, String date) async {
     final authState = ref.watch(authProvider);
     final accessToken = authState.accessToken;
 
@@ -29,9 +29,7 @@ class AppointmentService {
       path: "/appointment/bydate/?AppointmentDate=$date",
       decode: (json) {
         final map = json as Map<String, dynamic>;
-        final list = map['appointments'] as List? ?? const [];
-
-        return Appointment.listFromJson(list);
+        return AppointmentByDateResponse.fromJson(map);
       },
       headers: {"Authorization": "Bearer $accessToken"},
     );
@@ -388,7 +386,7 @@ class AppointmentService {
     final authState = ref.read(authProvider);
     final accessToken = authState.accessToken;
 
-    final url = Uri.parse('https://sfe-api.appnormalthink.com/notification/');
+    final url = Uri.parse('https://sfe-api-test.appnormalthink.com/notification/');
 
     await http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'}, body: json.encode({'RefID': appointmentID, 'NotificationType': 'Appointment'}));
   }

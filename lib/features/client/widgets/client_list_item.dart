@@ -3,6 +3,7 @@ import 'package:wfs/features/appointment/widgets/app_text.dart';
 import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/client/widgets/client_level_capsule.dart';
 import 'package:wfs/features/client/widgets/client_status_capsule.dart';
+import 'package:wfs/widgets/capsule_widget.dart';
 
 class ClientListItem extends StatelessWidget {
   final Client client;
@@ -43,6 +44,13 @@ class ClientListItem extends StatelessWidget {
                               Row(
                                 spacing: 8,
                                 children: [
+                                  if (client.clientType?.trim().isNotEmpty == true)
+                                    CapsuleWidget(
+                                      label: client.clientType!.trim(),
+                                      capsuleStyle: client.clientType == 'Client'
+                                          ? CapsuleStyle(Color(0xFF219653), Color.fromRGBO(36, 151, 86, 0.2))
+                                          : CapsuleStyle(const Color(0xFF2F80ED), const Color.fromRGBO(47, 128, 237, 0.2)),
+                                    ),
                                   Flexible(child: AppText(label: '${client.firstName ?? ''} ${client.lastName ?? ''}', fontSize: 17)),
                                   ClientStatusCapsule(clientStatusName: client.clientStatus?.clientStatusName ?? ''),
                                   ClientLevelCapsule(clientLevelName: client.clientLevel?.clientLevelName ?? ''),

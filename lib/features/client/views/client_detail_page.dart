@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/widgets/app_text.dart';
@@ -10,6 +11,7 @@ import 'package:wfs/features/client/widgets/client_status_capsule.dart';
 import 'package:wfs/utility/app_utility.dart';
 import 'package:wfs/widgets/app_action_tile.dart';
 import 'package:wfs/widgets/app_detail_section_card.dart';
+import 'package:wfs/widgets/app_multiline_text.dart';
 
 class ClientDetailPage extends ConsumerStatefulWidget {
   final String clientID;
@@ -158,22 +160,32 @@ class _ClientDetailPageState extends ConsumerState<ClientDetailPage> {
             ],
           ),
           AppDetailSectionCard(
-            title: 'territory',
+            title: 'Territory',
             descWidget: AppText(label: client.salesTerritoryName ?? ''),
             fullWidth: true,
           ),
           AppDetailSectionCard(
-            title: 'mobile',
+            title: 'Close Probability',
+            descWidget: AppText(label: client.closeProbability == null ? '-' : '${client.closeProbability}%'),
+            fullWidth: true,
+          ),
+          AppDetailSectionCard(
+            title: 'Purchasing Power',
+            descWidget: AppText(label: client.budget == null ? '-' : _formatBudget(client.budget)),
+            fullWidth: true,
+          ),
+          AppDetailSectionCard(
+            title: 'Mobile',
             descWidget: AppText(label: client.phone ?? ''),
             fullWidth: true,
           ),
           AppDetailSectionCard(
-            title: 'email',
+            title: 'Email',
             descWidget: AppText(label: client.email ?? ''),
             fullWidth: true,
           ),
           AppDetailSectionCard(
-            title: 'company',
+            title: 'Company',
             descWidget: ListView.separated(
               padding: EdgeInsets.zero,
               shrinkWrap: true,
@@ -193,32 +205,120 @@ class _ClientDetailPageState extends ConsumerState<ClientDetailPage> {
             fullWidth: true,
           ),
           AppDetailSectionCard(
-            title: 'sales',
-            descWidget: AppText(label: client.saleName ?? ''),
+            title: 'Job Title',
+            descWidget: AppText(label: client.jobTitle ?? ''),
             fullWidth: true,
           ),
           AppDetailSectionCard(
-            title: 'tags',
-            descWidget: ListView.separated(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: (tags ?? []).length,
-              itemBuilder: (_, index) {
-                final tag = (tags ?? [])[index];
-
-                return Container(
-                  alignment: Alignment.centerLeft,
-                  height: 38,
-                  child: AppText(label: tag.tagName ?? '', textColor: AppUtility.colorPrimary),
-                );
-              },
-              separatorBuilder: (_, _) => const Divider(height: 0, thickness: 0.33, color: Color(0xFFC7C7CC)),
-            ),
+            title: 'Line ID',
+            descWidget: AppText(label: client.lineID ?? ''),
             fullWidth: true,
           ),
+          AppDetailSectionCard(
+            title: 'Report Line',
+            descWidget: AppText(label: client.reportLine ?? ''),
+            fullWidth: true,
+          ),
+          AppDetailSectionCard(
+            title: 'No. of subordinate',
+            descWidget: AppText(label: client.noOfSubordinate == null ? '-' : '${client.noOfSubordinate}'),
+            fullWidth: true,
+          ),
+          AppDetailSectionCard(
+            title: 'Lead Note',
+            descWidget: AppMultilineText(label: client.noted ?? ''),
+            fullWidth: true,
+          ),
+          // AppDetailSectionCard(
+          //   title: 'Lead Note',
+          //   descWidget: AppText(label: client.noOfSubordinate == null ? '-' : '${client.noOfSubordinate}'),
+          //   fullWidth: true,
+          // ),
+          AppDetailSectionCard(
+            title: 'Sales',
+            descWidget: AppText(label: client.saleName ?? ''),
+            fullWidth: true,
+          ),
+          if ((tags?.length ?? 0) > 0)
+            AppDetailSectionCard(
+              title: 'Tags',
+              descWidget: ListView.separated(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: (tags ?? []).length,
+                itemBuilder: (_, index) {
+                  final tag = (tags ?? [])[index];
+
+                  return Container(
+                    alignment: Alignment.centerLeft,
+                    height: 38,
+                    child: AppText(label: tag.tagName ?? '', textColor: AppUtility.colorPrimary),
+                  );
+                },
+                separatorBuilder: (_, _) => const Divider(height: 0, thickness: 0.33, color: Color(0xFFC7C7CC)),
+              ),
+              fullWidth: true,
+            ),
+          if ((client.dealValues?.length ?? 0) > 0)
+            AppDetailSectionCard(
+              title: 'Deal Values',
+              descWidget: Column(
+                children: [
+                  ListView.separated(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: (client.dealValues ?? const []).length,
+                    itemBuilder: (_, index) {
+                      final dealValue = (client.dealValues ?? const [])[index];
+
+                      return Container(
+                        alignment: Alignment.centerLeft,
+                        height: 38,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            AppText(label: '${dealValue.detail} - ${dealValue.saleAmount}', textColor: AppUtility.colorPrimary),
+                            // GestureDetector(
+                            //   onTap: () => _removeDealValue(dealValue.dealValueItemID ?? ''),
+                            //   child: const Icon(Icons.remove_circle, color: Color(0xFFFF382B), size: 20),
+                            // ),
+                          ],
+                        ),
+                      );
+                    },
+                    separatorBuilder: (_, _) => const Divider(height: 0, thickness: 0.33, color: Color(0xFFC7C7CC)),
+                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(top: 16),
+                  //   child: GestureDetector(
+                  //     behavior: HitTestBehavior.opaque,
+                  //     onTap: () => showDealValueDialog(context: context, ref: ref, leadID: widget.leadID),
+                  //     child: const Row(
+                  //       mainAxisSize: MainAxisSize.min,
+                  //       spacing: 8,
+                  //       children: [
+                  //         Icon(Icons.add_circle, color: Color(0xFF31C859), size: 24),
+                  //         AppText(label: 'Add Deal Value'),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+                ],
+              ),
+              fullWidth: true,
+            ),
         ],
       ),
     );
+  }
+
+  String _formatBudget(double? budget) {
+    if (budget == null) return '';
+
+    final formatter = NumberFormat('#,##0.##');
+
+    return formatter.format(budget);
   }
 }
