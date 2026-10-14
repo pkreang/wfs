@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wfs/core/base_provider.dart';
+import 'package:wfs/core/http/api_client.dart';
 import 'package:wfs/features/appointment/widgets/app_cupertino_option.dart';
 import 'package:wfs/features/survey/models/survey_model.dart';
 import 'package:wfs/features/survey/models/survey_question_model.dart';
@@ -61,6 +64,7 @@ class _SurveyFormPageState extends ConsumerState<SurveyFormPage> {
   }
 
   Future<void> handleSave() async {
+    if (isLoading) return;
     if (Validator.required(titleController.text) != null) {
       AppDialogs.error(context, message: 'กรุณากรอก Survey Title');
       return;
@@ -111,9 +115,63 @@ class _SurveyFormPageState extends ConsumerState<SurveyFormPage> {
         message: 'Data saved successfully',
         btnOkOnPress: () => Navigator.pop(context, true),
       );
+    } catch (error) {
+      if (!mounted) return;
+      AppDialogs.alert(
+        context,
+        icon: Icons.cancel,
+        title: 'ไม่สามารถดำเนินการได้',
+        message: _saveErrorMessage(error),
+      );
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
+  }
+
+  String _saveErrorMessage(Object error) {
+    const fallback = 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง';
+    if (error is! ApiException) return fallback;
+
+    Object? body = error.body;
+    if (body is String) {
+      try {
+        body = jsonDecode(body);
+      } on FormatException {
+        // Non-JSON responses use the API exception's message below.
+      }
+    }
+
+    if (body is Map) {
+      final detail = body['detail'];
+      if (detail is String && detail.trim().isNotEmpty) return detail;
+      if (detail is List) {
+        final messages = <String>[];
+        for (final item in detail) {
+          if (item is! Map) continue;
+          final message = item['msg'];
+          if (message is! String || message.trim().isEmpty) continue;
+          final location = item['loc'];
+          String? label;
+          if (location is List && location.isNotEmpty) {
+            if (location.last == 'TemplateName') {
+              label = 'Title';
+            } else if (location.length >= 3 &&
+                location[1] == 'Questions' &&
+                location[2] is int) {
+              label = 'Question ${(location[2] as int) + 1}';
+            } else {
+              label = location.where((part) => part != 'body').join('.');
+            }
+          }
+          messages.add(
+            label == null || label.isEmpty ? message : '$label: $message',
+          );
+        }
+        if (messages.isNotEmpty) return messages.join('\n');
+      }
+    }
+
+    return error.message.trim().isEmpty ? fallback : error.message;
   }
 
   @override

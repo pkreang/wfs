@@ -56,6 +56,7 @@ class TaskDetailViewModel extends StateNotifier<TaskDetailState> {
     final taskAsync = await AsyncValue.guard(
       () => _taskService.getById(ref, id),
     );
+    if (!mounted) return;
     state = state.copyWith(task: taskAsync);
   }
 
@@ -86,6 +87,22 @@ class TaskDetailViewModel extends StateNotifier<TaskDetailState> {
 
   void setScheduledEndDate(DateTime value) {
     _set((task) => task.copyWith(scheduledEndDate: value));
+  }
+
+  void setScheduledStartTime(TimeOfDay value) {
+    _set(
+      (task) => task.copyWith(
+        scheduledStartDate: task.scheduledStartDate.copyWith(hour: value.hour, minute: value.minute),
+      ),
+    );
+  }
+
+  void setScheduledEndTime(TimeOfDay value) {
+    _set(
+      (task) => task.copyWith(
+        scheduledEndDate: task.scheduledEndDate.copyWith(hour: value.hour, minute: value.minute),
+      ),
+    );
   }
 
   void setPurpose(Purpose value) {

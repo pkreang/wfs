@@ -105,7 +105,7 @@ class Task {
       details: (json['Noted'] ?? json['Details'] ?? json['details'])?.toString(),
       // status: TaskStatus.fromValue(json['status_name'] ?? json['Status'] ?? json['status']),
       scheduledStartDate: _parseDate(json['AppointmentDateTimeFrom'] ?? json['ScheduledDate'] ?? json['scheduled_date']) ?? DateTime.now(),
-      scheduledEndDate: _parseDate(json['AppointmentDateTimeEnd'] ?? json['ScheduledDate'] ?? json['scheduled_date']) ?? DateTime.now(),
+      scheduledEndDate: _parseDate(json['AppointmentDateTimeTo'] ?? json['ScheduledDate'] ?? json['scheduled_date']) ?? DateTime.now(),
       createdAt: _parseDate(json['CreatedDate'] ?? json['CreatedAt'] ?? json['createdAt']),
       updatedAt: _parseDate(json['ModifiedDate'] ?? json['UpdatedAt'] ?? json['updatedAt']),
       createdBy: (json['CreatedBy'] ?? json['createdBy'])?.toString(),

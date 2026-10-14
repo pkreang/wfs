@@ -47,15 +47,22 @@ class ClientService {
   }
 
   Future<Client> getById(Ref ref, String clientId) async {
+    final client = await findById(ref, clientId);
+    if (client == null) throw StateError('Client not found: $clientId');
+    return client;
+  }
+
+  Future<Client?> findById(Ref ref, String clientId) async {
     final authState = ref.read(authProvider);
     final accessToken = authState.accessToken;
 
-    final client = await apiClient.get(
+    final client = await apiClient.get<Client?>(
       path: "/client/id/$clientId",
       decode: (json) {
         final map = json as Map<String, dynamic>;
 
-        return Client.fromJson(map['client']);
+        final data = map['client'];
+        return data == null ? null : Client.fromJson(data);
       },
       headers: {"Authorization": "Bearer $accessToken"},
     );

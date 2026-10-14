@@ -59,7 +59,7 @@ class _TaskEditPageState extends ConsumerState<TaskEditPage> {
   }
 
   Future<void> handleSave() async {
-    final task = ref.read(taskDetailProvider(widget.taskID)).task.value;
+    final task = ref.read(taskEditProvider(widget.taskID)).task.value;
     if (task == null) {
       AppDialogs.error(context, message: 'ไม่พบข้อมูล Task');
       return;
@@ -120,15 +120,17 @@ class _TaskEditPageState extends ConsumerState<TaskEditPage> {
       return;
     }
 
-    final result = await ref.read(taskDetailProvider(widget.taskID).notifier).updateTask();
+    final result = await ref.read(taskEditProvider(widget.taskID).notifier).updateTask();
     if (!mounted) return;
     if (!result) {
-      final errMsg = ref.read(taskDetailProvider(widget.taskID)).errorMessage;
+      final errMsg = ref.read(taskEditProvider(widget.taskID)).errorMessage;
       if (errMsg != null && errMsg.isNotEmpty) {
         AppDialogs.alert(context, title: 'ไม่สามารถดำเนินการได้', message: errMsg);
       }
       return;
     }
+
+    ref.invalidate(taskDetailProvider(widget.taskID));
 
     AppDialogs.success(context, title: 'SUCCESS', message: 'Data saved successfully', btnOkOnPress: () => Navigator.pop(context));
   }
@@ -138,8 +140,8 @@ class _TaskEditPageState extends ConsumerState<TaskEditPage> {
     final List<Company> companies = ref.watch(companysProvider).maybeWhen(data: (items) => items, orElse: () => const <Company>[]);
     final List<TaskAppointmentType> appointmentTypes = ref.watch(taskTypeProvider).maybeWhen(data: (items) => items, orElse: () => const <TaskAppointmentType>[]);
     final List<Purpose> purposes = ref.watch(purposesProvider).maybeWhen(data: (items) => items, orElse: () => const <Purpose>[]);
-    final List<Client> clients = ref.watch(clientsProvider).maybeWhen(data: (items) => items, orElse: () => const <Client>[]);
-    final state = ref.watch(taskDetailProvider(widget.taskID));
+    final List<Client> clients = ref.watch(clientForLeadProvider).maybeWhen(data: (items) => items, orElse: () => const <Client>[]);
+    final state = ref.watch(taskEditProvider(widget.taskID));
 
     return Stack(
       children: [
@@ -171,22 +173,24 @@ class _TaskEditPageState extends ConsumerState<TaskEditPage> {
                   addressController: addressController,
                   onTaskTypeTap: () => _openTaskTypeSheet(task.appointmentTypeID ?? ''),
                   onScheduleStartChanged: (value) {
-                    final notifier = ref.read(taskDetailProvider(widget.taskID).notifier);
+                    final notifier = ref.read(taskEditProvider(widget.taskID).notifier);
                     notifier.setScheduledStartDate(value);
                     if (task.scheduledEndDate.isBefore(value)) {
                       notifier.setScheduledEndDate(value);
                     }
                   },
-                  onScheduleEndChanged: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setScheduledEndDate(value),
-                  onTitleChanged: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setTitle(value),
-                  onDetailsChanged: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setDetails(value),
-                  onPurposeChanged: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setPurpose(value),
-                  onPurposeOtherChanged: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setPurposeOther(value),
-                  onMobileChanged: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setMobile(value),
-                  onEmailChanged: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setEmail(value),
-                  onCompanyChanged: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setCompany(value),
-                  onCompanyRemoved: () => ref.read(taskDetailProvider(widget.taskID).notifier).removeCompany(),
-                  onAddressChanged: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setAddress(address: value),
+                  onScheduleEndChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setScheduledEndDate(value),
+                  onScheduleStartTimeChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setScheduledStartTime(value),
+                  onScheduleEndTimeChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setScheduledEndTime(value),
+                  onTitleChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setTitle(value),
+                  onDetailsChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setDetails(value),
+                  onPurposeChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setPurpose(value),
+                  onPurposeOtherChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setPurposeOther(value),
+                  onMobileChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setMobile(value),
+                  onEmailChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setEmail(value),
+                  onCompanyChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setCompany(value),
+                  onCompanyRemoved: () => ref.read(taskEditProvider(widget.taskID).notifier).removeCompany(),
+                  onAddressChanged: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setAddress(address: value),
                 );
               },
             ),
@@ -198,7 +202,7 @@ class _TaskEditPageState extends ConsumerState<TaskEditPage> {
   }
 
   Future<void> _openTaskTypeSheet(String appointmentTypeID) async {
-    await AppSheetTaskType.show(context: context, appointmentTypeID: appointmentTypeID, onSelected: (value) => ref.read(taskDetailProvider(widget.taskID).notifier).setAppointmentType(value));
+    await AppSheetTaskType.show(context: context, appointmentTypeID: appointmentTypeID, onSelected: (value) => ref.read(taskEditProvider(widget.taskID).notifier).setAppointmentType(value));
   }
 
   String _getTaskTypeName(Task task, List<TaskAppointmentType> appointmentTypes) {
@@ -258,6 +262,8 @@ class _TaskEditForm extends StatelessWidget {
   final VoidCallback onTaskTypeTap;
   final ValueChanged<DateTime> onScheduleStartChanged;
   final ValueChanged<DateTime> onScheduleEndChanged;
+  final ValueChanged<TimeOfDay> onScheduleStartTimeChanged;
+  final ValueChanged<TimeOfDay> onScheduleEndTimeChanged;
   final ValueChanged<String> onTitleChanged;
   final ValueChanged<String> onDetailsChanged;
   final ValueChanged<Purpose> onPurposeChanged;
@@ -284,6 +290,8 @@ class _TaskEditForm extends StatelessWidget {
     required this.onTaskTypeTap,
     required this.onScheduleStartChanged,
     required this.onScheduleEndChanged,
+    required this.onScheduleStartTimeChanged,
+    required this.onScheduleEndTimeChanged,
     required this.onTitleChanged,
     required this.onDetailsChanged,
     required this.onPurposeChanged,
@@ -347,9 +355,9 @@ class _TaskEditForm extends StatelessWidget {
             start: task.scheduledStartDate,
             end: task.scheduledEndDate,
             onStartDateSelected: onScheduleStartChanged,
-            // onStartTimeSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentFromTime(value),
+            onStartTimeSelected: onScheduleStartTimeChanged,
             onEndDateSelected: onScheduleEndChanged,
-            // onEndTimeSelected: (value) => ref.read(appointmentCreateProvider(widget.clientId).notifier).setAppointmentToTime(value),
+            onEndTimeSelected: onScheduleEndTimeChanged,
           ),
           Column(
             children: [

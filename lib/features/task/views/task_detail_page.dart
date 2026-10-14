@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wfs/core/base_provider.dart';
 import 'package:wfs/features/appointment/models/address.dart';
+import 'package:wfs/features/client/models/client.dart';
 import 'package:wfs/features/task/models/task.dart';
 import 'package:wfs/features/task/views/task_edit_page.dart';
 import 'package:wfs/utility/app_utility.dart';
@@ -183,7 +184,7 @@ class TaskDetailPage extends ConsumerWidget {
   }
 }
 
-class _TaskDetailContent extends StatelessWidget {
+class _TaskDetailContent extends ConsumerWidget {
   final Task task;
   final Future<void> Function(String phone) onCall;
   final Future<void> Function(String email) onEmail;
@@ -194,14 +195,13 @@ class _TaskDetailContent extends StatelessWidget {
   const _TaskDetailContent({required this.task, required this.onCall, required this.onEmail, required this.onDelete, required this.onComplete, required this.onCancel});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final startDate = task.appointmentDateTimeFrom ?? task.scheduledStartDate;
     final endDate = task.appointmentDateTimeTo ?? task.scheduledEndDate;
     final hasPhone = task.phone?.trim().isNotEmpty ?? false;
     final hasEmail = task.email?.trim().isNotEmpty ?? false;
     final hasPurposeName = task.purposeName?.trim().isNotEmpty ?? false;
     final hasPurposeOther = task.purposeOther?.trim().isNotEmpty ?? false;
-    final clientAndCompany = [task.clientName, task.companyName].whereType<String>().where((value) => value.isNotEmpty).join(' • ');
     final taskType = task.appointmentType?.appointmentTypeName ?? '';
     final isCompleted = task.appointmentStatusID == "C9B78060-8F8C-46FA-92A6-65D932701EB7";
     final isCancel = task.appointmentStatusID == "16CBDB62-30BB-4679-A1ED-CB935E11B7E2";
@@ -210,6 +210,9 @@ class _TaskDetailContent extends StatelessWidget {
         : isCancel
         ? "Canceled"
         : "Scheduled";
+    final List<Client> clients = ref.watch(clientForLeadProvider).maybeWhen(data: (items) => items, orElse: () => const <Client>[]);
+    final client = clients.where((client) => task.clientID?.isNotEmpty == true && client.clientID == task.clientID).firstOrNull;
+    final clientName = client == null ? task.clientName ?? '' : '${client.firstName ?? ''} ${client.lastName ?? ''}'.trim();
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -239,12 +242,11 @@ class _TaskDetailContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (clientAndCompany.isNotEmpty)
-            AppDetailSectionCard(
-              title: 'client / company',
-              descWidget: AppText(label: clientAndCompany, maxLines: null),
-              fullWidth: true,
-            ),
+          AppDetailSectionCard(
+            title: 'Client',
+            descWidget: AppText(label: clientName, maxLines: null),
+            fullWidth: true,
+          ),
           const SizedBox(height: 16),
           AppDetailSectionCard(
             title: 'Type',
@@ -281,12 +283,6 @@ class _TaskDetailContent extends StatelessWidget {
               fullWidth: true,
             ),
           ],
-          const SizedBox(height: 16),
-          AppDetailSectionCard(
-            title: 'purpose',
-            descWidget: AppText(label: task.purposeName ?? task.purposeOther ?? ''),
-            fullWidth: true,
-          ),
           const SizedBox(height: 16),
           AppDetailSectionCard(
             title: 'Address',

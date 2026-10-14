@@ -306,6 +306,10 @@ final taskDetailProvider = StateNotifierProvider.autoDispose.family<TaskDetailVi
   return TaskDetailViewModel(ref, id);
 });
 
+final taskEditProvider = StateNotifierProvider.autoDispose.family<TaskDetailViewModel, TaskDetailState, String>((ref, id) {
+  return TaskDetailViewModel(ref, id);
+});
+
 final taskTypeProvider = FutureProvider.autoDispose<List<TaskAppointmentType>>((ref) async {
   return ref.read(taskServiceProvider).fetchTaskTypes(ref);
 });

@@ -25,8 +25,9 @@ import 'package:wfs/widgets/form_info_tile.dart';
 
 class LeadDetailPage extends ConsumerStatefulWidget {
   final String leadID;
+  final bool isDetailOnly;
 
-  const LeadDetailPage({required this.leadID, super.key});
+  const LeadDetailPage({required this.leadID, this.isDetailOnly = false, super.key});
 
   @override
   ConsumerState<LeadDetailPage> createState() => _LeadDetailPageState();
@@ -404,7 +405,7 @@ class _LeadDetailPageState extends ConsumerState<LeadDetailPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(leadDetailProvider(widget.leadID));
 
-    final isCanEdit = state.lead.asData?.value.leadStatus?.toLowerCase() != 'closed';
+    final isCanEdit = !widget.isDetailOnly && state.lead.asData?.value.leadStatus?.toLowerCase() != 'closed';
 
     // (state.lead.asData?.value.closeLostReason?.trim().isEmpty ?? true) &&
 
@@ -491,7 +492,7 @@ class _LeadDetailPageState extends ConsumerState<LeadDetailPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 8,
                 children: [
-                  if (nextStage != null && nextStage.displayName != "Closed")
+                  if (!widget.isDetailOnly && nextStage != null && nextStage.displayName != "Closed")
                     AppActionTile(
                       icon: Icons.fact_check_outlined,
                       title: nextStage.displayName,

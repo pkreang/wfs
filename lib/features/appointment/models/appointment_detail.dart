@@ -37,6 +37,7 @@ class AppointmentDetail {
   final List<Tag> tags;
   final bool isShowIconCheckIn;
   final bool isShowIconComplete;
+  final bool isLeadClient;
 
   AppointmentDetail({
     required this.userID,
@@ -70,6 +71,7 @@ class AppointmentDetail {
     required this.tags,
     this.isShowIconCheckIn = false,
     this.isShowIconComplete = false,
+    this.isLeadClient = false,
   });
 
   factory AppointmentDetail.fromJson(Map<String, dynamic> json) => AppointmentDetail(
@@ -207,6 +209,7 @@ class AppointmentDetail {
     bool isRemoveAddress = false,
     bool? isShowIconCheckIn,
     bool? isShowIconComplete,
+    bool? isLeadClient,
   }) {
     return AppointmentDetail(
       userID: userID ?? this.userID,
@@ -242,6 +245,7 @@ class AppointmentDetail {
       tags: tags ?? this.tags,
       isShowIconCheckIn: isShowIconCheckIn ?? this.isShowIconCheckIn,
       isShowIconComplete: isShowIconComplete ?? this.isShowIconComplete,
+      isLeadClient: isLeadClient ?? this.isLeadClient,
     );
   }
 }

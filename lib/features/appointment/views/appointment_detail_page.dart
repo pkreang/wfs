@@ -17,6 +17,7 @@ import 'package:wfs/features/appointment/widgets/appointment_type_capsule.dart';
 import 'package:wfs/features/appointment/widgets/client_status.dart';
 import 'package:wfs/features/appointment/widgets/level_status.dart';
 import 'package:wfs/features/client/views/client_detail_page.dart';
+import 'package:wfs/features/lead/views/lead_detail_page.dart';
 import 'package:wfs/features/survey/widgets/survey_list_picker.dart';
 import 'package:wfs/providers/appointment_provider.dart';
 import 'package:wfs/providers/auth_provider.dart';
@@ -301,7 +302,11 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
                   AppActionTile(
                     icon: Icons.person,
                     title: 'clients',
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ClientDetailPage(clientID: client.clientID))),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => appointmentDetail.isLeadClient ? LeadDetailPage(leadID: appointmentDetail.clientID, isDetailOnly: true) : ClientDetailPage(clientID: client.clientID),
+                      ),
+                    ),
                   ),
                   AppActionTile(icon: Icons.location_pin, title: 'map', onTap: () => openGoogleMap(latitude, longitude)),
                   if (isShowIconCheckIn)

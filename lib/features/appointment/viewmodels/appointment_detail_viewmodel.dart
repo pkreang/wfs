@@ -25,22 +25,29 @@ class AppointmentDetailViewModel
     final res = await AsyncValue.guard(
       () => _appointmentService.fetchAppointmentById(ref, id),
     );
-    state = res;
+    if (!mounted) return;
 
     if (res.hasError) {
       print('appointmentDetail fetch error: ${res.error}');
     }
 
     final appointment = res.asData?.value;
-    if (appointment == null) return;
+    if (appointment == null) {
+      state = res;
+      return;
+    }
 
     final clientAsync = await AsyncValue.guard(
-      () => _clientService.getById(ref, appointment.clientID),
+      () => _clientService.findById(ref, appointment.clientID),
     );
+    if (!mounted) return;
     final client = clientAsync.asData?.value;
-    if (client != null) {
-      state = AsyncValue.data(appointment.copyWith(tags: client.tags ?? []));
-    }
+    state = AsyncValue.data(
+      appointment.copyWith(
+        tags: client != null ? client.tags ?? [] : appointment.tags,
+        isLeadClient: !clientAsync.hasError && client == null,
+      ),
+    );
   }
 
   Future<void> refresh() => fetch();
