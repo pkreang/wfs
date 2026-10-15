@@ -4,7 +4,7 @@ import 'package:wfs/features/territory/models/territory_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class TerritoryService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<List<TerritoryModel>> fetchTerritories(Ref ref) async {
     final authState = ref.read(authProvider);

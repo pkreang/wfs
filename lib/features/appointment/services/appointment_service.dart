@@ -19,7 +19,7 @@ import 'package:wfs/providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
 
 class AppointmentService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<AppointmentByDateResponse> fetchAppointmentsByDate(Ref ref, String date) async {
     final authState = ref.watch(authProvider);
@@ -386,7 +386,7 @@ class AppointmentService {
     final authState = ref.read(authProvider);
     final accessToken = authState.accessToken;
 
-    final url = Uri.parse('https://sfe-api-test.appnormalthink.com/notification/');
+    final url = Uri.parse('https://sfe-api.appnormalthink.com/notification/');
 
     await http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'}, body: json.encode({'RefID': appointmentID, 'NotificationType': 'Appointment'}));
   }

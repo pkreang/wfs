@@ -26,73 +26,48 @@ class _SurveyRef implements Ref {
 
 class _DashboardService extends SurveyDashboardService {
   final requestedIDs = <String>[];
-  Future<SurveyDashboardAnalytics> Function() load = () async =>
-      SurveyDashboardAnalytics.fromJson({
-        'TotalSent': 5,
-        'TotalResponded': 0,
-        'ResponseRate': 0.0,
-        'AverageOverallScore': 0.0,
-      });
+  Future<SurveyDashboardAnalytics> Function() load = () async => SurveyDashboardAnalytics.fromJson({'TotalSent': 5, 'TotalResponded': 0, 'ResponseRate': 0.0, 'AverageOverallScore': 0.0});
 
   @override
-  Future<SurveyDashboardAnalytics> fetchAnalytics(
-    Ref ref,
-    String surveyTemplateID,
-  ) async {
+  Future<SurveyDashboardAnalytics> fetchAnalytics(Ref ref, String surveyTemplateID) async {
     requestedIDs.add(surveyTemplateID);
     return load();
   }
 }
 
 void main() {
-  test(
-    'requests dashboard analytics using the selected template and token',
-    () async {
-      const templateID = 'template & feedback+?';
-      final result = await http.runWithClient(
-        () => SurveyDashboardService().fetchAnalytics(_SurveyRef(), templateID),
-        () => MockClient((request) async {
-          expect(request.method, 'GET');
-          expect(request.url.origin, 'https://sfe-api-test.appnormalthink.com');
-          expect(request.url.path, '/survey/admin/dashboard-analytics');
-          expect(request.url.queryParameters, {'surveyTemplateID': templateID});
-          expect(request.headers['Authorization'], 'Bearer test-access-token');
-          return http.Response(
-            jsonEncode({
-              'TotalSent': 5,
-              'TotalResponded': 0,
-              'ResponseRate': 0.0,
-              'AverageOverallScore': 0.0,
-            }),
-            200,
-          );
-        }),
-      );
+  test('requests dashboard analytics using the selected template and token', () async {
+    const templateID = 'template & feedback+?';
+    final result = await http.runWithClient(
+      () => SurveyDashboardService().fetchAnalytics(_SurveyRef(), templateID),
+      () => MockClient((request) async {
+        expect(request.method, 'GET');
+        expect(request.url.origin, 'https://sfe-api.appnormalthink.com');
+        expect(request.url.path, '/survey/admin/dashboard-analytics');
+        expect(request.url.queryParameters, {'surveyTemplateID': templateID});
+        expect(request.headers['Authorization'], 'Bearer test-access-token');
+        return http.Response(jsonEncode({'TotalSent': 5, 'TotalResponded': 0, 'ResponseRate': 0.0, 'AverageOverallScore': 0.0}), 200);
+      }),
+    );
 
-      expect(result.totalSent, 5);
-      expect(result.totalResponded, 0);
-      expect(result.responseRate, 0);
-      expect(result.averageOverallScore, 0);
-    },
-  );
+    expect(result.totalSent, 5);
+    expect(result.totalResponded, 0);
+    expect(result.responseRate, 0);
+    expect(result.averageOverallScore, 0);
+  });
 
   Future<void> showPage(WidgetTester tester, _DashboardService service) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [surveyDashboardServiceProvider.overrideWithValue(service)],
         child: const MaterialApp(
-          home: SurveyDashboardPage(
-            surveyID: 'template-id',
-            title: 'Customer feedback',
-          ),
+          home: SurveyDashboardPage(surveyID: 'template-id', title: 'Customer feedback'),
         ),
       ),
     );
   }
 
-  testWidgets('displays the sample analytics including zero values on mobile', (
-    tester,
-  ) async {
+  testWidgets('displays the sample analytics including zero values on mobile', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -116,16 +91,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('displays API rate and score directly on a wide layout', (
-    tester,
-  ) async {
-    final service = _DashboardService()
-      ..load = () async => SurveyDashboardAnalytics.fromJson({
-        'TotalSent': 20,
-        'TotalResponded': 7,
-        'ResponseRate': 35.0,
-        'AverageOverallScore': 8.5,
-      });
+  testWidgets('displays API rate and score directly on a wide layout', (tester) async {
+    final service = _DashboardService()..load = () async => SurveyDashboardAnalytics.fromJson({'TotalSent': 20, 'TotalResponded': 7, 'ResponseRate': 35.0, 'AverageOverallScore': 8.5});
     await showPage(tester, service);
     await tester.pumpAndSettle();
 
@@ -133,16 +100,11 @@ void main() {
     expect(find.text('7'), findsOneWidget);
     expect(find.text('35.0%'), findsOneWidget);
     expect(find.text('8.5'), findsOneWidget);
-    expect(
-      tester.getTopLeft(find.text('Total sent')).dy,
-      tester.getTopLeft(find.text('Total responded')).dy,
-    );
+    expect(tester.getTopLeft(find.text('Total sent')).dy, tester.getTopLeft(find.text('Total responded')).dy);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('shows loading and retries failed analytics requests', (
-    tester,
-  ) async {
+  testWidgets('shows loading and retries failed analytics requests', (tester) async {
     final pending = Completer<SurveyDashboardAnalytics>();
     final service = _DashboardService()..load = () => pending.future;
     await showPage(tester, service);
@@ -150,17 +112,9 @@ void main() {
 
     pending.completeError(Exception('Request failed'));
     await tester.pumpAndSettle();
-    expect(
-      find.text('ไม่สามารถโหลดข้อมูล Survey Dashboard ได้'),
-      findsOneWidget,
-    );
+    expect(find.text('ไม่สามารถโหลดข้อมูล Survey Dashboard ได้'), findsOneWidget);
 
-    service.load = () async => const SurveyDashboardAnalytics(
-      totalSent: 10,
-      totalResponded: 4,
-      responseRate: 40,
-      averageOverallScore: 8,
-    );
+    service.load = () async => const SurveyDashboardAnalytics(totalSent: 10, totalResponded: 4, responseRate: 40, averageOverallScore: 8);
     await tester.tap(find.text('ลองใหม่'));
     await tester.pumpAndSettle();
     expect(service.requestedIDs, ['template-id', 'template-id']);

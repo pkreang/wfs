@@ -15,7 +15,7 @@ class TaskService {
   static const _taskTable = 'tasks';
 
   Database? _database;
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<Database> get _db async {
     final existing = _database;

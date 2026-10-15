@@ -20,7 +20,7 @@ class SurveyService {
   static const _submissionTable = 'survey_submissions';
 
   Database? _database;
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<Database> get _db async {
     final existing = _database;
@@ -118,7 +118,11 @@ class SurveyService {
     }
     final accessToken = ref.read(authProvider).accessToken;
 
-    return apiClient.getOnly(path: '/survey/admin/responses/${Uri.encodeComponent(surveyResponseID)}', headers: {'Authorization': 'Bearer $accessToken'}, decode: (json) => SurveyResponse.fromJson(Map<String, dynamic>.from(json as Map)));
+    return apiClient.getOnly(
+      path: '/survey/admin/responses/${Uri.encodeComponent(surveyResponseID)}',
+      headers: {'Authorization': 'Bearer $accessToken'},
+      decode: (json) => SurveyResponse.fromJson(Map<String, dynamic>.from(json as Map)),
+    );
   }
 
   Future<List<SurveyQuestionType>> getQuestionTypes(Ref ref) async {
@@ -130,7 +134,11 @@ class SurveyService {
   Future<Survey> getSurveyById(Object? ref, String surveyID) async {
     final accessToken = (ref as dynamic).read(authProvider).accessToken;
 
-    return apiClient.getOnly(path: '/survey/admin/templates/${Uri.encodeComponent(surveyID)}', headers: {'Authorization': 'Bearer $accessToken'}, decode: (json) => Survey.fromJson(Map<String, dynamic>.from(json as Map)));
+    return apiClient.getOnly(
+      path: '/survey/admin/templates/${Uri.encodeComponent(surveyID)}',
+      headers: {'Authorization': 'Bearer $accessToken'},
+      decode: (json) => Survey.fromJson(Map<String, dynamic>.from(json as Map)),
+    );
   }
 
   Future<Survey> getSurveyByRefCode(Object? ref, String refCode) async {
@@ -199,7 +207,13 @@ class SurveyService {
     final now = DateTime.now();
     final submission = SurveySubmission(submissionID: 'submission_${now.microsecondsSinceEpoch}', surveyID: survey.surveyID ?? '', refCode: refCode, submittedAt: now, answers: answers);
 
-    await db.insert(_submissionTable, {'SubmissionID': submission.submissionID, 'SurveyID': submission.surveyID, 'RefCode': submission.refCode, 'AnswersJson': jsonEncode(submission.answers.map((answer) => answer.toJson()).toList()), 'SubmittedAt': submission.submittedAt.toIso8601String()});
+    await db.insert(_submissionTable, {
+      'SubmissionID': submission.submissionID,
+      'SurveyID': submission.surveyID,
+      'RefCode': submission.refCode,
+      'AnswersJson': jsonEncode(submission.answers.map((answer) => answer.toJson()).toList()),
+      'SubmittedAt': submission.submittedAt.toIso8601String(),
+    });
 
     return true;
   }

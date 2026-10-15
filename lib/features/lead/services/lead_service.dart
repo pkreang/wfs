@@ -6,7 +6,7 @@ import 'package:wfs/features/lead/models/lead_status.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class LeadService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<List<Lead>> fetchLeads(Ref ref, {String? startDate, endDate, status}) async {
     final authState = ref.read(authProvider);
@@ -179,7 +179,7 @@ import 'package:wfs/features/lead/models/lead_status.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class LeadService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<List<Lead>> fetchLeads(Ref ref) async {
     final authState = ref.read(authProvider);

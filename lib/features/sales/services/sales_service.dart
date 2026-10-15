@@ -6,7 +6,7 @@ import 'package:wfs/models/user_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class SalesService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<List<User>> fetchSales(Ref ref) async {
     final authState = ref.read(authProvider);

@@ -5,7 +5,7 @@ import 'package:wfs/features/phase3/lead_workflow/models/lead_workflow_stage_mod
 import 'package:wfs/providers/auth_provider.dart';
 
 class LeadWorkflowService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<LeadWorkflowModel> getDefaultWorkflow(Ref ref) async {
     final accessToken = ref.read(authProvider).accessToken;

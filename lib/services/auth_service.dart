@@ -9,7 +9,7 @@ import 'package:wfs/providers/auth_provider.dart';
 import '../config/api_config.dart';
 
 class AuthService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
   static const Duration _requestTimeout = Duration(seconds: 20);
 
   Future<Map<String, dynamic>> login(String username, String password) async {

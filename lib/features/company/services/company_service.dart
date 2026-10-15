@@ -4,7 +4,7 @@ import 'package:wfs/features/company/models/company.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class CompanyService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<List<Company>> fetchCompanies(Ref ref) async {
     final authState = ref.read(authProvider);

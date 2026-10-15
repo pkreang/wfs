@@ -26,32 +26,13 @@ void main() {
   for (final appointmentID in <String?>['appointment-id', null]) {
     test('creates a ticket with AppointmentID=$appointmentID', () async {
       final result = await http.runWithClient(
-        () => SurveyService().createTicket(
-          _TicketRef(),
-          surveyTemplateID: 'template-id',
-          clientID: 'client-id',
-          appointmentID: appointmentID,
-        ),
+        () => SurveyService().createTicket(_TicketRef(), surveyTemplateID: 'template-id', clientID: 'client-id', appointmentID: appointmentID),
         () => MockClient((request) async {
           expect(request.method, 'POST');
-          expect(
-            request.url.toString(),
-            'https://sfe-api-test.appnormalthink.com/survey/admin/tickets',
-          );
+          expect(request.url.toString(), 'https://sfe-api.appnormalthink.com/survey/admin/tickets');
           expect(request.headers['Authorization'], 'Bearer test-access-token');
-          expect(jsonDecode(request.body), {
-            'SurveyTemplateID': 'template-id',
-            'ClientID': 'client-id',
-            'AppointmentID': appointmentID,
-          });
-          return http.Response(
-            jsonEncode({
-              'SurveyResponseID': 'response-id',
-              'SurveyToken': 'test-token',
-              'SurveyLink': link,
-            }),
-            201,
-          );
+          expect(jsonDecode(request.body), {'SurveyTemplateID': 'template-id', 'ClientID': 'client-id', 'AppointmentID': appointmentID});
+          return http.Response(jsonEncode({'SurveyResponseID': 'response-id', 'SurveyToken': 'test-token', 'SurveyLink': link}), 201);
         }),
       );
       expect(result, link);
@@ -64,32 +45,17 @@ void main() {
     http.Response('{}', 201),
     http.Response('{"SurveyLink":"/relative-link"}', 201),
   ]) {
-    test(
-      'rejects failed or invalid ticket response ${response.body}',
-      () async {
-        await expectLater(
-          http.runWithClient(
-            () => SurveyService().createTicket(
-              _TicketRef(),
-              surveyTemplateID: 'template-id',
-              clientID: 'client-id',
-            ),
-            () => MockClient((_) async => response),
-          ),
-          throwsA(isA<Exception>()),
-        );
-      },
-    );
+    test('rejects failed or invalid ticket response ${response.body}', () async {
+      await expectLater(
+        http.runWithClient(() => SurveyService().createTicket(_TicketRef(), surveyTemplateID: 'template-id', clientID: 'client-id'), () => MockClient((_) async => response)),
+        throwsA(isA<Exception>()),
+      );
+    });
   }
 
   test('existing POST calls still require success status by default', () async {
     await expectLater(
-      http.runWithClient(
-        () => ApiClient(
-          'https://example.com',
-        ).post(path: '/test', body: {}, decode: (json) => json),
-        () => MockClient((_) async => http.Response('{}', 200)),
-      ),
+      http.runWithClient(() => ApiClient('https://example.com').post(path: '/test', body: {}, decode: (json) => json), () => MockClient((_) async => http.Response('{}', 200))),
       throwsA(isA<ApiException>()),
     );
   });

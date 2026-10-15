@@ -4,7 +4,7 @@ import 'package:wfs/features/tag/models/tag.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class TagService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<List<Tag>> fetchTags(Ref ref) async {
     final authState = ref.read(authProvider);

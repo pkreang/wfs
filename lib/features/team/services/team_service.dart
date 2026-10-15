@@ -6,7 +6,7 @@ import 'package:wfs/models/user_model.dart';
 import 'package:wfs/providers/auth_provider.dart';
 
 class TeamService {
-  final apiClient = ApiClient('https://sfe-api-test.appnormalthink.com');
+  final apiClient = ApiClient('https://sfe-api.appnormalthink.com');
 
   Future<List<User>> fetchTeamMembers(Ref ref) async {
     final authState = ref.read(authProvider);
@@ -39,9 +39,7 @@ class TeamService {
       path: "/client/id/${clientID.toString()}/",
       decode: (json) {
         final clientJson = (json as Map<String, dynamic>)["client"];
-        return clientJson == null
-            ? null
-            : Client.fromJson(clientJson as Map<String, dynamic>);
+        return clientJson == null ? null : Client.fromJson(clientJson as Map<String, dynamic>);
       },
       headers: {"Authorization": "Bearer $accessToken"},
     );
